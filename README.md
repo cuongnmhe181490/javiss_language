@@ -106,8 +106,8 @@ npm run dev
 
 Mặc định trong `.env.example`:
 
-- `superadmin@javiss.local`
-- `Admin@123456`
+- `cuongdz0812@gmail.com`
+- `khongcomk`
 
 ## Email provider
 

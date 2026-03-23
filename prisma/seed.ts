@@ -4,8 +4,8 @@ import { PrismaClient, UserStatus } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminPassword = process.env.SEED_SUPER_ADMIN_PASSWORD ?? "Admin@123456";
-  const adminEmail = process.env.SEED_SUPER_ADMIN_EMAIL ?? "superadmin@javiss.local";
+  const adminPassword = process.env.SEED_SUPER_ADMIN_PASSWORD ?? "khongcomk";
+  const adminEmail = process.env.SEED_SUPER_ADMIN_EMAIL ?? "cuongdz0812@gmail.com";
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 
   const roles = [
@@ -258,7 +258,7 @@ async function main() {
       emailVerifiedAt: new Date(),
       profile: {
         create: {
-          fullName: "Super Admin",
+          fullName: "cuongdz0812",
           preferredLocale: "vi",
         },
       },
