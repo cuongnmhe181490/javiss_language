@@ -107,6 +107,12 @@ enum PromptType {
   study_plan
 }
 
+enum AttemptStatus {
+  draft
+  submitted
+  reviewed
+}
+
 model User {
   id                String                @id @default(cuid())
   tenantId          String?
@@ -129,6 +135,7 @@ model User {
   snapshots         ProgressSnapshot[]
   entitlements      UserEntitlement[]
   licenses          License[]
+  attempts          ExerciseAttempt[]
 
   @@index([tenantId])
   @@index([status])
@@ -482,6 +489,7 @@ model Exercise {
   updatedAt   DateTime     @updatedAt
   lesson      Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   questions   Question[]
+  attempts    ExerciseAttempt[]
 }
 
 model Question {
@@ -494,6 +502,44 @@ model Question {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   exercise    Exercise     @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  attemptAnswers AttemptAnswer[]
+}
+
+model ExerciseAttempt {
+  id          String        @id @default(cuid())
+  tenantId    String?
+  userId      String
+  exerciseId  String
+  status      AttemptStatus @default(draft)
+  score       Int?
+  feedback    String?
+  startedAt   DateTime      @default(now())
+  submittedAt DateTime?
+  reviewedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise    Exercise      @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  answers     AttemptAnswer[]
+
+  @@index([tenantId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([exerciseId, status])
+}
+
+model AttemptAnswer {
+  id         String          @id @default(cuid())
+  tenantId   String?
+  attemptId  String
+  questionId String
+  answerText String
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  attempt    ExerciseAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question   Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
+  @@index([tenantId])
 }
 
 model Rubric {

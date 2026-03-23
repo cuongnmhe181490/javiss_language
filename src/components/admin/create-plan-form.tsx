@@ -55,7 +55,7 @@ export function CreatePlanForm() {
   return (
     <form className="grid gap-4 md:grid-cols-2" onSubmit={onSubmit}>
       <div className="space-y-2">
-        <Label htmlFor="code">Mã plan</Label>
+        <Label htmlFor="code">Mã gói học</Label>
         <Input id="code" placeholder="starter_plus" {...register("code")} />
         <FormMessage error={errors.code?.message} />
       </div>

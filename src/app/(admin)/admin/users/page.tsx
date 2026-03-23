@@ -11,6 +11,13 @@ import { listUsers } from "@/server/repositories/user.repository";
 
 export const dynamic = "force-dynamic";
 
+const roleLabelMap: Record<string, string> = {
+  super_admin: "Super admin",
+  admin: "Admin",
+  teacher: "Giáo viên",
+  student: "Học viên",
+};
+
 export default async function AdminUsersPage({
   searchParams,
 }: {
@@ -79,7 +86,11 @@ export default async function AdminUsersPage({
                     <TableRow key={user.id}>
                       <TableCell>{user.profile?.fullName ?? "Chưa có tên"}</TableCell>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.roles.map((role) => role.role.code).join(", ")}</TableCell>
+                      <TableCell>
+                        {user.roles
+                          .map((role) => roleLabelMap[role.role.code] ?? role.role.code)
+                          .join(", ")}
+                      </TableCell>
                       <TableCell>
                         <StatusBadge status={user.status} />
                       </TableCell>
