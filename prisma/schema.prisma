@@ -1,0 +1,530 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserStatus {
+  pending
+  approved
+  verification_sent
+  active
+  rejected
+  blocked
+}
+
+enum RegistrationStatus {
+  pending
+  approved
+  rejected
+}
+
+enum NotificationStatus {
+  unread
+  read
+  archived
+}
+
+enum AuditAction {
+  registration_created
+  registration_approved
+  registration_rejected
+  verification_code_sent
+  verification_succeeded
+  verification_failed
+  verification_resent
+  user_blocked
+  user_unblocked
+  login_succeeded
+  login_failed
+}
+
+enum LicenseStatus {
+  draft
+  active
+  expired
+  revoked
+}
+
+enum EntitlementStatus {
+  active
+  inactive
+  expired
+}
+
+enum FeatureFlagType {
+  boolean
+  percentage
+  json
+}
+
+enum GoalStatus {
+  draft
+  active
+  completed
+  paused
+}
+
+enum PlanStatus {
+  draft
+  active
+  completed
+  archived
+}
+
+enum ExerciseType {
+  practice
+  mock_test
+  assessment
+}
+
+enum QuestionType {
+  multiple_choice
+  short_answer
+  essay
+  speaking
+  listening
+  reading
+}
+
+enum LessonStatus {
+  draft
+  published
+  archived
+}
+
+enum PromptType {
+  onboarding
+  evaluation
+  feedback
+  study_plan
+}
+
+model User {
+  id                String                @id @default(cuid())
+  tenantId          String?
+  email             String                @unique
+  passwordHash      String
+  status            UserStatus            @default(pending)
+  emailVerifiedAt   DateTime?
+  lastLoginAt       DateTime?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  profile           UserProfile?
+  roles             UserRole[]
+  registrations     RegistrationRequest[]
+  verificationCodes VerificationCode[]
+  notifications     AdminNotification[]   @relation("NotificationRecipient")
+  auditLogs         AuditLog[]            @relation("AuditActor")
+  goals             Goal[]
+  skillProfiles     SkillProfile[]
+  studyPlans        StudyPlan[]
+  snapshots         ProgressSnapshot[]
+  entitlements      UserEntitlement[]
+  licenses          License[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model UserProfile {
+  id                   String    @id @default(cuid())
+  tenantId             String?
+  userId               String    @unique
+  fullName             String
+  preferredLocale      String    @default("vi")
+  preferredLanguageId  String?
+  currentLevel         String?
+  strongestSkills      String[]
+  weakestSkills        String[]
+  preferredStudyWindow String?
+  examDate             DateTime?
+  onboardingNotes      String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preferredLanguage    Language? @relation(fields: [preferredLanguageId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+}
+
+model Role {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  name        String
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  users       UserRole[]
+}
+
+model UserRole {
+  id        String   @id @default(cuid())
+  tenantId  String?
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@index([tenantId])
+}
+
+model RegistrationRequest {
+  id                  String             @id @default(cuid())
+  tenantId            String?
+  userId              String
+  fullName            String
+  email               String
+  targetExamId        String?
+  targetScore         String?
+  preferredLanguageId String?
+  notes               String?
+  status              RegistrationStatus @default(pending)
+  reviewedById        String?
+  reviewedAt          DateTime?
+  rejectionReason     String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetExam          Exam?              @relation(fields: [targetExamId], references: [id], onDelete: SetNull)
+  preferredLanguage   Language?          @relation(fields: [preferredLanguageId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([email])
+  @@index([status])
+}
+
+model VerificationCode {
+  id           String   @id @default(cuid())
+  tenantId     String?
+  userId       String
+  codeHash     String
+  expiresAt    DateTime
+  usedAt       DateTime?
+  attemptCount Int      @default(0)
+  sentToEmail  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([expiresAt])
+}
+
+model AdminNotification {
+  id          String             @id @default(cuid())
+  tenantId    String?
+  recipientId String?
+  title       String
+  body        String
+  entityType  String
+  entityId    String
+  status      NotificationStatus @default(unread)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  recipient   User?              @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([entityType, entityId])
+}
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  tenantId    String?
+  actorId     String?
+  action      AuditAction
+  targetType  String
+  targetId    String
+  metadata    Json?
+  ipAddress   String?
+  createdAt   DateTime    @default(now())
+  actor       User?       @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([action])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+}
+
+model SubscriptionPlan {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  code        String   @unique
+  name        String
+  description String?
+  isDefault   Boolean  @default(false)
+  priceCents  Int      @default(0)
+  currency    String   @default("VND")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  licenses    License[]
+  entitlements UserEntitlement[]
+}
+
+model License {
+  id          String        @id @default(cuid())
+  tenantId    String?
+  userId      String
+  planId      String
+  status      LicenseStatus @default(active)
+  startsAt    DateTime      @default(now())
+  endsAt      DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan        SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId, status])
+}
+
+model UserEntitlement {
+  id          String            @id @default(cuid())
+  tenantId    String?
+  userId      String
+  planId      String?
+  featureKey  String
+  status      EntitlementStatus @default(active)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan        SubscriptionPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([userId, status])
+  @@index([featureKey])
+}
+
+model FeatureFlag {
+  id          String          @id @default(cuid())
+  tenantId    String?
+  key         String          @unique
+  name        String
+  description String?
+  type        FeatureFlagType @default(boolean)
+  value       Json
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model Language {
+  id          String        @id @default(cuid())
+  tenantId    String?
+  code        String        @unique
+  name        String
+  nativeName  String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  exams       Exam[]
+  packs       ExamPack[]
+  users       UserProfile[]
+  goals       Goal[]
+  topics      Topic[]
+  registrations RegistrationRequest[]
+}
+
+model Exam {
+  id          String      @id @default(cuid())
+  tenantId    String?
+  languageId  String
+  code        String      @unique
+  name        String
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  language    Language    @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  packs       ExamPack[]
+  goals       Goal[]
+  registrations RegistrationRequest[]
+}
+
+model ExamPack {
+  id          String      @id @default(cuid())
+  tenantId    String?
+  languageId  String
+  examId      String
+  code        String      @unique
+  name        String
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  language    Language    @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  exam        Exam        @relation(fields: [examId], references: [id], onDelete: Cascade)
+  topics      Topic[]
+  rubrics     Rubric[]
+  prompts     PromptTemplate[]
+}
+
+model Goal {
+  id                String     @id @default(cuid())
+  tenantId          String?
+  userId            String
+  examId            String
+  languageId        String
+  targetScore       String?
+  estimatedLevel    String?
+  targetExamDate    DateTime?
+  preferredSchedule String?
+  status            GoalStatus @default(active)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam              Exam       @relation(fields: [examId], references: [id], onDelete: Cascade)
+  language          Language   @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId, status])
+}
+
+model SkillProfile {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  userId      String
+  skillKey    String
+  strength    Int      @default(0)
+  weakness    Int      @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId, skillKey])
+}
+
+model StudyPlan {
+  id             String     @id @default(cuid())
+  tenantId       String?
+  userId         String
+  title          String
+  summary        String?
+  nextAction     String?
+  status         PlanStatus @default(active)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId, status])
+}
+
+model ProgressSnapshot {
+  id               String   @id @default(cuid())
+  tenantId         String?
+  userId           String
+  overallProgress  Int      @default(0)
+  readingProgress  Int      @default(0)
+  listeningProgress Int     @default(0)
+  speakingProgress Int      @default(0)
+  writingProgress  Int      @default(0)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model Topic {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  examPackId  String
+  languageId  String
+  slug        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  examPack    ExamPack @relation(fields: [examPackId], references: [id], onDelete: Cascade)
+  language    Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+}
+
+model Lesson {
+  id          String       @id @default(cuid())
+  tenantId    String?
+  topicId     String
+  slug        String       @unique
+  title       String
+  summary     String?
+  status      LessonStatus @default(draft)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  topic       Topic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  exercises   Exercise[]
+}
+
+model Exercise {
+  id          String       @id @default(cuid())
+  tenantId    String?
+  lessonId    String
+  slug        String       @unique
+  title       String
+  type        ExerciseType @default(practice)
+  instructions String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  lesson      Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  questions   Question[]
+}
+
+model Question {
+  id          String       @id @default(cuid())
+  tenantId    String?
+  exerciseId  String
+  prompt      String
+  type        QuestionType
+  answerKey   Json?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  exercise    Exercise     @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+}
+
+model Rubric {
+  id          String    @id @default(cuid())
+  tenantId    String?
+  examPackId  String
+  skillKey    String
+  title       String
+  content     Json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  examPack    ExamPack  @relation(fields: [examPackId], references: [id], onDelete: Cascade)
+
+  @@index([examPackId, skillKey])
+}
+
+model PromptTemplate {
+  id          String     @id @default(cuid())
+  tenantId    String?
+  examPackId  String
+  type        PromptType
+  key         String     @unique
+  title       String
+  content     String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  examPack    ExamPack   @relation(fields: [examPackId], references: [id], onDelete: Cascade)
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
