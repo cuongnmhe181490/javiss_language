@@ -19,6 +19,10 @@ const envSchema = z.object({
   SMTP_PORT: z.coerce.number().default(587),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
+  EMAIL_QUEUE_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
   VERIFICATION_CODE_TTL_MINUTES: z.coerce.number().int().min(1).default(15),
   VERIFICATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).default(5),
   RESEND_COOLDOWN_SECONDS: z.coerce.number().int().min(30).default(90),

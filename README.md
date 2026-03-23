@@ -113,6 +113,8 @@ Mặc định trong `.env.example`:
 
 - `MAIL_PROVIDER=mock`: ghi log email ra console
 - `MAIL_PROVIDER=smtp`: gửi thật qua SMTP
+- `EMAIL_QUEUE_ENABLED=false`: gửi trực tiếp trong request, phù hợp với Vercel serverless
+- `EMAIL_QUEUE_ENABLED=true`: đẩy vào BullMQ, chỉ bật khi có worker riêng đang chạy
 
 ## Queue
 

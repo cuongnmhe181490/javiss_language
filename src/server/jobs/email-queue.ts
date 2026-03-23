@@ -7,6 +7,10 @@ import type { EmailMessage } from "@/lib/email/types";
 let queue: Queue<EmailMessage> | null = null;
 
 function getQueue() {
+  if (!env.EMAIL_QUEUE_ENABLED) {
+    return null;
+  }
+
   if (!queue) {
     try {
       queue = new Queue<EmailMessage>("email", {
