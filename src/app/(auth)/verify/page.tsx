@@ -7,8 +7,13 @@ import { vi } from "@/i18n/dictionaries/vi";
 
 export const dynamic = "force-dynamic";
 
-export default async function VerifyPage() {
+export default async function VerifyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ email?: string }>;
+}) {
   const session = await getSession();
+  const params = await searchParams;
 
   return (
     <AppShell session={session}>
@@ -16,7 +21,7 @@ export default async function VerifyPage() {
         <SectionHeader title={vi.auth.verifyTitle} description={vi.auth.verifyDescription} />
         <Card>
           <CardContent className="p-8">
-            <VerifyForm />
+            <VerifyForm defaultEmail={params.email ?? ""} />
           </CardContent>
         </Card>
       </div>

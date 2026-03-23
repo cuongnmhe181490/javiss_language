@@ -10,3 +10,15 @@ export async function getAllSettings() {
     orderBy: { key: "asc" },
   });
 }
+
+export async function upsertSettings(entries: Array<{ key: string; value: string }>) {
+  return prisma.$transaction(
+    entries.map((entry) =>
+      prisma.systemSetting.upsert({
+        where: { key: entry.key },
+        update: { value: entry.value },
+        create: { key: entry.key, value: entry.value },
+      }),
+    ),
+  );
+}

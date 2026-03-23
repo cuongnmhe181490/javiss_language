@@ -41,6 +41,7 @@ enum AuditAction {
   user_unblocked
   login_succeeded
   login_failed
+  settings_updated
 }
 
 enum LicenseStatus {

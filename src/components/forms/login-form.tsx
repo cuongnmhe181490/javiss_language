@@ -35,8 +35,17 @@ export function LoginForm() {
 
       if (!response.ok) {
         const message = payload?.error?.message ?? "Không thể đăng nhập.";
+        const redirectTo = payload?.error?.details?.redirectTo as string | undefined;
         setError("root", { message });
         toast.error(message);
+
+        if (redirectTo) {
+          router.push(
+            redirectTo.includes("/verify")
+              ? `${redirectTo}?email=${encodeURIComponent(values.email)}`
+              : redirectTo,
+          );
+        }
         return;
       }
 

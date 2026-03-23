@@ -6,7 +6,11 @@ import { AppError } from "@/lib/utils/app-error";
 import { createAuditLog } from "@/server/services/audit.service";
 import { findUserByEmail } from "@/server/repositories/user.repository";
 
-export async function loginUser(input: { email: string; password: string; ipAddress?: string | null }) {
+export async function loginUser(input: {
+  email: string;
+  password: string;
+  ipAddress?: string | null;
+}) {
   const user = await findUserByEmail(input.email);
 
   if (!user) {
@@ -35,15 +39,34 @@ export async function loginUser(input: { email: string; password: string; ipAddr
   }
 
   if (user.status !== UserStatus.active) {
-    const messageMap: Record<UserStatus, string> = {
-      pending: "Tài khoản của bạn vẫn đang chờ admin duyệt.",
-      approved: "Tài khoản đã được duyệt nội bộ, vui lòng hoàn tất bước xác thực mã.",
-      verification_sent: "Vui lòng nhập mã xác thực đã được gửi tới email của bạn.",
-      active: "",
-      rejected: "Yêu cầu đăng ký của bạn đã bị từ chối.",
-      blocked: "Tài khoản của bạn hiện đang bị khóa.",
+    const messageMap: Record<UserStatus, { message: string; code: string }> = {
+      pending: {
+        message: "Tài khoản của bạn vẫn đang chờ admin duyệt.",
+        code: "PENDING_APPROVAL",
+      },
+      approved: {
+        message: "Tài khoản đã được duyệt nội bộ, vui lòng hoàn tất bước xác thực mã.",
+        code: "APPROVED_PENDING_VERIFICATION",
+      },
+      verification_sent: {
+        message: "Vui lòng nhập mã xác thực đã được gửi tới email của bạn.",
+        code: "VERIFICATION_REQUIRED",
+      },
+      active: {
+        message: "",
+        code: "ACTIVE",
+      },
+      rejected: {
+        message: "Yêu cầu đăng ký của bạn đã bị từ chối.",
+        code: "REGISTRATION_REJECTED",
+      },
+      blocked: {
+        message: "Tài khoản của bạn hiện đang bị khóa.",
+        code: "ACCOUNT_BLOCKED",
+      },
     };
-    throw new AppError(messageMap[user.status], 403, "USER_NOT_ACTIVE");
+
+    throw new AppError(messageMap[user.status].message, 403, messageMap[user.status].code);
   }
 
   const roles = user.roles.map((item) => item.role.code) as Array<

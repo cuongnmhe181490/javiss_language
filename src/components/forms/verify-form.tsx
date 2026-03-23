@@ -17,7 +17,7 @@ import {
 } from "@/features/auth/schemas";
 import { vi } from "@/i18n/dictionaries/vi";
 
-export function VerifyForm() {
+export function VerifyForm({ defaultEmail = "" }: { defaultEmail?: string }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isResending, startResending] = useTransition();
@@ -29,6 +29,10 @@ export function VerifyForm() {
     setError,
   } = useForm<VerifyInput>({
     resolver: zodResolver(verifySchema),
+    defaultValues: {
+      email: defaultEmail,
+      code: "",
+    },
   });
 
   const onSubmit = handleSubmit((values) => {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/shared/app-shell";
-import { requireSession } from "@/lib/auth/guards";
+import { requireActiveStudentSession } from "@/lib/auth/guards";
 import { vi } from "@/i18n/dictionaries/vi";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await requireSession();
+  const session = await requireActiveStudentSession();
 
   return (
     <AppShell session={session}>
