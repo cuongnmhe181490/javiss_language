@@ -22,3 +22,15 @@ export const updateSettingsSchema = z.object({
 });
 
 export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>;
+
+export const createAdminSchema = z.object({
+  fullName: z.string().min(2, "Vui lòng nhập họ tên admin."),
+  email: z.email("Email admin không hợp lệ."),
+  password: z
+    .string()
+    .min(8, "Mật khẩu cần có ít nhất 8 ký tự.")
+    .regex(/[A-Z]/, "Mật khẩu cần có ít nhất 1 chữ in hoa.")
+    .regex(/[0-9]/, "Mật khẩu cần có ít nhất 1 chữ số."),
+});
+
+export type CreateAdminInput = z.infer<typeof createAdminSchema>;

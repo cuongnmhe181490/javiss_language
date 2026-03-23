@@ -1,3 +1,4 @@
+import { CreateAdminForm } from "@/components/admin/create-admin-form";
 import { ToggleUserBlock } from "@/components/admin/toggle-user-block";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SectionHeader } from "@/components/shared/section-header";
@@ -5,6 +6,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableCell, TableHead, TableRow } from "@/components/ui/table";
+import { requireRoles } from "@/lib/auth/guards";
 import { listUsers } from "@/server/repositories/user.repository";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +16,7 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
+  const session = await requireRoles(["super_admin", "admin"]);
   const params = await searchParams;
   const users = await listUsers(params.q);
 
@@ -37,6 +40,19 @@ export default async function AdminUsersPage({
         </CardContent>
       </Card>
       <Card>
+        {session.roles.includes("super_admin") ? (
+          <CardContent className="border-b border-slate-200 p-6 dark:border-slate-800">
+            <div className="mb-4 space-y-1">
+              <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+                Tạo tài khoản admin mới
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Chỉ super admin mới có quyền tạo thêm admin.
+              </p>
+            </div>
+            <CreateAdminForm />
+          </CardContent>
+        ) : null}
         <CardContent className="p-0">
           {users.length === 0 ? (
             <div className="p-6">

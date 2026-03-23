@@ -31,3 +31,18 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type VerifyInput = z.infer<typeof verifySchema>;
 export type ResendCodeInput = z.infer<typeof resendCodeSchema>;
+
+export const updateProfileSchema = z.object({
+  fullName: z.string().min(2, "Vui lòng nhập họ và tên."),
+  currentLevel: z.string().optional(),
+  strongestSkills: z.string().optional(),
+  weakestSkills: z.string().optional(),
+  preferredStudyWindow: z.string().optional(),
+  targetScore: z.string().optional(),
+  estimatedLevel: z.string().optional(),
+  preferredSchedule: z.string().optional(),
+  targetExamDate: z.string().optional(),
+  onboardingNotes: z.string().optional(),
+});
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
