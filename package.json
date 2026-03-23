@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed"
