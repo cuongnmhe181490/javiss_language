@@ -2,6 +2,7 @@ import { updateProfileSchema } from "@/features/auth/schemas";
 import { getSession } from "@/lib/auth/session";
 import { AppError, getErrorMessage } from "@/lib/utils/app-error";
 import { fail, ok } from "@/lib/utils/response";
+import { assertHasRole } from "@/server/policies/rbac";
 import { updateStudentProfile } from "@/server/services/user-management.service";
 
 export async function POST(request: Request) {
@@ -11,6 +12,8 @@ export async function POST(request: Request) {
     if (!session) {
       return fail("Vui lòng đăng nhập.", 401, "UNAUTHORIZED");
     }
+
+    assertHasRole(session.roles, ["student"]);
 
     const body = await request.json();
     const input = updateProfileSchema.parse(body);

@@ -2,6 +2,7 @@ import { submitExerciseAttemptSchema } from "@/features/learning/schemas";
 import { getSession } from "@/lib/auth/session";
 import { AppError, getErrorMessage } from "@/lib/utils/app-error";
 import { fail, ok } from "@/lib/utils/response";
+import { assertHasRole } from "@/server/policies/rbac";
 import { saveExerciseAttempt } from "@/server/services/learning.service";
 
 export async function POST(
@@ -14,6 +15,8 @@ export async function POST(
     if (!session) {
       return fail("Vui lòng đăng nhập.", 401, "UNAUTHORIZED");
     }
+
+    assertHasRole(session.roles, ["student"]);
 
     const body = await request.json();
     const input = submitExerciseAttemptSchema.parse(body);
