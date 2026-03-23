@@ -23,7 +23,16 @@ export async function findUserByEmail(email: string) {
       snapshots: {
         orderBy: { createdAt: "desc" },
       },
-      entitlements: true,
+      entitlements: {
+        include: {
+          plan: true,
+        },
+      },
+      licenses: {
+        include: {
+          plan: true,
+        },
+      },
     },
   });
 }
@@ -50,6 +59,16 @@ export async function findUserById(id: string) {
       },
       snapshots: {
         orderBy: { createdAt: "desc" },
+      },
+      entitlements: {
+        include: {
+          plan: true,
+        },
+      },
+      licenses: {
+        include: {
+          plan: true,
+        },
       },
     },
   });

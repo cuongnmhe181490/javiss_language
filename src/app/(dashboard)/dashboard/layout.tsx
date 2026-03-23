@@ -20,6 +20,9 @@ export default async function DashboardLayout({
             <Link className="rounded-xl px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800" href="/dashboard">
               {vi.nav.dashboard}
             </Link>
+            <Link className="rounded-xl px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800" href="/dashboard/lessons">
+              Bài luyện
+            </Link>
             <Link className="rounded-xl px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800" href="/dashboard/profile">
               {vi.nav.profile}
             </Link>

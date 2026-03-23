@@ -1,15 +1,17 @@
+import Link from "next/link";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { SectionHeader } from "@/components/shared/section-header";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireSession } from "@/lib/auth/guards";
+import { requireActiveStudentSession } from "@/lib/auth/guards";
 import { findUserById } from "@/server/repositories/user.repository";
 import { vi } from "@/i18n/dictionaries/vi";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const session = await requireSession();
+  const session = await requireActiveStudentSession();
   const user = await findUserById(session.userId);
 
   if (!user) {
@@ -52,6 +54,9 @@ export default async function DashboardPage() {
               {plan?.nextAction ??
                 "Hoàn thiện hồ sơ học tập, xác định kỹ năng yếu và bắt đầu bài luyện đầu tiên."}
             </p>
+            <Link href="/dashboard/lessons">
+              <Button size="sm">Mở khu bài luyện</Button>
+            </Link>
           </CardContent>
         </Card>
         <Card>

@@ -34,3 +34,14 @@ export const createAdminSchema = z.object({
 });
 
 export type CreateAdminInput = z.infer<typeof createAdminSchema>;
+
+export const createPlanSchema = z.object({
+  code: z.string().min(2, "Vui lòng nhập mã plan."),
+  name: z.string().min(2, "Vui lòng nhập tên plan."),
+  description: z.string().optional(),
+  priceCents: z.coerce.number().int().min(0, "Giá không hợp lệ."),
+  currency: z.string().min(3, "Mã tiền tệ không hợp lệ."),
+  isDefault: z.boolean(),
+});
+
+export type CreatePlanInput = z.infer<typeof createPlanSchema>;
