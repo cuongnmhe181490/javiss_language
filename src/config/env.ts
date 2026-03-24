@@ -38,7 +38,14 @@ const envSchema = z.object({
     .transform((value) => value === "true"),
 });
 
-const parsed = envSchema.safeParse(process.env);
+const normalizedEnv = Object.fromEntries(
+  Object.entries(process.env).map(([key, value]) => [
+    key,
+    typeof value === "string" ? value.trim() : value,
+  ]),
+);
+
+const parsed = envSchema.safeParse(normalizedEnv);
 
 if (!parsed.success) {
   console.error("Invalid environment variables", parsed.error.flatten().fieldErrors);
