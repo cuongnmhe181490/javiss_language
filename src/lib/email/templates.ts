@@ -62,3 +62,24 @@ export function renderRejectionEmail(input: { name: string }) {
     `,
   };
 }
+
+export function renderPasswordResetEmail(input: {
+  name: string;
+  resetUrl: string;
+  expiresInMinutes: number;
+}) {
+  return {
+    subject: "Đặt lại mật khẩu tài khoản của bạn",
+    text: `Xin chào ${input.name}, bạn vừa yêu cầu đặt lại mật khẩu. Liên kết này có hiệu lực trong ${input.expiresInMinutes} phút: ${input.resetUrl}. Nếu bạn không yêu cầu, hãy bỏ qua email này.`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Đặt lại mật khẩu tài khoản của bạn</h2>
+        <p>Xin chào ${input.name},</p>
+        <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản Javiss Language.</p>
+        <p>Liên kết dưới đây có hiệu lực trong ${input.expiresInMinutes} phút:</p>
+        <p><a href="${input.resetUrl}">Mở trang đặt lại mật khẩu</a></p>
+        <p>Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email này.</p>
+      </div>
+    `,
+  };
+}

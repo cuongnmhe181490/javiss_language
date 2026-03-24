@@ -10,10 +10,10 @@ import { FormMessage } from "@/components/forms/form-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { loginSchema, type LoginInput } from "@/features/auth/schemas";
+import { resetPasswordSchema, type ResetPasswordInput } from "@/features/auth/schemas";
 import { vi } from "@/i18n/dictionaries/vi";
 
-export function LoginForm() {
+export function ResetPasswordForm({ token }: { token: string }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const {
@@ -21,13 +21,18 @@ export function LoginForm() {
     handleSubmit,
     formState: { errors },
     setError,
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<ResetPasswordInput>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      token,
+      password: "",
+      confirmPassword: "",
+    },
   });
 
   const onSubmit = handleSubmit((values) => {
     startTransition(async () => {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -35,52 +40,40 @@ export function LoginForm() {
       const payload = await response.json();
 
       if (!response.ok) {
-        const message = payload?.error?.message ?? "Không thể đăng nhập.";
-        const redirectTo = payload?.error?.details?.redirectTo as string | undefined;
+        const message = payload?.error?.message ?? "Không thể cập nhật mật khẩu mới.";
         setError("root", { message });
         toast.error(message);
-
-        if (redirectTo) {
-          router.push(
-            redirectTo.includes("/verify")
-              ? `${redirectTo}?email=${encodeURIComponent(values.email)}`
-              : redirectTo,
-          );
-        }
         return;
       }
 
-      toast.success("Đăng nhập thành công.");
-      const redirectTo = payload.data.redirectTo as string;
-      router.push(redirectTo);
-      router.refresh();
+      toast.success(payload.data.message);
+      router.push("/login");
     });
   });
 
   return (
     <form className="space-y-5" onSubmit={onSubmit}>
+      <input type="hidden" {...register("token")} />
       <div className="space-y-2">
-        <Label htmlFor="email">{vi.auth.email}</Label>
-        <Input id="email" placeholder="ban@vidu.com" type="email" {...register("email")} />
-        <FormMessage error={errors.email?.message} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">{vi.auth.password}</Label>
+        <Label htmlFor="password">{vi.auth.newPassword}</Label>
         <Input id="password" type="password" {...register("password")} />
         <FormMessage error={errors.password?.message} />
       </div>
-      <div className="text-right">
-        <Link
-          className="text-sm text-sky-600 hover:underline dark:text-sky-400"
-          href="/forgot-password"
-        >
-          {vi.auth.forgotPassword}
-        </Link>
+      <div className="space-y-2">
+        <Label htmlFor="confirmPassword">{vi.auth.confirmPassword}</Label>
+        <Input id="confirmPassword" type="password" {...register("confirmPassword")} />
+        <FormMessage error={errors.confirmPassword?.message} />
       </div>
       <FormMessage error={errors.root?.message} />
       <Button className="w-full" disabled={isPending} type="submit">
-        {isPending ? "Đang đăng nhập..." : vi.auth.submitLogin}
+        {isPending ? "Đang cập nhật..." : vi.auth.submitResetPassword}
       </Button>
+      <Link
+        className="block text-center text-sm text-sky-600 hover:underline dark:text-sky-400"
+        href="/login"
+      >
+        {vi.common.backToLogin}
+      </Link>
     </form>
   );
 }

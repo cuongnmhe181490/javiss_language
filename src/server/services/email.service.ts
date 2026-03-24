@@ -1,6 +1,7 @@
 import { env } from "@/config/env";
 import {
   renderAdminRegistrationEmail,
+  renderPasswordResetEmail,
   renderRejectionEmail,
   renderVerificationEmail,
 } from "@/lib/email/templates";
@@ -38,6 +39,22 @@ export async function sendVerificationCodeEmail(input: {
 
 export async function sendRejectionEmail(input: { email: string; name: string }) {
   const message = renderRejectionEmail({ name: input.name });
+  await enqueueEmail({
+    to: input.email,
+    ...message,
+  });
+}
+
+export async function sendPasswordResetEmail(input: {
+  email: string;
+  name: string;
+  resetUrl: string;
+}) {
+  const message = renderPasswordResetEmail({
+    name: input.name,
+    resetUrl: input.resetUrl,
+    expiresInMinutes: env.PASSWORD_RESET_TTL_MINUTES,
+  });
   await enqueueEmail({
     to: input.email,
     ...message,

@@ -23,6 +23,7 @@ const envSchema = z.object({
     .enum(["true", "false"])
     .default("false")
     .transform((value) => value === "true"),
+  PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().min(5).default(30),
   VERIFICATION_CODE_TTL_MINUTES: z.coerce.number().int().min(1).default(15),
   VERIFICATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).default(5),
   RESEND_COOLDOWN_SECONDS: z.coerce.number().int().min(30).default(90),
