@@ -28,6 +28,9 @@ export async function findAiConversationByIdForUser(input: {
       messages: {
         orderBy: { createdAt: "asc" },
       },
+      assessments: {
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
 }
@@ -77,6 +80,9 @@ export async function updateAiConversationState(input: {
   title?: string;
   kind?: AiConversationKind;
   scenario?: string | null;
+  speakingIsCompleted?: boolean;
+  speakingCompletedAt?: Date | null;
+  speakingFinalBand?: string | null;
   speakingEstimatedBand?: string | null;
   speakingFluencyBand?: string | null;
   speakingLexicalBand?: string | null;
@@ -96,6 +102,9 @@ export async function updateAiConversationState(input: {
       title: input.title,
       kind: input.kind,
       scenario: input.scenario,
+      speakingIsCompleted: input.speakingIsCompleted,
+      speakingCompletedAt: input.speakingCompletedAt,
+      speakingFinalBand: input.speakingFinalBand,
       speakingEstimatedBand: input.speakingEstimatedBand,
       speakingFluencyBand: input.speakingFluencyBand,
       speakingLexicalBand: input.speakingLexicalBand,
@@ -108,6 +117,51 @@ export async function updateAiConversationState(input: {
       provider: input.provider,
       modelName: input.modelName,
       lastProviderResponseId: input.lastProviderResponseId,
+    },
+  });
+}
+
+export async function createAiSpeakingAssessmentSnapshot(input: {
+  conversationId: string;
+  tenantId?: string | null;
+  estimatedBand: string;
+  fluencyBand: string;
+  lexicalBand: string;
+  grammarBand: string;
+  pronunciationBand: string;
+  summary: string;
+  strengths: string[];
+  improvements: string[];
+  provider: AiProvider;
+  modelName: string;
+}) {
+  const latestSnapshot = await prisma.aiSpeakingAssessmentSnapshot.findFirst({
+    where: {
+      conversationId: input.conversationId,
+    },
+    orderBy: {
+      sequenceNumber: "desc",
+    },
+    select: {
+      sequenceNumber: true,
+    },
+  });
+
+  return prisma.aiSpeakingAssessmentSnapshot.create({
+    data: {
+      conversationId: input.conversationId,
+      tenantId: input.tenantId,
+      sequenceNumber: (latestSnapshot?.sequenceNumber ?? 0) + 1,
+      estimatedBand: input.estimatedBand,
+      fluencyBand: input.fluencyBand,
+      lexicalBand: input.lexicalBand,
+      grammarBand: input.grammarBand,
+      pronunciationBand: input.pronunciationBand,
+      summary: input.summary,
+      strengths: input.strengths,
+      improvements: input.improvements,
+      provider: input.provider,
+      modelName: input.modelName,
     },
   });
 }

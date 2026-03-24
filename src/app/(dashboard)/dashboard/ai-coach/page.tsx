@@ -130,6 +130,12 @@ export default async function DashboardAiCoachPage({
                         {conversation.kind === AiConversationKind.speaking_mock ? (
                           <Badge>Speaking mock</Badge>
                         ) : null}
+                        {conversation.kind === AiConversationKind.speaking_mock &&
+                        conversation.speakingIsCompleted ? (
+                          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                            Đã kết thúc
+                          </Badge>
+                        ) : null}
                         <Badge className="bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                           {getProviderLabel(conversation.provider)}
                         </Badge>
@@ -175,6 +181,11 @@ export default async function DashboardAiCoachPage({
                 conversationId={selectedConversation.id}
                 scenario={selectedConversation.scenario}
                 latestAssistantMessage={latestAssistantMessage}
+                isCompleted={selectedConversation.speakingIsCompleted}
+                completedAt={selectedConversation.speakingCompletedAt}
+                finalBand={
+                  selectedConversation.speakingFinalBand ?? selectedConversation.speakingEstimatedBand
+                }
               />
             ) : (
               <AiSpeakingSessionPanel />
@@ -261,6 +272,74 @@ export default async function DashboardAiCoachPage({
                       )}
                     </div>
                   </div>
+                </div>
+              </div>
+            ) : null}
+
+            {selectedConversation?.kind === AiConversationKind.speaking_mock &&
+            selectedConversation.assessments.length > 0 ? (
+              <div className="rounded-3xl border border-slate-200 bg-white/70 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="text-base font-semibold text-slate-950 dark:text-white">
+                    Lịch sử band theo từng lượt nói
+                  </h3>
+                  <Badge className="bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                    {selectedConversation.assessments.length} lượt
+                  </Badge>
+                </div>
+                <div className="mt-4 space-y-4">
+                  {selectedConversation.assessments.map((assessment) => (
+                    <div
+                      key={assessment.id}
+                      className="rounded-2xl border border-slate-200 bg-slate-50/90 p-4 dark:border-slate-800 dark:bg-slate-950/80"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                          Lượt {assessment.sequenceNumber}
+                        </p>
+                        <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                          Band {assessment.estimatedBand}
+                        </Badge>
+                        <Badge className="bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                          {getProviderLabel(assessment.provider)}
+                        </Badge>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {assessment.createdAt.toLocaleString("vi-VN")}
+                        </span>
+                      </div>
+                      <div className="mt-3 grid gap-3 md:grid-cols-4">
+                        <div className="rounded-2xl border border-white/60 bg-white/90 p-3 dark:border-slate-800 dark:bg-slate-900/70">
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Fluency</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-950 dark:text-white">
+                            {assessment.fluencyBand}
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-white/60 bg-white/90 p-3 dark:border-slate-800 dark:bg-slate-900/70">
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Lexical</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-950 dark:text-white">
+                            {assessment.lexicalBand}
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-white/60 bg-white/90 p-3 dark:border-slate-800 dark:bg-slate-900/70">
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Grammar</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-950 dark:text-white">
+                            {assessment.grammarBand}
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-white/60 bg-white/90 p-3 dark:border-slate-800 dark:bg-slate-900/70">
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Pronunciation
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-slate-950 dark:text-white">
+                            {assessment.pronunciationBand}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-300">
+                        {assessment.summary}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             ) : null}

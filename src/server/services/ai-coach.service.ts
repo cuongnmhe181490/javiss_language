@@ -15,6 +15,7 @@ import { AppError } from "@/lib/utils/app-error";
 import {
   createAiConversation,
   createAiMessage,
+  createAiSpeakingAssessmentSnapshot,
   findAiConversationByIdForUser,
   listAiConversationsByUser,
   updateAiConversationState,
@@ -193,14 +194,23 @@ async function resolveSpeakingAssessmentWithFallback(input: {
       });
 
       const fallbackProvider = getMockAiCoachProvider();
-      return await fallbackProvider.generateSpeakingAssessment(input.providerInput);
+      return {
+        assessment: await fallbackProvider.generateSpeakingAssessment(input.providerInput),
+        provider: AiProvider.mock,
+        modelName: "javiss-coach-demo",
+      };
     }
   }
 
+  const providerConfig = resolveProviderConfig();
   const provider = getAiCoachProvider();
 
   try {
-    return await provider.generateSpeakingAssessment(input.providerInput);
+    return {
+      assessment: await provider.generateSpeakingAssessment(input.providerInput),
+      provider: providerConfig.provider,
+      modelName: providerConfig.modelName,
+    };
   } catch (error) {
     logger.warn("speaking_assessment_failed", {
       conversationId: input.conversationId,
@@ -209,7 +219,11 @@ async function resolveSpeakingAssessmentWithFallback(input: {
     });
 
     const fallbackProvider = getMockAiCoachProvider();
-    return await fallbackProvider.generateSpeakingAssessment(input.providerInput);
+    return {
+      assessment: await fallbackProvider.generateSpeakingAssessment(input.providerInput),
+      provider: AiProvider.mock,
+      modelName: "javiss-coach-demo",
+    };
   }
 }
 
@@ -395,7 +409,19 @@ export async function sendAiCoachMessage(input: {
     conversation = {
       ...createdConversation,
       messages: [],
+      assessments: [],
     };
+  }
+
+  if (
+    conversation.kind === AiConversationKind.speaking_mock &&
+    conversation.speakingIsCompleted
+  ) {
+    throw new AppError(
+      "Phiên speaking này đã kết thúc. Hãy mở phiên mới nếu bạn muốn luyện tiếp.",
+      409,
+      "SPEAKING_SESSION_COMPLETED",
+    );
   }
 
   await createAiMessage({
@@ -428,6 +454,8 @@ export async function sendAiCoachMessage(input: {
   });
 
   let speakingAssessment: AiSpeakingAssessment | null = null;
+  let speakingAssessmentProvider: AiProvider | null = null;
+  let speakingAssessmentModelName: string | null = null;
 
   if (conversation.kind === AiConversationKind.speaking_mock) {
     const speakingAssessmentInput: AiCoachReplyInput = {
@@ -445,12 +473,16 @@ export async function sendAiCoachMessage(input: {
       ],
     };
 
-    speakingAssessment = await resolveSpeakingAssessmentWithFallback({
+    const speakingAssessmentResult = await resolveSpeakingAssessmentWithFallback({
       providerInput: speakingAssessmentInput,
       providerMode: resolveProviderConfig().mode,
       conversationId: conversation.id,
       userId: input.userId,
     });
+
+    speakingAssessment = speakingAssessmentResult.assessment;
+    speakingAssessmentProvider = speakingAssessmentResult.provider;
+    speakingAssessmentModelName = speakingAssessmentResult.modelName;
   }
 
   await updateAiConversationState({
@@ -469,6 +501,28 @@ export async function sendAiCoachMessage(input: {
     speakingLastAssessedAt: speakingAssessment ? new Date() : undefined,
   });
 
+  if (
+    conversation.kind === AiConversationKind.speaking_mock &&
+    speakingAssessment &&
+    speakingAssessmentProvider &&
+    speakingAssessmentModelName
+  ) {
+    await createAiSpeakingAssessmentSnapshot({
+      conversationId: conversation.id,
+      tenantId: conversation.tenantId,
+      estimatedBand: speakingAssessment.estimatedBand,
+      fluencyBand: speakingAssessment.fluencyBand,
+      lexicalBand: speakingAssessment.lexicalBand,
+      grammarBand: speakingAssessment.grammarBand,
+      pronunciationBand: speakingAssessment.pronunciationBand,
+      summary: speakingAssessment.summary,
+      strengths: speakingAssessment.strengths,
+      improvements: speakingAssessment.improvements,
+      provider: speakingAssessmentProvider,
+      modelName: speakingAssessmentModelName,
+    });
+  }
+
   return {
     conversationId: conversation.id,
     kind: conversation.kind,
@@ -478,5 +532,52 @@ export async function sendAiCoachMessage(input: {
     modelName: reply.modelName,
     fallbackReason: reply.fallbackReason ?? null,
     speakingAssessment,
+  };
+}
+
+export async function completeAiSpeakingSession(input: {
+  userId: string;
+  conversationId: string;
+}) {
+  const conversation = await findAiConversationByIdForUser({
+    id: input.conversationId,
+    userId: input.userId,
+  });
+
+  if (!conversation) {
+    throw new AppError("Không tìm thấy phiên speaking này.", 404, "CONVERSATION_NOT_FOUND");
+  }
+
+  if (conversation.kind !== AiConversationKind.speaking_mock) {
+    throw new AppError(
+      "Chỉ phiên speaking mock mới có thể kết thúc.",
+      400,
+      "INVALID_CONVERSATION_KIND",
+    );
+  }
+
+  if (conversation.speakingIsCompleted) {
+    return {
+      conversationId: conversation.id,
+      speakingIsCompleted: true,
+      speakingCompletedAt: conversation.speakingCompletedAt,
+      speakingFinalBand:
+        conversation.speakingFinalBand ?? conversation.speakingEstimatedBand ?? null,
+    };
+  }
+
+  const completedAt = new Date();
+  const updatedConversation = await updateAiConversationState({
+    id: conversation.id,
+    speakingIsCompleted: true,
+    speakingCompletedAt: completedAt,
+    speakingFinalBand: conversation.speakingEstimatedBand ?? null,
+  });
+
+  return {
+    conversationId: updatedConversation.id,
+    speakingIsCompleted: updatedConversation.speakingIsCompleted,
+    speakingCompletedAt: updatedConversation.speakingCompletedAt,
+    speakingFinalBand: updatedConversation.speakingFinalBand,
   };
 }

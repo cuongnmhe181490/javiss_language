@@ -625,6 +625,9 @@ model AiConversation {
   title                 String
   kind                  AiConversationKind @default(coach)
   scenario              String?
+  speakingIsCompleted   Boolean     @default(false)
+  speakingCompletedAt   DateTime?
+  speakingFinalBand     String?
   speakingEstimatedBand String?
   speakingFluencyBand   String?
   speakingLexicalBand   String?
@@ -641,6 +644,7 @@ model AiConversation {
   updatedAt             DateTime    @updatedAt
   user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages              AiMessage[]
+  assessments           AiSpeakingAssessmentSnapshot[]
 
   @@index([tenantId])
   @@index([userId, updatedAt(sort: Desc)])
@@ -661,4 +665,28 @@ model AiMessage {
 
   @@index([tenantId])
   @@index([conversationId, createdAt(sort: Asc)])
+}
+
+model AiSpeakingAssessmentSnapshot {
+  id                      String         @id @default(cuid())
+  tenantId                String?
+  conversationId          String
+  sequenceNumber          Int
+  estimatedBand           String
+  fluencyBand             String
+  lexicalBand             String
+  grammarBand             String
+  pronunciationBand       String
+  summary                 String
+  strengths               String[]       @default([])
+  improvements            String[]       @default([])
+  provider                AiProvider
+  modelName               String
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  conversation            AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([conversationId, createdAt(sort: Desc)])
+  @@unique([conversationId, sequenceNumber])
 }

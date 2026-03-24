@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -65,10 +65,16 @@ export function AiSpeakingSessionPanel({
   conversationId,
   scenario,
   latestAssistantMessage,
+  isCompleted = false,
+  completedAt,
+  finalBand,
 }: {
   conversationId?: string;
   scenario?: string | null;
   latestAssistantMessage?: string | null;
+  isCompleted?: boolean;
+  completedAt?: Date | null;
+  finalBand?: string | null;
 }) {
   const router = useRouter();
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
@@ -77,6 +83,7 @@ export function AiSpeakingSessionPanel({
   const [transcript, setTranscript] = useState("");
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
+  const [isCompletingSession, setIsCompletingSession] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isMicSupported, setIsMicSupported] = useState(false);
 
@@ -88,6 +95,20 @@ export function AiSpeakingSessionPanel({
       recognitionRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (isCompleted) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    }
+  }, [isCompleted]);
+
+  const navigateToConversation = (nextConversationId: string) => {
+    startTransition(() => {
+      router.push(`/dashboard/ai-coach?conversationId=${nextConversationId}`);
+      router.refresh();
+    });
+  };
 
   const speakAssistantMessage = () => {
     if (!latestAssistantMessage || typeof window === "undefined" || !("speechSynthesis" in window)) {
@@ -123,8 +144,7 @@ export function AiSpeakingSessionPanel({
         return;
       }
 
-      router.push(`/dashboard/ai-coach?conversationId=${payload.data.conversationId}`);
-      router.refresh();
+      navigateToConversation(payload.data.conversationId);
     } catch {
       toast.error("Không thể khởi tạo phiên speaking lúc này.");
     } finally {
@@ -136,7 +156,9 @@ export function AiSpeakingSessionPanel({
     const Recognition = getSpeechRecognitionConstructor();
 
     if (!Recognition) {
-      toast.error("Trình duyệt này chưa hỗ trợ nhận giọng nói. Bạn vẫn có thể nhập câu trả lời bằng tay.");
+      toast.error(
+        "Trình duyệt này chưa hỗ trợ nhận giọng nói. Bạn vẫn có thể nhập câu trả lời bằng tay.",
+      );
       return;
     }
 
@@ -215,12 +237,39 @@ export function AiSpeakingSessionPanel({
       }
 
       setTranscript("");
-      router.push(`/dashboard/ai-coach?conversationId=${payload.data.conversationId}`);
-      router.refresh();
+      navigateToConversation(payload.data.conversationId);
     } catch {
       toast.error("Không thể gửi phần trả lời tới giám khảo AI.");
     } finally {
       setIsSubmittingAnswer(false);
+    }
+  };
+
+  const handleCompleteSession = async () => {
+    if (!conversationId) {
+      return;
+    }
+
+    setIsCompletingSession(true);
+
+    try {
+      const response = await fetch(`/api/ai/conversations/${conversationId}/complete`, {
+        method: "POST",
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        toast.error(payload?.error?.message ?? "Không thể kết thúc phiên speaking lúc này.");
+        return;
+      }
+
+      handleStopListening();
+      toast.success("Đã kết thúc phiên speaking. Bạn có thể xem band sơ bộ và lịch sử các lượt nói bên dưới.");
+      navigateToConversation(payload.data.conversationId);
+    } catch {
+      toast.error("Không thể kết thúc phiên speaking lúc này.");
+    } finally {
+      setIsCompletingSession(false);
     }
   };
 
@@ -236,7 +285,7 @@ export function AiSpeakingSessionPanel({
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">
             Giám khảo AI sẽ hỏi bằng tiếng Anh. Bạn có thể trả lời bằng micro hoặc nhập tay,
-            phù hợp để luyện speaking ngay cả khi chưa bật Live API.
+            phù hợp để luyện speaking ngay cả khi chưa bật live conversation.
           </p>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
@@ -275,11 +324,11 @@ export function AiSpeakingSessionPanel({
 
   return (
     <div className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-semibold text-slate-950 dark:text-white">
-              Speaking mock đang chạy
+              {isCompleted ? "Speaking mock đã kết thúc" : "Speaking mock đang chạy"}
             </h3>
             <Badge
               className={
@@ -290,28 +339,62 @@ export function AiSpeakingSessionPanel({
             >
               {isMicSupported ? "Microphone sẵn sàng" : "Microphone chưa hỗ trợ"}
             </Badge>
+            {isCompleted ? (
+              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                Đã chốt phiên
+              </Badge>
+            ) : null}
+            {finalBand ? (
+              <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                Band cuối: {finalBand}
+              </Badge>
+            ) : null}
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">
             {scenario ?? "IELTS Speaking mock"}
           </p>
+          {completedAt ? (
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Phiên đã kết thúc lúc {completedAt.toLocaleString("vi-VN")}
+            </p>
+          ) : null}
         </div>
-        <Button
-          disabled={!latestAssistantMessage}
-          onClick={speakAssistantMessage}
-          type="button"
-          variant="secondary"
-        >
-          Đọc câu hỏi gần nhất
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            disabled={!latestAssistantMessage}
+            onClick={speakAssistantMessage}
+            type="button"
+            variant="secondary"
+          >
+            Đọc câu hỏi gần nhất
+          </Button>
+          <Button
+            disabled={isCompleted || isCompletingSession}
+            onClick={handleCompleteSession}
+            type="button"
+            variant="outline"
+          >
+            {isCompletingSession ? "Đang kết thúc..." : "Kết thúc phiên"}
+          </Button>
+        </div>
       </div>
+
+      {isCompleted ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-100">
+          Phiên speaking này đã được chốt lại. Bạn vẫn có thể nghe lại câu hỏi gần nhất và xem
+          lịch sử band theo từng lượt nói, nhưng không thể gửi thêm câu trả lời vào phiên này.
+        </div>
+      ) : null}
+
       <Textarea
         placeholder="Phần trả lời của bạn sẽ hiện ở đây. Bạn có thể nói bằng tiếng Anh hoặc nhập tay."
         value={transcript}
         onChange={(event) => setTranscript(event.target.value)}
+        disabled={isCompleted}
       />
       <div className="flex flex-wrap gap-3">
         <Button
-          disabled={!isMicSupported || isListening}
+          disabled={!isMicSupported || isListening || isCompleted}
           onClick={handleStartListening}
           type="button"
           variant="outline"
@@ -326,14 +409,18 @@ export function AiSpeakingSessionPanel({
         >
           Dừng ghi
         </Button>
-        <Button disabled={isSubmittingAnswer} onClick={handleSubmitAnswer} type="button">
+        <Button
+          disabled={isSubmittingAnswer || isCompleted}
+          onClick={handleSubmitAnswer}
+          type="button"
+        >
           {isSubmittingAnswer ? "Đang gửi..." : "Gửi phần trả lời"}
         </Button>
       </div>
       <p className="text-xs leading-6 text-slate-500 dark:text-slate-400">
         Mẹo: nếu trình duyệt chưa hỗ trợ micro, bạn vẫn có thể nhập tay để tiếp tục mock
-        speaking. Khi bật Gemini hoặc Live API sau này, phần speaking này vẫn giữ nguyên luồng
-        UI.
+        speaking. Sau mỗi lượt nói, hệ thống sẽ chấm band sơ bộ và lưu lại lịch sử để bạn theo
+        dõi sự ổn định.
       </p>
     </div>
   );
