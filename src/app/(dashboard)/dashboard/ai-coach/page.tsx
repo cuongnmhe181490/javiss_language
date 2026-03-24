@@ -180,6 +180,91 @@ export default async function DashboardAiCoachPage({
               <AiSpeakingSessionPanel />
             )}
 
+            {selectedConversation?.kind === AiConversationKind.speaking_mock &&
+            selectedConversation.speakingEstimatedBand ? (
+              <div className="rounded-3xl border border-emerald-200 bg-emerald-50/80 p-5 dark:border-emerald-900/60 dark:bg-emerald-950/20">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="text-base font-semibold text-slate-950 dark:text-white">
+                    Chấm band speaking sơ bộ
+                  </h3>
+                  <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                    Band {selectedConversation.speakingEstimatedBand}
+                  </Badge>
+                  {selectedConversation.speakingLastAssessedAt ? (
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      Cập nhật: {selectedConversation.speakingLastAssessedAt.toLocaleString("vi-VN")}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-4 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-2xl border border-white/60 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Fluency</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-950 dark:text-white">
+                      {selectedConversation.speakingFluencyBand ?? "-"}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/60 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Lexical</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-950 dark:text-white">
+                      {selectedConversation.speakingLexicalBand ?? "-"}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/60 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Grammar</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-950 dark:text-white">
+                      {selectedConversation.speakingGrammarBand ?? "-"}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/60 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Pronunciation</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-950 dark:text-white">
+                      {selectedConversation.speakingPronunciationBand ?? "-"}
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-4 text-sm leading-7 text-slate-700 dark:text-slate-300">
+                  {selectedConversation.speakingAssessmentSummary}
+                </p>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                      Điểm tốt hiện tại
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {selectedConversation.speakingStrengths.length > 0 ? (
+                        selectedConversation.speakingStrengths.map((item) => (
+                          <Badge key={item} className="bg-white text-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                            {item}
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Chưa có dữ liệu.</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                      Cần cải thiện tiếp
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {selectedConversation.speakingImprovements.length > 0 ? (
+                        selectedConversation.speakingImprovements.map((item) => (
+                          <Badge
+                            key={item}
+                            className="bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300"
+                          >
+                            {item}
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Chưa có dữ liệu.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             <div className="space-y-4">
               {selectedConversation ? (
                 selectedConversation.messages.map((message) => (

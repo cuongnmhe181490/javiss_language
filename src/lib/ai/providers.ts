@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { z } from "zod";
 import { env } from "@/config/env";
 import { logger } from "@/lib/logger";
 import type {
@@ -6,7 +7,19 @@ import type {
   AiCoachProvider,
   AiCoachReplyInput,
   AiCoachReplyOutput,
+  AiSpeakingAssessment,
 } from "@/lib/ai/types";
+
+const speakingAssessmentSchema = z.object({
+  estimatedBand: z.string().min(1),
+  fluencyBand: z.string().min(1),
+  lexicalBand: z.string().min(1),
+  grammarBand: z.string().min(1),
+  pronunciationBand: z.string().min(1),
+  summary: z.string().min(1),
+  strengths: z.array(z.string().min(1)).min(1).max(3),
+  improvements: z.array(z.string().min(1)).min(1).max(3),
+});
 
 function joinOrDefault(values: string[], fallback: string) {
   return values.length > 0 ? values.join(", ") : fallback;
@@ -15,17 +28,15 @@ function joinOrDefault(values: string[], fallback: string) {
 function buildCoachInstructions(context: AiCoachContext) {
   return [
     "Bạn là Javiss AI Coach, một trợ lý luyện thi ngôn ngữ 1:1 cho học viên.",
-    "Luôn trả lời bằng tiếng Việt tự nhiên, rõ ràng, mang tính coaching thực tế.",
+    "Luôn trả lời bằng tiếng Việt tự nhiên, rõ ràng, thực tế, không lan man.",
     "Ưu tiên các bước hành động cụ thể, ngắn gọn, dễ làm ngay.",
-    "Không bịa kết quả học tập hay dữ liệu không có trong ngữ cảnh.",
-    "Nếu học viên hỏi về chiến lược học, hãy cá nhân hóa theo hồ sơ bên dưới.",
-    "Nếu học viên yêu cầu phản hồi bằng tiếng Anh hoặc ngôn ngữ khác, bạn có thể đáp ứng.",
-    "Mỗi câu trả lời nên có trọng tâm rõ, tránh lan man.",
+    "Không bịa dữ liệu học tập ngoài ngữ cảnh đã có.",
+    "Nếu học viên hỏi về chiến lược học, hãy cá nhân hóa theo hồ sơ.",
     "",
-    "Hồ sơ học viên hiện tại:",
+    "Hồ sơ học viên:",
     `- Họ tên: ${context.fullName}`,
     `- Email: ${context.email}`,
-    `- Locale giao diện: ${context.preferredLocale}`,
+    `- Locale: ${context.preferredLocale}`,
     `- Kỳ thi mục tiêu: ${context.examName ?? "Chưa đặt"}`,
     `- Điểm mục tiêu: ${context.targetScore ?? "Chưa đặt"}`,
     `- Trình độ ước lượng: ${context.estimatedLevel ?? "Chưa có"}`,
@@ -53,7 +64,7 @@ function buildSpeakingInstructions(context: AiCoachContext, scenario?: string | 
     "Do not answer for the candidate.",
     "Do not explain the test format unless the learner asks.",
     "If the candidate answer is too short, ask one concise follow-up question.",
-    "If the candidate asks for feedback, switch briefly to Vietnamese and give 3 parts only: điểm tốt, điểm cần sửa, việc nên làm ở lượt tiếp theo.",
+    "If the candidate asks for feedback, switch briefly to Vietnamese and give exactly 3 sections: điểm tốt, điểm cần sửa, việc nên làm ở lượt tiếp theo.",
     "Part 1 should focus on short personal questions.",
     "Part 2 should keep the candidate talking longer about the cue card topic.",
     "Part 3 should move to broader, abstract, or social questions.",
@@ -67,6 +78,75 @@ function buildSpeakingInstructions(context: AiCoachContext, scenario?: string | 
     `Weak skills: ${joinOrDefault(context.weakestSkills, "Unknown")}`,
     `Strong skills: ${joinOrDefault(context.strongestSkills, "Unknown")}`,
   ].join("\n");
+}
+
+function buildSpeakingAssessmentInstructions(context: AiCoachContext, scenario?: string | null) {
+  return [
+    "You are an IELTS Speaking band estimator.",
+    "Your job is to give a preliminary speaking band estimate based on the conversation so far.",
+    "Be realistic, moderately strict, and avoid inflated scores.",
+    "Use IELTS style criteria: fluency/coherence, lexical resource, grammatical range/accuracy, pronunciation.",
+    "Return ONLY valid JSON with this exact shape:",
+    '{"estimatedBand":"5.5","fluencyBand":"5.5","lexicalBand":"5.0","grammarBand":"5.5","pronunciationBand":"6.0","summary":"...","strengths":["..."],"improvements":["..."]}',
+    "The summary, strengths, and improvements must be in natural Vietnamese.",
+    "Each strengths/improvements array must contain 2 to 3 short items.",
+    "Bands should be strings like 4.5, 5.0, 5.5, 6.0, 6.5, 7.0.",
+    "",
+    `Scenario: ${scenario ?? "IELTS Speaking mock interview"}`,
+    `Target score: ${context.targetScore ?? "Chưa đặt"}`,
+    `Estimated level before practice: ${context.estimatedLevel ?? "Chưa có"}`,
+  ].join("\n");
+}
+
+function normalizeBand(value: string) {
+  const trimmed = value.trim();
+  const numeric = Number.parseFloat(trimmed);
+
+  if (!Number.isFinite(numeric)) {
+    return "5.0";
+  }
+
+  return numeric.toFixed(1);
+}
+
+function extractJsonCandidate(content: string) {
+  const fencedMatch = content.match(/```json\s*([\s\S]*?)```/i);
+
+  if (fencedMatch?.[1]) {
+    return fencedMatch[1].trim();
+  }
+
+  const firstBrace = content.indexOf("{");
+  const lastBrace = content.lastIndexOf("}");
+
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    return content.slice(firstBrace, lastBrace + 1);
+  }
+
+  return content.trim();
+}
+
+function parseSpeakingAssessment(content: string): AiSpeakingAssessment {
+  const candidate = extractJsonCandidate(content);
+  const parsed = speakingAssessmentSchema.parse(JSON.parse(candidate));
+
+  return {
+    estimatedBand: normalizeBand(parsed.estimatedBand),
+    fluencyBand: normalizeBand(parsed.fluencyBand),
+    lexicalBand: normalizeBand(parsed.lexicalBand),
+    grammarBand: normalizeBand(parsed.grammarBand),
+    pronunciationBand: normalizeBand(parsed.pronunciationBand),
+    summary: parsed.summary.trim(),
+    strengths: parsed.strengths.map((item) => item.trim()),
+    improvements: parsed.improvements.map((item) => item.trim()),
+  };
+}
+
+function getSpeakingUserAnswers(input: AiCoachReplyInput) {
+  return input.history
+    .filter((message) => message.role === "user")
+    .map((message) => message.content.trim())
+    .filter(Boolean);
 }
 
 function buildMockCoachReply(input: AiCoachReplyInput): string {
@@ -162,75 +242,55 @@ function buildMockSpeakingReply(input: AiCoachReplyInput): string {
   return "Why do you think people have different opinions about this issue?";
 }
 
-class MockAiCoachProvider implements AiCoachProvider {
-  async generateReply(input: AiCoachReplyInput): Promise<AiCoachReplyOutput> {
-    return {
-      text:
-        input.mode === "speaking_mock"
-          ? buildMockSpeakingReply(input)
-          : buildMockCoachReply(input),
-      provider: "mock",
-      modelName: "javiss-coach-demo",
-      providerResponseId: null,
-      fallbackReason: null,
-    };
-  }
+function buildMockSpeakingAssessment(input: AiCoachReplyInput): AiSpeakingAssessment {
+  const answers = getSpeakingUserAnswers(input);
+  const combined = answers.join(" ");
+  const wordCount = combined.split(/\s+/).filter(Boolean).length;
+  const longAnswerBonus = wordCount >= 60 ? 0.5 : wordCount >= 30 ? 0 : -0.5;
+  const bandBase = Math.max(4.5, Math.min(6.5, 5.5 + longAnswerBonus));
+  const normalized = bandBase.toFixed(1);
+
+  return {
+    estimatedBand: normalized,
+    fluencyBand: normalized,
+    lexicalBand: Math.max(4.5, bandBase - 0.5).toFixed(1),
+    grammarBand: normalized,
+    pronunciationBand: Math.min(6.5, bandBase + 0.5).toFixed(1),
+    summary:
+      "Đây là band speaking sơ bộ dựa trên độ dài và mức độ phát triển ý trong phần trả lời hiện tại. Khi có thêm nhiều lượt nói hơn, kết quả sẽ ổn định hơn.",
+    strengths: [
+      "Bạn đã bám đúng câu hỏi và có ý chính rõ.",
+      "Câu trả lời có thể hiểu được và đủ nền để phát triển tiếp.",
+    ],
+    improvements: [
+      "Mở rộng câu trả lời bằng lý do hoặc ví dụ cụ thể.",
+      "Dùng thêm câu nối để phần nói mượt hơn.",
+      "Giữ nhịp nói đều và tránh trả lời quá ngắn.",
+    ],
+  };
 }
 
-class OpenAiCoachProvider implements AiCoachProvider {
-  private client: OpenAI;
+abstract class BaseOpenAiCompatibleProvider implements AiCoachProvider {
+  protected client: OpenAI;
+  protected replyModel: string;
+  protected assessmentModel: string;
+  protected providerName: "openai" | "gemini";
 
-  constructor() {
-    this.client = new OpenAI({
-      apiKey: env.OPENAI_API_KEY,
-    });
-  }
-
-  async generateReply(input: AiCoachReplyInput): Promise<AiCoachReplyOutput> {
-    const response = await this.client.responses.create({
-      model: env.OPENAI_MODEL,
-      instructions:
-        input.mode === "speaking_mock"
-          ? buildSpeakingInstructions(input.context, input.scenario)
-          : buildCoachInstructions(input.context),
-      previous_response_id: input.previousResponseId ?? undefined,
-      input: [
-        {
-          role: "user",
-          content: input.message,
-        },
-      ],
-      store: true,
-    });
-
-    const text = response.output_text?.trim();
-
-    return {
-      text:
-        text && text.length > 0
-          ? text
-          : "Mình chưa tạo được phản hồi phù hợp ở lượt này. Bạn hãy thử hỏi lại cụ thể hơn.",
-      provider: "openai",
-      modelName: env.OPENAI_MODEL,
-      providerResponseId: response.id,
-      fallbackReason: null,
-    };
-  }
-}
-
-class GeminiAiCoachProvider implements AiCoachProvider {
-  private client: OpenAI;
-
-  constructor() {
-    this.client = new OpenAI({
-      apiKey: env.GEMINI_API_KEY,
-      baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
-    });
+  constructor(input: {
+    client: OpenAI;
+    replyModel: string;
+    assessmentModel?: string;
+    providerName: "openai" | "gemini";
+  }) {
+    this.client = input.client;
+    this.replyModel = input.replyModel;
+    this.assessmentModel = input.assessmentModel ?? input.replyModel;
+    this.providerName = input.providerName;
   }
 
   async generateReply(input: AiCoachReplyInput): Promise<AiCoachReplyOutput> {
     const response = await this.client.chat.completions.create({
-      model: env.GEMINI_MODEL,
+      model: this.replyModel,
       messages: [
         {
           role: "system",
@@ -253,11 +313,89 @@ class GeminiAiCoachProvider implements AiCoachProvider {
         text && text.length > 0
           ? text
           : "Mình chưa tạo được phản hồi phù hợp ở lượt này. Bạn hãy thử lại sau ít phút.",
-      provider: "gemini",
-      modelName: env.GEMINI_MODEL,
+      provider: this.providerName,
+      modelName: this.replyModel,
       providerResponseId: response.id ?? null,
       fallbackReason: null,
     };
+  }
+
+  async generateSpeakingAssessment(input: AiCoachReplyInput): Promise<AiSpeakingAssessment> {
+    const answers = getSpeakingUserAnswers(input);
+
+    const response = await this.client.chat.completions.create({
+      model: this.assessmentModel,
+      messages: [
+        {
+          role: "system",
+          content: buildSpeakingAssessmentInstructions(input.context, input.scenario),
+        },
+        {
+          role: "user",
+          content: [
+            "Examiner and candidate speaking transcript so far:",
+            input.history
+              .map((message) => `${message.role === "user" ? "Candidate" : "Examiner"}: ${message.content}`)
+              .join("\n"),
+            "",
+            "Candidate answers only:",
+            answers.join("\n"),
+          ].join("\n"),
+        },
+      ],
+    });
+
+    const text = response.choices[0]?.message?.content?.trim();
+
+    if (!text) {
+      throw new Error("EMPTY_SPEAKING_ASSESSMENT");
+    }
+
+    return parseSpeakingAssessment(text);
+  }
+}
+
+class MockAiCoachProvider implements AiCoachProvider {
+  async generateReply(input: AiCoachReplyInput): Promise<AiCoachReplyOutput> {
+    return {
+      text:
+        input.mode === "speaking_mock"
+          ? buildMockSpeakingReply(input)
+          : buildMockCoachReply(input),
+      provider: "mock",
+      modelName: "javiss-coach-demo",
+      providerResponseId: null,
+      fallbackReason: null,
+    };
+  }
+
+  async generateSpeakingAssessment(input: AiCoachReplyInput): Promise<AiSpeakingAssessment> {
+    return buildMockSpeakingAssessment(input);
+  }
+}
+
+class OpenAiCoachProvider extends BaseOpenAiCompatibleProvider {
+  constructor() {
+    super({
+      client: new OpenAI({
+        apiKey: env.OPENAI_API_KEY,
+      }),
+      replyModel: env.OPENAI_MODEL,
+      providerName: "openai",
+    });
+  }
+}
+
+class GeminiAiCoachProvider extends BaseOpenAiCompatibleProvider {
+  constructor() {
+    super({
+      client: new OpenAI({
+        apiKey: env.GEMINI_API_KEY,
+        baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+      }),
+      replyModel: env.GEMINI_MODEL,
+      providerName: "gemini",
+    });
   }
 }
 

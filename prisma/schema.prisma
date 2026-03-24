@@ -625,6 +625,15 @@ model AiConversation {
   title                 String
   kind                  AiConversationKind @default(coach)
   scenario              String?
+  speakingEstimatedBand String?
+  speakingFluencyBand   String?
+  speakingLexicalBand   String?
+  speakingGrammarBand   String?
+  speakingPronunciationBand String?
+  speakingAssessmentSummary String?
+  speakingStrengths     String[]    @default([])
+  speakingImprovements  String[]    @default([])
+  speakingLastAssessedAt DateTime?
   provider              AiProvider  @default(mock)
   modelName             String
   lastProviderResponseId String?

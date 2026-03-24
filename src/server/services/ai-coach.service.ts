@@ -6,6 +6,7 @@ import type {
   AiCoachContext,
   AiCoachReplyInput,
   AiConversationHistoryMessage,
+  AiSpeakingAssessment,
 } from "@/lib/ai/types";
 import { logger } from "@/lib/logger";
 import { enforceRateLimit } from "@/lib/rate-limit/memory-rate-limit";
@@ -167,6 +168,48 @@ function getProviderFallbackMessage(reason: string) {
       return "Gemini đang lỗi tạm thời. Hệ thống đã tự chuyển sang chế độ dự phòng.";
     default:
       return "AI thật đang tạm thời chưa sẵn sàng. Hệ thống đã chuyển sang chế độ dự phòng.";
+  }
+}
+
+async function resolveSpeakingAssessmentWithFallback(input: {
+  providerInput: AiCoachReplyInput;
+  providerMode: "mock" | "openai" | "gemini";
+  conversationId: string;
+  userId: string;
+}) {
+  if (input.providerMode === "gemini") {
+    const quota = await consumeDailyProviderQuota({
+      provider: "gemini",
+      userId: input.userId,
+      limit: env.GEMINI_DAILY_REQUEST_LIMIT,
+    });
+
+    if (!quota.allowed) {
+      logger.warn("gemini_daily_quota_reached_for_assessment", {
+        conversationId: input.conversationId,
+        userId: input.userId,
+        limit: env.GEMINI_DAILY_REQUEST_LIMIT,
+        count: quota.count,
+      });
+
+      const fallbackProvider = getMockAiCoachProvider();
+      return await fallbackProvider.generateSpeakingAssessment(input.providerInput);
+    }
+  }
+
+  const provider = getAiCoachProvider();
+
+  try {
+    return await provider.generateSpeakingAssessment(input.providerInput);
+  } catch (error) {
+    logger.warn("speaking_assessment_failed", {
+      conversationId: input.conversationId,
+      providerMode: input.providerMode,
+      error: error instanceof Error ? error.message : "unknown",
+    });
+
+    const fallbackProvider = getMockAiCoachProvider();
+    return await fallbackProvider.generateSpeakingAssessment(input.providerInput);
   }
 }
 
@@ -373,20 +416,57 @@ export async function sendAiCoachMessage(input: {
     existingMessages: conversation.messages,
   });
 
+  const replyProviderEnum = mapProviderNameToEnum(reply.provider);
+
   const assistantMessage = await createAiMessage({
     conversationId: conversation.id,
     role: AiMessageRole.assistant,
     content: reply.text,
-    provider: mapProviderNameToEnum(reply.provider),
+    provider: replyProviderEnum,
     modelName: reply.modelName,
     providerResponseId: reply.providerResponseId,
   });
 
+  let speakingAssessment: AiSpeakingAssessment | null = null;
+
+  if (conversation.kind === AiConversationKind.speaking_mock) {
+    const speakingAssessmentInput: AiCoachReplyInput = {
+      message: input.values.message,
+      previousResponseId: conversation.lastProviderResponseId,
+      context,
+      mode: "speaking_mock",
+      scenario: conversation.scenario,
+      history: [
+        ...buildHistory(conversation.messages, input.values.message),
+        {
+          role: "assistant",
+          content: reply.text,
+        },
+      ],
+    };
+
+    speakingAssessment = await resolveSpeakingAssessmentWithFallback({
+      providerInput: speakingAssessmentInput,
+      providerMode: resolveProviderConfig().mode,
+      conversationId: conversation.id,
+      userId: input.userId,
+    });
+  }
+
   await updateAiConversationState({
     id: conversation.id,
-    provider: mapProviderNameToEnum(reply.provider),
+    provider: replyProviderEnum,
     modelName: reply.modelName,
     lastProviderResponseId: reply.providerResponseId ?? conversation.lastProviderResponseId,
+    speakingEstimatedBand: speakingAssessment?.estimatedBand,
+    speakingFluencyBand: speakingAssessment?.fluencyBand,
+    speakingLexicalBand: speakingAssessment?.lexicalBand,
+    speakingGrammarBand: speakingAssessment?.grammarBand,
+    speakingPronunciationBand: speakingAssessment?.pronunciationBand,
+    speakingAssessmentSummary: speakingAssessment?.summary,
+    speakingStrengths: speakingAssessment?.strengths,
+    speakingImprovements: speakingAssessment?.improvements,
+    speakingLastAssessedAt: speakingAssessment ? new Date() : undefined,
   });
 
   return {
@@ -397,5 +477,6 @@ export async function sendAiCoachMessage(input: {
     provider: reply.provider,
     modelName: reply.modelName,
     fallbackReason: reply.fallbackReason ?? null,
+    speakingAssessment,
   };
 }

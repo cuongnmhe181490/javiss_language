@@ -77,6 +77,15 @@ export async function updateAiConversationState(input: {
   title?: string;
   kind?: AiConversationKind;
   scenario?: string | null;
+  speakingEstimatedBand?: string | null;
+  speakingFluencyBand?: string | null;
+  speakingLexicalBand?: string | null;
+  speakingGrammarBand?: string | null;
+  speakingPronunciationBand?: string | null;
+  speakingAssessmentSummary?: string | null;
+  speakingStrengths?: string[];
+  speakingImprovements?: string[];
+  speakingLastAssessedAt?: Date | null;
   provider?: AiProvider;
   modelName?: string;
   lastProviderResponseId?: string | null;
@@ -87,6 +96,15 @@ export async function updateAiConversationState(input: {
       title: input.title,
       kind: input.kind,
       scenario: input.scenario,
+      speakingEstimatedBand: input.speakingEstimatedBand,
+      speakingFluencyBand: input.speakingFluencyBand,
+      speakingLexicalBand: input.speakingLexicalBand,
+      speakingGrammarBand: input.speakingGrammarBand,
+      speakingPronunciationBand: input.speakingPronunciationBand,
+      speakingAssessmentSummary: input.speakingAssessmentSummary,
+      speakingStrengths: input.speakingStrengths,
+      speakingImprovements: input.speakingImprovements,
+      speakingLastAssessedAt: input.speakingLastAssessedAt,
       provider: input.provider,
       modelName: input.modelName,
       lastProviderResponseId: input.lastProviderResponseId,

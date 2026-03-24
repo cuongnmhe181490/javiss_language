@@ -44,6 +44,18 @@ export type AiCoachReplyOutput = {
   fallbackReason?: string | null;
 };
 
+export type AiSpeakingAssessment = {
+  estimatedBand: string;
+  fluencyBand: string;
+  lexicalBand: string;
+  grammarBand: string;
+  pronunciationBand: string;
+  summary: string;
+  strengths: string[];
+  improvements: string[];
+};
+
 export interface AiCoachProvider {
   generateReply(input: AiCoachReplyInput): Promise<AiCoachReplyOutput>;
+  generateSpeakingAssessment(input: AiCoachReplyInput): Promise<AiSpeakingAssessment>;
 }
