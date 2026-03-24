@@ -9,6 +9,7 @@ import type {
 } from "@/lib/ai/types";
 import { logger } from "@/lib/logger";
 import { enforceRateLimit } from "@/lib/rate-limit/memory-rate-limit";
+import { consumeDailyProviderQuota } from "@/lib/rate-limit/provider-quota";
 import { AppError } from "@/lib/utils/app-error";
 import {
   createAiConversation,
@@ -158,6 +159,85 @@ function buildHistory(
   ];
 }
 
+function getProviderFallbackMessage(reason: string) {
+  switch (reason) {
+    case "daily_quota_reached":
+      return "Gemini đã chạm giới hạn lượt dùng trong ngày. Hệ thống đã tự chuyển sang chế độ dự phòng.";
+    case "provider_request_failed":
+      return "Gemini đang lỗi tạm thời. Hệ thống đã tự chuyển sang chế độ dự phòng.";
+    default:
+      return "AI thật đang tạm thời chưa sẵn sàng. Hệ thống đã chuyển sang chế độ dự phòng.";
+  }
+}
+
+async function resolveReplyWithFallback(input: {
+  userId: string;
+  conversationId: string;
+  conversationKind: AiConversationKind;
+  scenario?: string | null;
+  previousResponseId?: string | null;
+  message: string;
+  context: AiCoachContext;
+  existingMessages: { role: AiMessageRole; content: string }[];
+}) {
+  const providerConfig = resolveProviderConfig();
+  const provider = getAiCoachProvider();
+  const providerInput: AiCoachReplyInput = {
+    message: input.message,
+    previousResponseId: input.previousResponseId,
+    context: input.context,
+    mode: input.conversationKind === AiConversationKind.speaking_mock ? "speaking_mock" : "coach",
+    scenario: input.scenario,
+    history: buildHistory(input.existingMessages, input.message),
+  };
+
+  let fallbackReason: string | null = null;
+
+  if (providerConfig.provider === AiProvider.gemini) {
+    const quota = await consumeDailyProviderQuota({
+      provider: "gemini",
+      userId: input.userId,
+      limit: env.GEMINI_DAILY_REQUEST_LIMIT,
+    });
+
+    if (!quota.allowed) {
+      logger.warn("gemini_daily_quota_reached", {
+        conversationId: input.conversationId,
+        userId: input.userId,
+        limit: env.GEMINI_DAILY_REQUEST_LIMIT,
+        count: quota.count,
+      });
+
+      fallbackReason = "daily_quota_reached";
+    }
+  }
+
+  if (!fallbackReason) {
+    try {
+      return await provider.generateReply(providerInput);
+    } catch (error) {
+      logger.warn("ai_coach_provider_failed", {
+        conversationId: input.conversationId,
+        error: error instanceof Error ? error.message : "unknown",
+      });
+
+      fallbackReason = "provider_request_failed";
+    }
+  }
+
+  if (!env.AI_FALLBACK_TO_MOCK) {
+    throw new AppError(getProviderFallbackMessage(fallbackReason ?? "provider_request_failed"), 503, "AI_PROVIDER_UNAVAILABLE");
+  }
+
+  const fallbackProvider = getMockAiCoachProvider();
+  const fallbackReply = await fallbackProvider.generateReply(providerInput);
+
+  return {
+    ...fallbackReply,
+    fallbackReason,
+  };
+}
+
 export async function getAiCoachDashboardData(userId: string) {
   const [user, conversations] = await Promise.all([
     findUserById(userId),
@@ -192,7 +272,11 @@ export async function startAiSpeakingSession(input: {
   userId: string;
   values: AiSpeakingSessionInput;
 }) {
-  await enforceRateLimit(`ai-speaking-session:${input.userId}`, 5, 10 * 60 * 1000);
+  await enforceRateLimit(
+    `ai-speaking-session:${input.userId}`,
+    env.AI_SPEAKING_SESSION_WINDOW_LIMIT,
+    env.AI_SPEAKING_SESSION_WINDOW_MINUTES * 60 * 1000,
+  );
 
   const user = await findUserById(input.userId);
 
@@ -231,7 +315,11 @@ export async function sendAiCoachMessage(input: {
   conversationId?: string;
   values: AiCoachMessageInput;
 }) {
-  await enforceRateLimit(`ai-coach:${input.userId}`, 20, 10 * 60 * 1000);
+  await enforceRateLimit(
+    `ai-coach:${input.userId}`,
+    env.AI_MESSAGE_WINDOW_LIMIT,
+    env.AI_MESSAGE_WINDOW_MINUTES * 60 * 1000,
+  );
 
   const user = await findUserById(input.userId);
 
@@ -240,7 +328,6 @@ export async function sendAiCoachMessage(input: {
   }
 
   const providerConfig = resolveProviderConfig();
-  const provider = getAiCoachProvider();
 
   let conversation =
     input.conversationId
@@ -275,28 +362,16 @@ export async function sendAiCoachMessage(input: {
   });
 
   const context = buildAiCoachContext(user);
-  const providerInput: AiCoachReplyInput = {
-    message: input.values.message,
-    previousResponseId: conversation.lastProviderResponseId,
-    context,
-    mode: conversation.kind === AiConversationKind.speaking_mock ? "speaking_mock" : "coach",
+  const reply = await resolveReplyWithFallback({
+    userId: input.userId,
+    conversationId: conversation.id,
+    conversationKind: conversation.kind,
     scenario: conversation.scenario,
-    history: buildHistory(conversation.messages, input.values.message),
-  };
-
-  let reply;
-
-  try {
-    reply = await provider.generateReply(providerInput);
-  } catch (error) {
-    logger.warn("ai_coach_provider_failed", {
-      conversationId: conversation.id,
-      error: error instanceof Error ? error.message : "unknown",
-    });
-
-    const fallbackProvider = getMockAiCoachProvider();
-    reply = await fallbackProvider.generateReply(providerInput);
-  }
+    previousResponseId: conversation.lastProviderResponseId,
+    message: input.values.message,
+    context,
+    existingMessages: conversation.messages,
+  });
 
   const assistantMessage = await createAiMessage({
     conversationId: conversation.id,
@@ -321,5 +396,6 @@ export async function sendAiCoachMessage(input: {
     message: assistantMessage,
     provider: reply.provider,
     modelName: reply.modelName,
+    fallbackReason: reply.fallbackReason ?? null,
   };
 }

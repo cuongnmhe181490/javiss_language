@@ -50,6 +50,17 @@ function getSpeechRecognitionConstructor() {
   return browserWindow.SpeechRecognition ?? browserWindow.webkitSpeechRecognition ?? null;
 }
 
+function getFallbackMessage(reason?: string | null) {
+  switch (reason) {
+    case "daily_quota_reached":
+      return "Gemini đã chạm quota hôm nay. Hệ thống tạm chuyển phần hỏi đáp sang chế độ dự phòng.";
+    case "provider_request_failed":
+      return "Gemini đang lỗi tạm thời. Hệ thống đã chuyển phần hỏi đáp sang chế độ dự phòng.";
+    default:
+      return null;
+  }
+}
+
 export function AiSpeakingSessionPanel({
   conversationId,
   scenario,
@@ -197,6 +208,12 @@ export function AiSpeakingSessionPanel({
         return;
       }
 
+      const fallbackMessage = getFallbackMessage(payload?.data?.fallbackReason);
+
+      if (fallbackMessage) {
+        toast.message(fallbackMessage);
+      }
+
       setTranscript("");
       router.push(`/dashboard/ai-coach?conversationId=${payload.data.conversationId}`);
       router.refresh();
@@ -309,11 +326,7 @@ export function AiSpeakingSessionPanel({
         >
           Dừng ghi
         </Button>
-        <Button
-          disabled={isSubmittingAnswer}
-          onClick={handleSubmitAnswer}
-          type="button"
-        >
+        <Button disabled={isSubmittingAnswer} onClick={handleSubmitAnswer} type="button">
           {isSubmittingAnswer ? "Đang gửi..." : "Gửi phần trả lời"}
         </Button>
       </div>

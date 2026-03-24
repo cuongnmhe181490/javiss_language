@@ -24,10 +24,19 @@ const envSchema = z.object({
     .default("false")
     .transform((value) => value === "true"),
   AI_PROVIDER: z.enum(["mock", "openai", "gemini"]).default("mock"),
+  AI_FALLBACK_TO_MOCK: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((value) => value === "true"),
+  AI_MESSAGE_WINDOW_LIMIT: z.coerce.number().int().min(1).default(20),
+  AI_MESSAGE_WINDOW_MINUTES: z.coerce.number().int().min(1).default(10),
+  AI_SPEAKING_SESSION_WINDOW_LIMIT: z.coerce.number().int().min(1).default(5),
+  AI_SPEAKING_SESSION_WINDOW_MINUTES: z.coerce.number().int().min(1).default(10),
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default("gpt-4o-mini"),
   GEMINI_API_KEY: z.string().optional(),
   GEMINI_MODEL: z.string().default("gemini-2.5-flash"),
+  GEMINI_DAILY_REQUEST_LIMIT: z.coerce.number().int().min(1).default(80),
   PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().min(5).default(30),
   VERIFICATION_CODE_TTL_MINUTES: z.coerce.number().int().min(1).default(15),
   VERIFICATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).default(5),

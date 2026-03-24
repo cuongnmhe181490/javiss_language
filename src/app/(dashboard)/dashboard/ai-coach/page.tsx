@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AiConversationKind, AiMessageRole } from "@prisma/client";
+import { AiConversationKind, AiMessageRole, AiProvider } from "@prisma/client";
 import { AiCoachComposer } from "@/components/dashboard/ai-coach-composer";
 import { AiSpeakingSessionPanel } from "@/components/dashboard/ai-speaking-session-panel";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -15,10 +15,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
-function getProviderLabel(mode: "mock" | "openai" | "gemini") {
-  switch (mode) {
+function getProviderLabel(provider: AiProvider | "mock" | "openai" | "gemini") {
+  switch (provider) {
+    case AiProvider.openai:
     case "openai":
       return "OpenAI";
+    case AiProvider.gemini:
     case "gemini":
       return "Gemini";
     default:
@@ -49,6 +51,9 @@ export default async function DashboardAiCoachPage({
     .slice()
     .reverse()
     .find((message) => message.role === AiMessageRole.assistant)?.content;
+  const activeProvider = selectedConversation?.provider ?? providerMode;
+  const isFallbackConversation =
+    selectedConversation?.provider === AiProvider.mock && providerMode !== "mock";
 
   return (
     <div className="space-y-6">
@@ -125,6 +130,9 @@ export default async function DashboardAiCoachPage({
                         {conversation.kind === AiConversationKind.speaking_mock ? (
                           <Badge>Speaking mock</Badge>
                         ) : null}
+                        <Badge className="bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                          {getProviderLabel(conversation.provider)}
+                        </Badge>
                       </div>
                       <p className="mt-2 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
                         {lastMessage?.content ?? "Chưa có nội dung phản hồi nào."}
@@ -143,7 +151,7 @@ export default async function DashboardAiCoachPage({
           <CardHeader>
             <div className="flex flex-wrap items-center gap-3">
               <CardTitle>{selectedConversation?.title ?? "Bắt đầu cùng AI Coach"}</CardTitle>
-              <Badge>{getProviderLabel(providerMode)}</Badge>
+              <Badge>{getProviderLabel(activeProvider)}</Badge>
               {selectedConversation?.kind === AiConversationKind.speaking_mock ? (
                 <Badge>Speaking mock</Badge>
               ) : null}
@@ -152,9 +160,13 @@ export default async function DashboardAiCoachPage({
           <CardContent className="space-y-6">
             {providerMode === "mock" ? (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-                AI Coach hiện đang chạy ở chế độ demo vì production chưa có key cho OpenAI hoặc
-                Gemini. Luồng chat, speaking mock và lưu lịch sử đã hoạt động đầy đủ; chỉ cần bổ
-                sung key là có thể chuyển sang AI thật.
+                AI Coach hiện đang chạy ở chế độ demo vì production chưa có key cho OpenAI hoặc Gemini. Luồng chat, speaking mock và lưu lịch sử đã hoạt động đầy đủ; chỉ cần bổ sung key là có thể chuyển sang AI thật.
+              </div>
+            ) : null}
+
+            {isFallbackConversation ? (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+                Hội thoại này đang chạy bằng chế độ dự phòng do Gemini gặp giới hạn quota hoặc lỗi tạm thời. Bạn vẫn có thể tiếp tục dùng bình thường.
               </div>
             ) : null}
 

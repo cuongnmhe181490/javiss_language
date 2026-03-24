@@ -6,6 +6,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
+function getFallbackMessage(reason?: string | null) {
+  switch (reason) {
+    case "daily_quota_reached":
+      return "Gemini đã chạm quota hôm nay. Hệ thống tạm chuyển sang chế độ dự phòng.";
+    case "provider_request_failed":
+      return "Gemini đang lỗi tạm thời. Hệ thống đã chuyển sang chế độ dự phòng.";
+    default:
+      return null;
+  }
+}
+
 export function AiCoachComposer({
   conversationId,
 }: {
@@ -38,6 +49,12 @@ export function AiCoachComposer({
       if (!response.ok) {
         toast.error(payload?.error?.message ?? "Không thể gửi câu hỏi tới AI Coach.");
         return;
+      }
+
+      const fallbackMessage = getFallbackMessage(payload?.data?.fallbackReason);
+
+      if (fallbackMessage) {
+        toast.message(fallbackMessage);
       }
 
       setMessage("");

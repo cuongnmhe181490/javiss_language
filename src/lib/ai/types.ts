@@ -41,6 +41,7 @@ export type AiCoachReplyOutput = {
   provider: "mock" | "openai" | "gemini";
   modelName: string;
   providerResponseId?: string | null;
+  fallbackReason?: string | null;
 };
 
 export interface AiCoachProvider {

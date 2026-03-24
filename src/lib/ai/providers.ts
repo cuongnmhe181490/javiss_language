@@ -20,6 +20,7 @@ function buildCoachInstructions(context: AiCoachContext) {
     "Không bịa kết quả học tập hay dữ liệu không có trong ngữ cảnh.",
     "Nếu học viên hỏi về chiến lược học, hãy cá nhân hóa theo hồ sơ bên dưới.",
     "Nếu học viên yêu cầu phản hồi bằng tiếng Anh hoặc ngôn ngữ khác, bạn có thể đáp ứng.",
+    "Mỗi câu trả lời nên có trọng tâm rõ, tránh lan man.",
     "",
     "Hồ sơ học viên hiện tại:",
     `- Họ tên: ${context.fullName}`,
@@ -44,13 +45,19 @@ function buildCoachInstructions(context: AiCoachContext) {
 
 function buildSpeakingInstructions(context: AiCoachContext, scenario?: string | null) {
   return [
-    "You are an IELTS Speaking examiner for a 1:1 mock speaking session.",
-    "Speak in English during the interview.",
-    "Ask only one question at a time, and keep each examiner turn concise and natural.",
-    "Do not provide long explanations during the interview.",
-    "If the learner explicitly asks for feedback, then give short feedback in Vietnamese with actionable advice.",
-    "If the learner answer is too short, ask one short follow-up question.",
-    "Stay in examiner role unless the learner requests feedback or strategy.",
+    "You are a strict but natural IELTS Speaking examiner running a one-to-one mock test.",
+    "Stay in examiner role during the interview.",
+    "Speak in English during the interview unless the learner explicitly asks for feedback.",
+    "Ask exactly one question at a time.",
+    "Each examiner turn should be short, natural, and similar to a real IELTS examiner.",
+    "Do not answer for the candidate.",
+    "Do not explain the test format unless the learner asks.",
+    "If the candidate answer is too short, ask one concise follow-up question.",
+    "If the candidate asks for feedback, switch briefly to Vietnamese and give 3 parts only: điểm tốt, điểm cần sửa, việc nên làm ở lượt tiếp theo.",
+    "Part 1 should focus on short personal questions.",
+    "Part 2 should keep the candidate talking longer about the cue card topic.",
+    "Part 3 should move to broader, abstract, or social questions.",
+    "Avoid giving multiple questions in one turn.",
     "",
     `Scenario: ${scenario ?? "IELTS Speaking mock interview"}`,
     `Candidate name: ${context.fullName}`,
@@ -130,34 +137,29 @@ function buildMockCoachReply(input: AiCoachReplyInput): string {
 }
 
 function buildMockSpeakingReply(input: AiCoachReplyInput): string {
-  const transcript = input.message.trim();
-  const message = transcript.toLowerCase();
+  const message = input.message.trim().toLowerCase();
   const scenario = input.scenario ?? "IELTS Speaking mock";
 
-  if (
-    message.includes("feedback") ||
-    message.includes("nhận xét") ||
-    message.includes("đánh giá")
-  ) {
+  if (message.includes("feedback") || message.includes("nhận xét") || message.includes("đánh giá")) {
     return [
       "Nhận xét nhanh:",
-      "- Câu trả lời của bạn đã có ý chính, nhưng vẫn có thể kéo dài thêm bằng ví dụ cụ thể.",
-      "- Hãy nói chậm hơn một chút ở phần mở đầu để phát âm rõ hơn.",
-      "- Ở lượt tiếp theo, cố gắng dùng một câu nối như “The main reason is…” hoặc “What I mean is…”.",
+      "- Bạn đã có ý chính rõ ràng và trả lời đúng hướng câu hỏi.",
+      "- Hãy kéo dài câu trả lời thêm bằng lý do hoặc ví dụ cụ thể để tự nhiên hơn.",
+      "- Ở lượt tiếp theo, hãy dùng một câu nối như “The main reason is...” hoặc “For example...”.",
       "",
-      "Let me ask you one more question: What would you improve first in your speaking performance?",
+      "One more question: what would you improve first in your speaking today?",
     ].join("\n");
   }
 
   if (scenario.includes("Part 1")) {
-    return "Why do you think this is important in your daily life?";
+    return "Why is that important to you personally?";
   }
 
   if (scenario.includes("Part 2")) {
-    return "Thank you. Could you continue and explain why this experience was memorable for you?";
+    return "Could you continue and explain why this experience stayed in your memory?";
   }
 
-  return "What changes do you think society will see in the future regarding this topic?";
+  return "Why do you think people have different opinions about this issue?";
 }
 
 class MockAiCoachProvider implements AiCoachProvider {
@@ -170,6 +172,7 @@ class MockAiCoachProvider implements AiCoachProvider {
       provider: "mock",
       modelName: "javiss-coach-demo",
       providerResponseId: null,
+      fallbackReason: null,
     };
   }
 }
@@ -210,6 +213,7 @@ class OpenAiCoachProvider implements AiCoachProvider {
       provider: "openai",
       modelName: env.OPENAI_MODEL,
       providerResponseId: response.id,
+      fallbackReason: null,
     };
   }
 }
@@ -252,6 +256,7 @@ class GeminiAiCoachProvider implements AiCoachProvider {
       provider: "gemini",
       modelName: env.GEMINI_MODEL,
       providerResponseId: response.id ?? null,
+      fallbackReason: null,
     };
   }
 }
