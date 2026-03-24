@@ -79,6 +79,7 @@ export async function loginUser(input: {
     status: user.status,
     roles,
     fullName: user.profile?.fullName ?? user.email,
+    sessionVersion: user.sessionVersion,
   });
 
   await prisma.user.update({

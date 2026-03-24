@@ -59,6 +59,9 @@ export async function completePasswordReset(input: {
       where: { id: input.userId },
       data: {
         passwordHash: input.passwordHash,
+        sessionVersion: {
+          increment: 1,
+        },
       },
     });
   });

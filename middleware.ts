@@ -40,14 +40,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (payload && ["/login", "/register"].includes(pathname)) {
-    const isAdmin = payload.roles?.some((role) => ["super_admin", "admin"].includes(role));
-    return NextResponse.redirect(new URL(isAdmin ? "/admin" : "/dashboard", request.url));
-  }
-
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/api/admin/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/api/admin/:path*"],
 };

@@ -120,6 +120,7 @@ model User {
   tenantId          String?
   email             String                @unique
   passwordHash      String
+  sessionVersion    Int                   @default(0)
   status            UserStatus            @default(pending)
   emailVerifiedAt   DateTime?
   lastLoginAt       DateTime?

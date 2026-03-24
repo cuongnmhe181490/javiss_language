@@ -2,6 +2,7 @@ import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { env } from "@/config/env";
 import { SESSION_MAX_AGE_SECONDS } from "@/lib/auth/constants";
+import { prisma } from "@/lib/db/prisma";
 
 export type SessionRole = "super_admin" | "admin" | "teacher" | "student";
 
@@ -11,6 +12,7 @@ export type SessionPayload = JWTPayload & {
   status: string;
   roles: SessionRole[];
   fullName: string;
+  sessionVersion: number;
 };
 
 const secret = new TextEncoder().encode(env.JWT_SECRET);
@@ -37,7 +39,42 @@ export async function getSession() {
   }
 
   try {
-    return await verifySession(token);
+    const payload = await verifySession(token);
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        email: true,
+        status: true,
+        sessionVersion: true,
+        profile: {
+          select: {
+            fullName: true,
+          },
+        },
+        roles: {
+          select: {
+            role: {
+              select: {
+                code: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!user || user.sessionVersion !== payload.sessionVersion) {
+      return null;
+    }
+
+    return {
+      ...payload,
+      email: user.email,
+      status: user.status,
+      fullName: user.profile?.fullName ?? user.email,
+      roles: user.roles.map((item) => item.role.code) as SessionRole[],
+      sessionVersion: user.sessionVersion,
+    };
   } catch {
     return null;
   }

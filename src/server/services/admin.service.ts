@@ -20,7 +20,15 @@ export async function toggleBlockUser(input: {
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { status: nextStatus },
+    data: {
+      status: nextStatus,
+      sessionVersion:
+        nextStatus === UserStatus.blocked
+          ? {
+              increment: 1,
+            }
+          : undefined,
+    },
   });
 
   await createAuditLog({
