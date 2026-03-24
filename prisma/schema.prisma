@@ -117,6 +117,16 @@ enum AttemptStatus {
   reviewed
 }
 
+enum AiProvider {
+  mock
+  openai
+}
+
+enum AiMessageRole {
+  user
+  assistant
+}
+
 model User {
   id                String                @id @default(cuid())
   tenantId          String?
@@ -142,6 +152,7 @@ model User {
   entitlements      UserEntitlement[]
   licenses          License[]
   attempts          ExerciseAttempt[]
+  aiConversations   AiConversation[]
 
   @@index([tenantId])
   @@index([status])
@@ -599,4 +610,38 @@ model SystemSetting {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model AiConversation {
+  id                    String      @id @default(cuid())
+  tenantId              String?
+  userId                String
+  title                 String
+  provider              AiProvider  @default(mock)
+  modelName             String
+  lastProviderResponseId String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages              AiMessage[]
+
+  @@index([tenantId])
+  @@index([userId, updatedAt(sort: Desc)])
+}
+
+model AiMessage {
+  id                String        @id @default(cuid())
+  tenantId          String?
+  conversationId    String
+  role              AiMessageRole
+  content           String
+  provider          AiProvider?
+  modelName         String?
+  providerResponseId String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  conversation      AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([conversationId, createdAt(sort: Asc)])
 }

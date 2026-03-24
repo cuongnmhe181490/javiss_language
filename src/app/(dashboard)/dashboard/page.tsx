@@ -54,9 +54,16 @@ export default async function DashboardPage() {
               {plan?.nextAction ??
                 "Hoàn thiện hồ sơ học tập, xác định kỹ năng yếu và bắt đầu bài luyện đầu tiên."}
             </p>
-            <Link href="/dashboard/lessons">
-              <Button size="sm">Mở khu bài luyện</Button>
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/dashboard/lessons">
+                <Button size="sm">Mở khu bài luyện</Button>
+              </Link>
+              <Link href="/dashboard/ai-coach">
+                <Button size="sm" variant="secondary">
+                  AI Coach 1:1
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
         <Card>
