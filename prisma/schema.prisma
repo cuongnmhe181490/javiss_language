@@ -43,6 +43,8 @@ enum AuditAction {
   login_failed
   password_reset_requested
   password_reset_completed
+  lesson_created
+  exercise_created
   settings_updated
   admin_created
   profile_updated

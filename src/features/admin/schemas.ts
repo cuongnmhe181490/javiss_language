@@ -45,3 +45,32 @@ export const createPlanSchema = z.object({
 });
 
 export type CreatePlanInput = z.infer<typeof createPlanSchema>;
+
+export const createLessonSchema = z.object({
+  topicId: z.string().min(1, "Vui lòng chọn topic."),
+  slug: z.string().min(2, "Vui lòng nhập slug lesson."),
+  title: z.string().min(2, "Vui lòng nhập tiêu đề lesson."),
+  summary: z.string().optional(),
+  status: z.enum(["draft", "published", "archived"]),
+});
+
+export type CreateLessonInput = z.infer<typeof createLessonSchema>;
+
+export const createExerciseSchema = z.object({
+  lessonId: z.string().min(1, "Vui lòng chọn lesson."),
+  slug: z.string().min(2, "Vui lòng nhập slug bài luyện."),
+  title: z.string().min(2, "Vui lòng nhập tiêu đề bài luyện."),
+  type: z.enum(["practice", "mock_test", "assessment"]),
+  instructions: z.string().optional(),
+  questionType: z.enum([
+    "multiple_choice",
+    "short_answer",
+    "essay",
+    "speaking",
+    "listening",
+    "reading",
+  ]),
+  questionPrompts: z.string().min(3, "Vui lòng nhập ít nhất một câu hỏi."),
+});
+
+export type CreateExerciseInput = z.infer<typeof createExerciseSchema>;

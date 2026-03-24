@@ -25,6 +25,7 @@ export const vi = {
     progress: "Tiến độ",
     registrations: "Đăng ký chờ duyệt",
     users: "Người dùng",
+    content: "Nội dung",
     plans: "Gói học",
     logs: "Nhật ký",
     settings: "Cài đặt",
