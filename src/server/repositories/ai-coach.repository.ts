@@ -1,4 +1,4 @@
-import { AiMessageRole, AiProvider } from "@prisma/client";
+import { AiConversationKind, AiMessageRole, AiProvider } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 
 export async function listAiConversationsByUser(userId: string) {
@@ -35,6 +35,8 @@ export async function findAiConversationByIdForUser(input: {
 export async function createAiConversation(input: {
   userId: string;
   title: string;
+  kind?: AiConversationKind;
+  scenario?: string | null;
   provider: AiProvider;
   modelName: string;
 }) {
@@ -42,6 +44,8 @@ export async function createAiConversation(input: {
     data: {
       userId: input.userId,
       title: input.title,
+      kind: input.kind,
+      scenario: input.scenario,
       provider: input.provider,
       modelName: input.modelName,
     },
@@ -71,6 +75,8 @@ export async function createAiMessage(input: {
 export async function updateAiConversationState(input: {
   id: string;
   title?: string;
+  kind?: AiConversationKind;
+  scenario?: string | null;
   provider?: AiProvider;
   modelName?: string;
   lastProviderResponseId?: string | null;
@@ -79,6 +85,8 @@ export async function updateAiConversationState(input: {
     where: { id: input.id },
     data: {
       title: input.title,
+      kind: input.kind,
+      scenario: input.scenario,
       provider: input.provider,
       modelName: input.modelName,
       lastProviderResponseId: input.lastProviderResponseId,

@@ -20,15 +20,25 @@ export type AiCoachContext = {
   } | null;
 };
 
+export type AiConversationMode = "coach" | "speaking_mock";
+
+export type AiConversationHistoryMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 export type AiCoachReplyInput = {
   message: string;
   previousResponseId?: string | null;
   context: AiCoachContext;
+  mode?: AiConversationMode;
+  scenario?: string | null;
+  history: AiConversationHistoryMessage[];
 };
 
 export type AiCoachReplyOutput = {
   text: string;
-  provider: "mock" | "openai";
+  provider: "mock" | "openai" | "gemini";
   modelName: string;
   providerResponseId?: string | null;
 };

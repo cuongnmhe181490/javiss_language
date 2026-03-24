@@ -8,6 +8,10 @@ import type {
   AiCoachReplyOutput,
 } from "@/lib/ai/types";
 
+function joinOrDefault(values: string[], fallback: string) {
+  return values.length > 0 ? values.join(", ") : fallback;
+}
+
 function buildCoachInstructions(context: AiCoachContext) {
   return [
     "Bạn là Javiss AI Coach, một trợ lý luyện thi ngôn ngữ 1:1 cho học viên.",
@@ -25,8 +29,8 @@ function buildCoachInstructions(context: AiCoachContext) {
     `- Điểm mục tiêu: ${context.targetScore ?? "Chưa đặt"}`,
     `- Trình độ ước lượng: ${context.estimatedLevel ?? "Chưa có"}`,
     `- Ngôn ngữ muốn học: ${context.preferredLanguage ?? "Chưa có"}`,
-    `- Kỹ năng mạnh: ${context.strongestSkills.join(", ") || "Chưa có"}`,
-    `- Kỹ năng yếu: ${context.weakestSkills.join(", ") || "Chưa có"}`,
+    `- Kỹ năng mạnh: ${joinOrDefault(context.strongestSkills, "Chưa có")}`,
+    `- Kỹ năng yếu: ${joinOrDefault(context.weakestSkills, "Chưa có")}`,
     `- Khung giờ học mong muốn: ${context.preferredStudyWindow ?? "Chưa có"}`,
     `- Lịch học mong muốn: ${context.preferredSchedule ?? "Chưa có"}`,
     `- Bước tiếp theo hệ thống gợi ý: ${context.nextAction ?? "Chưa có"}`,
@@ -38,7 +42,27 @@ function buildCoachInstructions(context: AiCoachContext) {
   ].join("\n");
 }
 
-function buildMockReply(input: AiCoachReplyInput): string {
+function buildSpeakingInstructions(context: AiCoachContext, scenario?: string | null) {
+  return [
+    "You are an IELTS Speaking examiner for a 1:1 mock speaking session.",
+    "Speak in English during the interview.",
+    "Ask only one question at a time, and keep each examiner turn concise and natural.",
+    "Do not provide long explanations during the interview.",
+    "If the learner explicitly asks for feedback, then give short feedback in Vietnamese with actionable advice.",
+    "If the learner answer is too short, ask one short follow-up question.",
+    "Stay in examiner role unless the learner requests feedback or strategy.",
+    "",
+    `Scenario: ${scenario ?? "IELTS Speaking mock interview"}`,
+    `Candidate name: ${context.fullName}`,
+    `Target exam: ${context.examName ?? "IELTS Academic"}`,
+    `Target score: ${context.targetScore ?? "Chưa đặt"}`,
+    `Estimated level: ${context.estimatedLevel ?? "Chưa có"}`,
+    `Weak skills: ${joinOrDefault(context.weakestSkills, "Unknown")}`,
+    `Strong skills: ${joinOrDefault(context.strongestSkills, "Unknown")}`,
+  ].join("\n");
+}
+
+function buildMockCoachReply(input: AiCoachReplyInput): string {
   const message = input.message.toLowerCase();
   const weakSkill = input.context.weakestSkills[0];
   const strongSkill = input.context.strongestSkills[0];
@@ -48,9 +72,9 @@ function buildMockReply(input: AiCoachReplyInput): string {
   if (message.includes("speaking")) {
     return [
       `Mình thấy bạn đang hướng tới ${exam} với mục tiêu ${targetScore}. Nếu muốn cải thiện Speaking nhanh, hãy ưu tiên 3 việc trong 7 ngày tới.`,
-      `1. Mỗi ngày nói 10 đến 15 phút về một chủ đề quen thuộc rồi tự nghe lại.`,
-      `2. Ghi sẵn 5 cấu trúc câu mở rộng ý để tránh trả lời quá ngắn.`,
-      `3. Sau mỗi lần luyện, tự chấm theo tiêu chí độ trôi chảy, từ vựng và phát âm.`,
+      "1. Mỗi ngày nói 10 đến 15 phút về một chủ đề quen thuộc rồi tự nghe lại.",
+      "2. Ghi sẵn 5 cấu trúc câu mở rộng ý để tránh trả lời quá ngắn.",
+      "3. Sau mỗi lần luyện, tự chấm theo tiêu chí độ trôi chảy, từ vựng và phát âm.",
       weakSkill
         ? `Vì kỹ năng yếu hiện tại của bạn là ${weakSkill}, mình khuyên bạn dồn thêm thời lượng cho phần này trước.`
         : "Bạn nên bắt đầu từ các chủ đề quen thuộc để tạo sự tự tin trước.",
@@ -105,10 +129,44 @@ function buildMockReply(input: AiCoachReplyInput): string {
   ].join("\n\n");
 }
 
+function buildMockSpeakingReply(input: AiCoachReplyInput): string {
+  const transcript = input.message.trim();
+  const message = transcript.toLowerCase();
+  const scenario = input.scenario ?? "IELTS Speaking mock";
+
+  if (
+    message.includes("feedback") ||
+    message.includes("nhận xét") ||
+    message.includes("đánh giá")
+  ) {
+    return [
+      "Nhận xét nhanh:",
+      "- Câu trả lời của bạn đã có ý chính, nhưng vẫn có thể kéo dài thêm bằng ví dụ cụ thể.",
+      "- Hãy nói chậm hơn một chút ở phần mở đầu để phát âm rõ hơn.",
+      "- Ở lượt tiếp theo, cố gắng dùng một câu nối như “The main reason is…” hoặc “What I mean is…”.",
+      "",
+      "Let me ask you one more question: What would you improve first in your speaking performance?",
+    ].join("\n");
+  }
+
+  if (scenario.includes("Part 1")) {
+    return "Why do you think this is important in your daily life?";
+  }
+
+  if (scenario.includes("Part 2")) {
+    return "Thank you. Could you continue and explain why this experience was memorable for you?";
+  }
+
+  return "What changes do you think society will see in the future regarding this topic?";
+}
+
 class MockAiCoachProvider implements AiCoachProvider {
   async generateReply(input: AiCoachReplyInput): Promise<AiCoachReplyOutput> {
     return {
-      text: buildMockReply(input),
+      text:
+        input.mode === "speaking_mock"
+          ? buildMockSpeakingReply(input)
+          : buildMockCoachReply(input),
       provider: "mock",
       modelName: "javiss-coach-demo",
       providerResponseId: null,
@@ -128,7 +186,10 @@ class OpenAiCoachProvider implements AiCoachProvider {
   async generateReply(input: AiCoachReplyInput): Promise<AiCoachReplyOutput> {
     const response = await this.client.responses.create({
       model: env.OPENAI_MODEL,
-      instructions: buildCoachInstructions(input.context),
+      instructions:
+        input.mode === "speaking_mock"
+          ? buildSpeakingInstructions(input.context, input.scenario)
+          : buildCoachInstructions(input.context),
       previous_response_id: input.previousResponseId ?? undefined,
       input: [
         {
@@ -153,13 +214,65 @@ class OpenAiCoachProvider implements AiCoachProvider {
   }
 }
 
+class GeminiAiCoachProvider implements AiCoachProvider {
+  private client: OpenAI;
+
+  constructor() {
+    this.client = new OpenAI({
+      apiKey: env.GEMINI_API_KEY,
+      baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+    });
+  }
+
+  async generateReply(input: AiCoachReplyInput): Promise<AiCoachReplyOutput> {
+    const response = await this.client.chat.completions.create({
+      model: env.GEMINI_MODEL,
+      messages: [
+        {
+          role: "system",
+          content:
+            input.mode === "speaking_mock"
+              ? buildSpeakingInstructions(input.context, input.scenario)
+              : buildCoachInstructions(input.context),
+        },
+        ...input.history.map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
+      ],
+    });
+
+    const text = response.choices[0]?.message?.content?.trim();
+
+    return {
+      text:
+        text && text.length > 0
+          ? text
+          : "Mình chưa tạo được phản hồi phù hợp ở lượt này. Bạn hãy thử lại sau ít phút.",
+      provider: "gemini",
+      modelName: env.GEMINI_MODEL,
+      providerResponseId: response.id ?? null,
+    };
+  }
+}
+
 export function getAiCoachProvider(): AiCoachProvider {
   if (env.AI_PROVIDER === "openai" && env.OPENAI_API_KEY) {
     return new OpenAiCoachProvider();
   }
 
+  if (env.AI_PROVIDER === "gemini" && env.GEMINI_API_KEY) {
+    return new GeminiAiCoachProvider();
+  }
+
   if (env.AI_PROVIDER === "openai" && !env.OPENAI_API_KEY) {
     logger.warn("openai_provider_missing_api_key", {
+      provider: env.AI_PROVIDER,
+    });
+  }
+
+  if (env.AI_PROVIDER === "gemini" && !env.GEMINI_API_KEY) {
+    logger.warn("gemini_provider_missing_api_key", {
       provider: env.AI_PROVIDER,
     });
   }

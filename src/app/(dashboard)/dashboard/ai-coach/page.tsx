@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { AiMessageRole } from "@prisma/client";
+import { AiConversationKind, AiMessageRole } from "@prisma/client";
 import { AiCoachComposer } from "@/components/dashboard/ai-coach-composer";
+import { AiSpeakingSessionPanel } from "@/components/dashboard/ai-speaking-session-panel";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SectionHeader } from "@/components/shared/section-header";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,17 @@ import {
 } from "@/server/services/ai-coach.service";
 
 export const dynamic = "force-dynamic";
+
+function getProviderLabel(mode: "mock" | "openai" | "gemini") {
+  switch (mode) {
+    case "openai":
+      return "OpenAI";
+    case "gemini":
+      return "Gemini";
+    default:
+      return "Chế độ demo";
+  }
+}
 
 export default async function DashboardAiCoachPage({
   searchParams,
@@ -33,12 +45,16 @@ export default async function DashboardAiCoachPage({
   const goal = user.goals[0];
   const weakSkills = user.profile?.weakestSkills ?? [];
   const strongSkills = user.profile?.strongestSkills ?? [];
+  const latestAssistantMessage = selectedConversation?.messages
+    .slice()
+    .reverse()
+    .find((message) => message.role === AiMessageRole.assistant)?.content;
 
   return (
     <div className="space-y-6">
       <SectionHeader
         title="AI Coach 1:1"
-        description="Trao đổi riêng với trợ lý học tập để hỏi chiến lược, lộ trình và cách cải thiện kỹ năng."
+        description="Trao đổi riêng với trợ lý học tập để hỏi chiến lược, lộ trình, đồng thời mở phiên speaking mock để luyện nói trực tiếp theo kiểu giám khảo hỏi từng lượt."
       />
       <div className="grid gap-6 xl:grid-cols-[300px_1fr]">
         <div className="space-y-6">
@@ -79,13 +95,13 @@ export default async function DashboardAiCoachPage({
             <CardContent className="space-y-3">
               <Link href="/dashboard/ai-coach">
                 <Button className="w-full" type="button" variant="secondary">
-                  Bắt đầu cuộc trò chuyện mới
+                  Bắt đầu chat coaching mới
                 </Button>
               </Link>
               {conversations.length === 0 ? (
                 <EmptyState
                   title="Chưa có hội thoại nào"
-                  description="Hãy gửi câu hỏi đầu tiên để AI Coach bắt đầu hỗ trợ bạn."
+                  description="Hãy gửi câu hỏi đầu tiên hoặc mở một phiên speaking mock để AI bắt đầu hỗ trợ bạn."
                 />
               ) : (
                 conversations.map((conversation) => {
@@ -102,9 +118,14 @@ export default async function DashboardAiCoachPage({
                           : "border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700"
                       }`}
                     >
-                      <p className="font-medium text-slate-950 dark:text-white">
-                        {conversation.title}
-                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-medium text-slate-950 dark:text-white">
+                          {conversation.title}
+                        </p>
+                        {conversation.kind === AiConversationKind.speaking_mock ? (
+                          <Badge>Speaking mock</Badge>
+                        ) : null}
+                      </div>
                       <p className="mt-2 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
                         {lastMessage?.content ?? "Chưa có nội dung phản hồi nào."}
                       </p>
@@ -122,15 +143,31 @@ export default async function DashboardAiCoachPage({
           <CardHeader>
             <div className="flex flex-wrap items-center gap-3">
               <CardTitle>{selectedConversation?.title ?? "Bắt đầu cùng AI Coach"}</CardTitle>
-              <Badge>{providerMode === "openai" ? "OpenAI" : "Chế độ demo"}</Badge>
+              <Badge>{getProviderLabel(providerMode)}</Badge>
+              {selectedConversation?.kind === AiConversationKind.speaking_mock ? (
+                <Badge>Speaking mock</Badge>
+              ) : null}
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
             {providerMode === "mock" ? (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-                AI Coach hiện đang chạy ở chế độ demo vì production chưa có `OPENAI_API_KEY`. Luồng hội thoại và lưu lịch sử đã hoạt động đầy đủ, và có thể chuyển sang OpenAI ngay khi cấu hình key.
+                AI Coach hiện đang chạy ở chế độ demo vì production chưa có key cho OpenAI hoặc
+                Gemini. Luồng chat, speaking mock và lưu lịch sử đã hoạt động đầy đủ; chỉ cần bổ
+                sung key là có thể chuyển sang AI thật.
               </div>
             ) : null}
+
+            {selectedConversation?.kind === AiConversationKind.speaking_mock ? (
+              <AiSpeakingSessionPanel
+                conversationId={selectedConversation.id}
+                scenario={selectedConversation.scenario}
+                latestAssistantMessage={latestAssistantMessage}
+              />
+            ) : (
+              <AiSpeakingSessionPanel />
+            )}
+
             <div className="space-y-4">
               {selectedConversation ? (
                 selectedConversation.messages.map((message) => (
@@ -148,7 +185,11 @@ export default async function DashboardAiCoachPage({
                       }`}
                     >
                       <p className="mb-2 text-xs font-semibold uppercase tracking-wide opacity-70">
-                        {message.role === AiMessageRole.user ? "Bạn" : "AI Coach"}
+                        {message.role === AiMessageRole.user
+                          ? "Bạn"
+                          : selectedConversation.kind === AiConversationKind.speaking_mock
+                            ? "Giám khảo AI"
+                            : "AI Coach"}
                       </p>
                       <p className="whitespace-pre-wrap">{message.content}</p>
                     </div>
@@ -157,11 +198,19 @@ export default async function DashboardAiCoachPage({
               ) : (
                 <EmptyState
                   title="Bắt đầu cuộc trò chuyện đầu tiên"
-                  description="Hãy hỏi AI Coach về lộ trình học, cách cải thiện kỹ năng hoặc chiến lược làm bài phù hợp với hồ sơ của bạn."
+                  description="Bạn có thể chat với AI Coach để xin lộ trình học, hoặc mở speaking mock để luyện trả lời trực tiếp như một buổi phỏng vấn speaking rút gọn."
                 />
               )}
             </div>
-            <AiCoachComposer conversationId={selectedConversation?.id} />
+
+            {selectedConversation?.kind === AiConversationKind.speaking_mock ? (
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Hãy trả lời bằng tiếng Anh. Nếu muốn giám khảo nhận xét, bạn có thể nói hoặc nhập:
+                “Please give me feedback”.
+              </p>
+            ) : (
+              <AiCoachComposer conversationId={selectedConversation?.id} />
+            )}
           </CardContent>
         </Card>
       </div>

@@ -120,11 +120,17 @@ enum AttemptStatus {
 enum AiProvider {
   mock
   openai
+  gemini
 }
 
 enum AiMessageRole {
   user
   assistant
+}
+
+enum AiConversationKind {
+  coach
+  speaking_mock
 }
 
 model User {
@@ -617,6 +623,8 @@ model AiConversation {
   tenantId              String?
   userId                String
   title                 String
+  kind                  AiConversationKind @default(coach)
+  scenario              String?
   provider              AiProvider  @default(mock)
   modelName             String
   lastProviderResponseId String?

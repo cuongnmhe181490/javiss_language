@@ -1,8 +1,12 @@
-import { AiMessageRole, AiProvider } from "@prisma/client";
+import { AiConversationKind, AiMessageRole, AiProvider } from "@prisma/client";
 import { env } from "@/config/env";
-import type { AiCoachMessageInput } from "@/features/ai/schemas";
+import type { AiCoachMessageInput, AiSpeakingSessionInput } from "@/features/ai/schemas";
 import { getAiCoachProvider, getMockAiCoachProvider } from "@/lib/ai/providers";
-import type { AiCoachContext } from "@/lib/ai/types";
+import type {
+  AiCoachContext,
+  AiCoachReplyInput,
+  AiConversationHistoryMessage,
+} from "@/lib/ai/types";
 import { logger } from "@/lib/logger";
 import { enforceRateLimit } from "@/lib/rate-limit/memory-rate-limit";
 import { AppError } from "@/lib/utils/app-error";
@@ -18,6 +22,59 @@ import { findUserById } from "@/server/repositories/user.repository";
 function buildConversationTitle(message: string) {
   const compact = message.replace(/\s+/g, " ").trim();
   return compact.length > 48 ? `${compact.slice(0, 48).trim()}...` : compact;
+}
+
+function getSpeakingPartLabel(part: AiSpeakingSessionInput["part"]) {
+  switch (part) {
+    case "part1":
+      return "Part 1";
+    case "part2":
+      return "Part 2";
+    case "part3":
+      return "Part 3";
+    default:
+      return "Part 1";
+  }
+}
+
+function buildSpeakingTitle(values: AiSpeakingSessionInput) {
+  return `Speaking mock - ${getSpeakingPartLabel(values.part)}`;
+}
+
+function buildSpeakingScenario(values: AiSpeakingSessionInput) {
+  const label = getSpeakingPartLabel(values.part);
+  return values.topic
+    ? `IELTS Speaking ${label} - Topic: ${values.topic}`
+    : `IELTS Speaking ${label}`;
+}
+
+function buildSpeakingOpeningMessage(values: AiSpeakingSessionInput) {
+  if (values.part === "part2") {
+    return [
+      "Now let's move to Part 2.",
+      `I'd like you to describe ${values.topic ?? "a memorable experience you had recently"}.`,
+      "You should say:",
+      "- what it was",
+      "- when it happened",
+      "- who was involved",
+      "- and why it was memorable",
+      "Take a moment to think, and then start speaking when you are ready.",
+    ].join("\n");
+  }
+
+  if (values.part === "part3") {
+    return [
+      "Let's begin Part 3.",
+      `How important is ${values.topic ?? "this topic"} in modern society?`,
+    ].join("\n");
+  }
+
+  return [
+    "Good morning. This is a short IELTS Speaking practice.",
+    values.topic
+      ? `Let's start with Part 1 about ${values.topic}. What comes to your mind first when you think about this topic?`
+      : "Let's start with Part 1. Do you work or are you a student?",
+  ].join("\n");
 }
 
 function buildAiCoachContext(user: NonNullable<Awaited<ReturnType<typeof findUserById>>>): AiCoachContext {
@@ -50,6 +107,57 @@ function buildAiCoachContext(user: NonNullable<Awaited<ReturnType<typeof findUse
   };
 }
 
+function resolveProviderConfig() {
+  if (env.AI_PROVIDER === "openai" && env.OPENAI_API_KEY) {
+    return {
+      provider: AiProvider.openai,
+      modelName: env.OPENAI_MODEL,
+      mode: "openai" as const,
+    };
+  }
+
+  if (env.AI_PROVIDER === "gemini" && env.GEMINI_API_KEY) {
+    return {
+      provider: AiProvider.gemini,
+      modelName: env.GEMINI_MODEL,
+      mode: "gemini" as const,
+    };
+  }
+
+  return {
+    provider: AiProvider.mock,
+    modelName: "javiss-coach-demo",
+    mode: "mock" as const,
+  };
+}
+
+function mapProviderNameToEnum(provider: "mock" | "openai" | "gemini") {
+  switch (provider) {
+    case "openai":
+      return AiProvider.openai;
+    case "gemini":
+      return AiProvider.gemini;
+    default:
+      return AiProvider.mock;
+  }
+}
+
+function buildHistory(
+  existingMessages: { role: AiMessageRole; content: string }[],
+  latestUserMessage: string,
+): AiConversationHistoryMessage[] {
+  return [
+    ...existingMessages.map<AiConversationHistoryMessage>((message) => ({
+      role: message.role === AiMessageRole.user ? "user" : "assistant",
+      content: message.content,
+    })),
+    {
+      role: "user",
+      content: latestUserMessage,
+    },
+  ];
+}
+
 export async function getAiCoachDashboardData(userId: string) {
   const [user, conversations] = await Promise.all([
     findUserById(userId),
@@ -63,8 +171,7 @@ export async function getAiCoachDashboardData(userId: string) {
   return {
     user,
     conversations,
-    providerMode:
-      env.AI_PROVIDER === "openai" && env.OPENAI_API_KEY ? ("openai" as const) : ("mock" as const),
+    providerMode: resolveProviderConfig().mode,
   };
 }
 
@@ -81,6 +188,44 @@ export async function getAiConversationDetail(input: { userId: string; conversat
   return conversation;
 }
 
+export async function startAiSpeakingSession(input: {
+  userId: string;
+  values: AiSpeakingSessionInput;
+}) {
+  await enforceRateLimit(`ai-speaking-session:${input.userId}`, 5, 10 * 60 * 1000);
+
+  const user = await findUserById(input.userId);
+
+  if (!user) {
+    throw new AppError("Không tìm thấy hồ sơ học viên.", 404, "USER_NOT_FOUND");
+  }
+
+  const providerConfig = resolveProviderConfig();
+  const conversation = await createAiConversation({
+    userId: input.userId,
+    title: buildSpeakingTitle(input.values),
+    kind: AiConversationKind.speaking_mock,
+    scenario: buildSpeakingScenario(input.values),
+    provider: providerConfig.provider,
+    modelName: providerConfig.modelName,
+  });
+
+  const openingMessage = await createAiMessage({
+    conversationId: conversation.id,
+    role: AiMessageRole.assistant,
+    content: buildSpeakingOpeningMessage(input.values),
+    provider: providerConfig.provider,
+    modelName: providerConfig.modelName,
+  });
+
+  return {
+    conversationId: conversation.id,
+    message: openingMessage,
+    scenario: conversation.scenario,
+    kind: conversation.kind,
+  };
+}
+
 export async function sendAiCoachMessage(input: {
   userId: string;
   conversationId?: string;
@@ -94,9 +239,8 @@ export async function sendAiCoachMessage(input: {
     throw new AppError("Không tìm thấy hồ sơ học viên.", 404, "USER_NOT_FOUND");
   }
 
+  const providerConfig = resolveProviderConfig();
   const provider = getAiCoachProvider();
-  const providerMode =
-    env.AI_PROVIDER === "openai" && env.OPENAI_API_KEY ? AiProvider.openai : AiProvider.mock;
 
   let conversation =
     input.conversationId
@@ -114,9 +258,9 @@ export async function sendAiCoachMessage(input: {
     const createdConversation = await createAiConversation({
       userId: input.userId,
       title: buildConversationTitle(input.values.message),
-      provider: providerMode,
-      modelName:
-        providerMode === AiProvider.openai ? env.OPENAI_MODEL : "javiss-coach-demo",
+      kind: AiConversationKind.coach,
+      provider: providerConfig.provider,
+      modelName: providerConfig.modelName,
     });
     conversation = {
       ...createdConversation,
@@ -131,14 +275,19 @@ export async function sendAiCoachMessage(input: {
   });
 
   const context = buildAiCoachContext(user);
+  const providerInput: AiCoachReplyInput = {
+    message: input.values.message,
+    previousResponseId: conversation.lastProviderResponseId,
+    context,
+    mode: conversation.kind === AiConversationKind.speaking_mock ? "speaking_mock" : "coach",
+    scenario: conversation.scenario,
+    history: buildHistory(conversation.messages, input.values.message),
+  };
+
   let reply;
 
   try {
-    reply = await provider.generateReply({
-      message: input.values.message,
-      previousResponseId: conversation.lastProviderResponseId,
-      context,
-    });
+    reply = await provider.generateReply(providerInput);
   } catch (error) {
     logger.warn("ai_coach_provider_failed", {
       conversationId: conversation.id,
@@ -146,31 +295,29 @@ export async function sendAiCoachMessage(input: {
     });
 
     const fallbackProvider = getMockAiCoachProvider();
-    reply = await fallbackProvider.generateReply({
-      message: input.values.message,
-      previousResponseId: null,
-      context,
-    });
+    reply = await fallbackProvider.generateReply(providerInput);
   }
 
   const assistantMessage = await createAiMessage({
     conversationId: conversation.id,
     role: AiMessageRole.assistant,
     content: reply.text,
-    provider: reply.provider === "openai" ? AiProvider.openai : AiProvider.mock,
+    provider: mapProviderNameToEnum(reply.provider),
     modelName: reply.modelName,
     providerResponseId: reply.providerResponseId,
   });
 
   await updateAiConversationState({
     id: conversation.id,
-    provider: reply.provider === "openai" ? AiProvider.openai : AiProvider.mock,
+    provider: mapProviderNameToEnum(reply.provider),
     modelName: reply.modelName,
     lastProviderResponseId: reply.providerResponseId ?? conversation.lastProviderResponseId,
   });
 
   return {
     conversationId: conversation.id,
+    kind: conversation.kind,
+    scenario: conversation.scenario,
     message: assistantMessage,
     provider: reply.provider,
     modelName: reply.modelName,

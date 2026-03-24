@@ -60,7 +60,7 @@ export default async function DashboardPage() {
               </Link>
               <Link href="/dashboard/ai-coach">
                 <Button size="sm" variant="secondary">
-                  AI Coach 1:1
+                  AI Coach & Speaking
                 </Button>
               </Link>
             </div>
