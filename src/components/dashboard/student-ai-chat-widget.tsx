@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,24 @@ const suggestionPrompts = [
   "Hãy gợi ý cho tôi kế hoạch học trong 7 ngày tới.",
   "Tôi nên cải thiện kỹ năng speaking theo cách nào trước?",
   "Dựa vào hồ sơ hiện tại, hôm nay tôi nên học gì?",
+];
+
+const quickSpeakingOptions = [
+  {
+    part: "part1" as const,
+    label: "Part 1",
+    topic: "daily life",
+  },
+  {
+    part: "part2" as const,
+    label: "Part 2",
+    topic: "a memorable trip",
+  },
+  {
+    part: "part3" as const,
+    label: "Part 3",
+    topic: "technology in education",
+  },
 ];
 
 const initialMessages: StudentChatMessage[] = [
@@ -79,9 +97,11 @@ function getStoredConversationId() {
 
 export function StudentAiChatWidget({ initialData }: StudentAiChatWidgetProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const serverMessages = initialData?.messages?.length ? initialData.messages : initialMessages;
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [isStartingSpeaking, setIsStartingSpeaking] = useState<string | null>(null);
   const [messages, setMessages] = useState<StudentChatMessage[]>(
     () => getStoredMessages() ?? serverMessages,
   );
@@ -201,6 +221,42 @@ export function StudentAiChatWidget({ initialData }: StudentAiChatWidgetProps) {
     });
   };
 
+  const startSpeakingSession = async (part: "part1" | "part2" | "part3", topic?: string) => {
+    setIsStartingSpeaking(part);
+
+    try {
+      const response = await fetch("/api/ai/speaking/sessions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          part,
+          topic,
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        toast.error(payload?.error?.message ?? "Chưa thể mở phiên speaking lúc này.");
+        return;
+      }
+
+      if (typeof window !== "undefined") {
+        window.sessionStorage.removeItem(STORAGE_KEY);
+        window.sessionStorage.removeItem(CONVERSATION_STORAGE_KEY);
+      }
+
+      setIsOpen(false);
+      router.push(`/dashboard/ai-coach?conversationId=${payload.data.conversationId}`);
+      router.refresh();
+    } catch {
+      toast.error("Chưa thể mở phiên speaking lúc này.");
+    } finally {
+      setIsStartingSpeaking(null);
+    }
+  };
+
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
       {isOpen ? (
@@ -263,14 +319,32 @@ export function StudentAiChatWidget({ initialData }: StudentAiChatWidgetProps) {
                   </Button>
                 </Link>
               </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Link href="/dashboard/ai-coach">
-                  <Button size="sm" type="button">
+              <div className="mt-3 space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-semibold text-slate-950 dark:text-white">
                     Luyện speaking ngay
-                  </Button>
-                </Link>
+                  </p>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    Chọn nhanh một phần thi để vào phiên mock mới.
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {quickSpeakingOptions.map((option) => (
+                    <Button
+                      key={option.part}
+                      size="sm"
+                      type="button"
+                      onClick={() => startSpeakingSession(option.part, option.topic)}
+                      disabled={Boolean(isStartingSpeaking)}
+                    >
+                      {isStartingSpeaking === option.part
+                        ? "Đang mở..."
+                        : `Mở ${option.label}`}
+                    </Button>
+                  ))}
+                </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Vào màn hình đầy đủ để mở speaking mock và xem toàn bộ lịch sử.
+                  Hệ thống sẽ tạo sẵn topic gợi ý rồi chuyển bạn sang màn hình luyện nói đầy đủ.
                 </p>
               </div>
             </div>
