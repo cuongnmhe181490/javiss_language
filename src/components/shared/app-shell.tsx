@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PublicAiChatWidget } from "@/components/shared/public-ai-chat-widget";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { vi } from "@/i18n/dictionaries/vi";
@@ -53,6 +54,7 @@ export function AppShell({ children, session }: AppShellProps) {
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-6 py-10">{children}</main>
+      {!session ? <PublicAiChatWidget /> : null}
     </div>
   );
 }
