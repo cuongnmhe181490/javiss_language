@@ -8,36 +8,24 @@ import { vi } from "@/i18n/dictionaries/vi";
 
 export const dynamic = "force-dynamic";
 
-const contentMap = {
-  blocked: {
-    title: vi.auth.blockedTitle,
-    description: vi.auth.blockedDescription,
-  },
-  unknown: {
-    title: "Không xác định được trạng thái tài khoản",
-    description:
-      "Hệ thống chưa xác định được trạng thái hiện tại của tài khoản. Vui lòng thử lại sau hoặc liên hệ quản trị viên để được hỗ trợ.",
-  },
-} as const;
-
-export default async function AccountStatusPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ state?: keyof typeof contentMap }>;
-}) {
+export default async function RejectedPage() {
   const session = await getSession();
-  const params = await searchParams;
-  const content = contentMap[params.state ?? "unknown"] ?? contentMap.unknown;
 
   return (
     <AppShell session={session}>
       <div className="mx-auto max-w-3xl">
         <Card className="border-white/70 bg-white/80 shadow-xl dark:border-slate-800 dark:bg-slate-950/80">
           <CardContent className="space-y-6 p-8">
-            <SectionHeader title={content.title} description={content.description} />
+            <SectionHeader title={vi.auth.rejectedTitle} description={vi.auth.rejectedDescription} />
+            <div className="rounded-3xl border border-amber-200 bg-amber-50/90 p-5 dark:border-amber-900/60 dark:bg-amber-950/20">
+              <p className="text-sm leading-7 text-amber-800 dark:text-amber-200">
+                Nếu bạn nghĩ đây là nhầm lẫn, hãy liên hệ đội ngũ hỗ trợ và cung cấp email đã dùng
+                khi đăng ký để được kiểm tra lại hồ sơ.
+              </p>
+            </div>
             <div className="flex flex-wrap gap-3">
-              <Link href="/login">
-                <Button>{vi.common.backToLogin}</Button>
+              <Link href="/register">
+                <Button>Gửi lại yêu cầu đăng ký</Button>
               </Link>
               <Link href="/">
                 <Button variant="outline">{vi.common.backToHome}</Button>

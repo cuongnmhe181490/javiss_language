@@ -20,7 +20,7 @@ export const loginSchema = z.object({
 
 export const verifySchema = z.object({
   email: z.email("Email không hợp lệ."),
-  code: z.string().min(4, "Vui lòng nhập mã xác nhận."),
+  code: z.string().min(4, "Vui lòng nhập mã xác thực."),
 });
 
 export const resendCodeSchema = z.object({

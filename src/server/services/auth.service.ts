@@ -41,11 +41,11 @@ export async function loginUser(input: {
   if (user.status !== UserStatus.active) {
     const messageMap: Record<UserStatus, { message: string; code: string }> = {
       pending: {
-        message: "Tài khoản của bạn vẫn đang chờ admin duyệt.",
+        message: "Tài khoản của bạn vẫn đang chờ đội ngũ phê duyệt.",
         code: "PENDING_APPROVAL",
       },
       approved: {
-        message: "Tài khoản đã được duyệt nội bộ, vui lòng hoàn tất bước xác thực mã.",
+        message: "Tài khoản đã được duyệt nội bộ. Vui lòng hoàn tất bước xác thực email.",
         code: "APPROVED_PENDING_VERIFICATION",
       },
       verification_sent: {
@@ -57,7 +57,7 @@ export async function loginUser(input: {
         code: "ACTIVE",
       },
       rejected: {
-        message: "Yêu cầu đăng ký của bạn đã bị từ chối.",
+        message: "Yêu cầu đăng ký của bạn hiện chưa được phê duyệt.",
         code: "REGISTRATION_REJECTED",
       },
       blocked: {

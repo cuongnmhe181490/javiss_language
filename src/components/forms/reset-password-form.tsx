@@ -54,20 +54,25 @@ export function ResetPasswordForm({ token }: { token: string }) {
   return (
     <form className="space-y-5" onSubmit={onSubmit}>
       <input type="hidden" {...register("token")} />
+
       <div className="space-y-2">
         <Label htmlFor="password">{vi.auth.newPassword}</Label>
         <Input id="password" type="password" {...register("password")} />
         <FormMessage error={errors.password?.message} />
       </div>
+
       <div className="space-y-2">
         <Label htmlFor="confirmPassword">{vi.auth.confirmPassword}</Label>
         <Input id="confirmPassword" type="password" {...register("confirmPassword")} />
         <FormMessage error={errors.confirmPassword?.message} />
       </div>
+
       <FormMessage error={errors.root?.message} />
+
       <Button className="w-full" disabled={isPending} type="submit">
         {isPending ? "Đang cập nhật..." : vi.auth.submitResetPassword}
       </Button>
+
       <Link
         className="block text-center text-sm text-sky-600 hover:underline dark:text-sky-400"
         href="/login"

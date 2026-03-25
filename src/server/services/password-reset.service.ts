@@ -1,9 +1,6 @@
 import { UserStatus } from "@prisma/client";
 import { env } from "@/config/env";
-import type {
-  ForgotPasswordInput,
-  ResetPasswordInput,
-} from "@/features/auth/schemas";
+import type { ForgotPasswordInput, ResetPasswordInput } from "@/features/auth/schemas";
 import { enforceRateLimit } from "@/lib/rate-limit/memory-rate-limit";
 import { hashPassword } from "@/lib/security/password";
 import {
@@ -22,7 +19,7 @@ import { createAuditLog } from "@/server/services/audit.service";
 import { sendPasswordResetEmail } from "@/server/services/email.service";
 
 const GENERIC_MESSAGE =
-  "Nếu email tồn tại trong hệ thống, chúng tôi đã gửi liên kết đặt lại mật khẩu tới hộp thư của bạn.";
+  "Nếu email tồn tại trong hệ thống và tài khoản đã hoạt động, chúng tôi đã gửi liên kết đặt lại mật khẩu tới hộp thư của bạn.";
 
 export async function requestPasswordReset(
   input: ForgotPasswordInput,
@@ -71,10 +68,7 @@ export async function requestPasswordReset(
   };
 }
 
-export async function resetPassword(
-  input: ResetPasswordInput,
-  ipAddress?: string | null,
-) {
+export async function resetPassword(input: ResetPasswordInput, ipAddress?: string | null) {
   await enforceRateLimit(`reset-password:${input.token}`, 5, 15 * 60 * 1000);
 
   const tokenHash = hashPasswordResetToken(input.token);

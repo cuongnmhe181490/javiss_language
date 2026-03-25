@@ -8,7 +8,7 @@ export function getStatusRedirect(userStatus: UserStatus) {
     case "verification_sent":
       return "/verify";
     case "rejected":
-      return "/account-status?state=rejected";
+      return "/rejected";
     case "blocked":
       return "/account-status?state=blocked";
     default:

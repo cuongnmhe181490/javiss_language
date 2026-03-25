@@ -1,5 +1,6 @@
 import { RegistrationStatus, UserStatus } from "@prisma/client";
 import { env } from "@/config/env";
+import type { RegisterInput, ResendCodeInput, VerifyInput } from "@/features/auth/schemas";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger";
 import { enforceRateLimit } from "@/lib/rate-limit/memory-rate-limit";
@@ -9,11 +10,6 @@ import {
   hashVerificationCode,
 } from "@/lib/security/verification-code";
 import { AppError } from "@/lib/utils/app-error";
-import type {
-  RegisterInput,
-  ResendCodeInput,
-  VerifyInput,
-} from "@/features/auth/schemas";
 import { findExamByCode, findLanguageByCode } from "@/server/repositories/exam.repository";
 import {
   createDefaultLearningArtifacts,
@@ -24,8 +20,8 @@ import {
   findRegistrationById,
   updateUserStatus,
 } from "@/server/repositories/registration.repository";
-import { findUserByEmail } from "@/server/repositories/user.repository";
 import { getSettingValue } from "@/server/repositories/settings.repository";
+import { findUserByEmail } from "@/server/repositories/user.repository";
 import { createAuditLog } from "@/server/services/audit.service";
 import {
   notifyAdminsOfRegistration,
@@ -155,7 +151,7 @@ export async function registerUser(input: RegisterInput, ipAddress?: string | nu
 
   return {
     message:
-      "Đăng ký đã được gửi thành công. Vui lòng chờ quản trị viên phê duyệt tài khoản của bạn.",
+      "Yêu cầu đăng ký đã được gửi thành công. Vui lòng chờ đội ngũ phê duyệt tài khoản của bạn.",
   };
 }
 
@@ -229,7 +225,7 @@ export async function approveRegistration(input: {
   });
 
   return {
-    message: "Đã duyệt yêu cầu và gửi mã xác nhận cho người dùng.",
+    message: "Đã duyệt yêu cầu và gửi mã xác thực cho người dùng.",
   };
 }
 
@@ -296,10 +292,7 @@ export async function verifyRegistrationCode(input: VerifyInput, ipAddress?: str
     throw new AppError("Không tìm thấy tài khoản tương ứng.", 404, "USER_NOT_FOUND");
   }
 
-  if (
-    user.status !== UserStatus.approved &&
-    user.status !== UserStatus.verification_sent
-  ) {
+  if (user.status !== UserStatus.approved && user.status !== UserStatus.verification_sent) {
     if (user.status === UserStatus.active) {
       throw new AppError("Tài khoản này đã được kích hoạt trước đó.", 400, "ALREADY_ACTIVE");
     }
@@ -315,7 +308,7 @@ export async function verifyRegistrationCode(input: VerifyInput, ipAddress?: str
   const verification = await findLatestAvailableVerificationCode(user.id);
 
   if (!verification) {
-    throw new AppError("Không tìm thấy mã xác nhận còn hiệu lực.", 404, "CODE_NOT_FOUND");
+    throw new AppError("Không tìm thấy mã xác thực còn hiệu lực.", 404, "CODE_NOT_FOUND");
   }
 
   if (verification.usedAt) {
@@ -323,7 +316,7 @@ export async function verifyRegistrationCode(input: VerifyInput, ipAddress?: str
   }
 
   if (verification.expiresAt.getTime() < Date.now()) {
-    throw new AppError("Mã xác nhận đã hết hạn.", 400, "CODE_EXPIRED");
+    throw new AppError("Mã xác thực đã hết hạn.", 400, "CODE_EXPIRED");
   }
 
   if (verification.attemptCount >= policy.maxAttempts) {
@@ -356,7 +349,7 @@ export async function verifyRegistrationCode(input: VerifyInput, ipAddress?: str
     });
 
     throw new AppError(
-      "Mã xác nhận không đúng. Vui lòng kiểm tra lại và thử tiếp.",
+      "Mã xác thực không đúng. Vui lòng kiểm tra lại và thử tiếp.",
       400,
       "INVALID_CODE",
     );
@@ -404,12 +397,9 @@ export async function resendVerificationCode(input: ResendCodeInput, ipAddress?:
     throw new AppError("Không tìm thấy tài khoản tương ứng.", 404, "USER_NOT_FOUND");
   }
 
-  if (
-    user.status !== UserStatus.approved &&
-    user.status !== UserStatus.verification_sent
-  ) {
+  if (user.status !== UserStatus.approved && user.status !== UserStatus.verification_sent) {
     throw new AppError(
-      "Tài khoản hiện không thể gửi lại mã xác nhận.",
+      "Tài khoản hiện không thể gửi lại mã xác thực.",
       400,
       "INVALID_USER_STATUS",
     );
@@ -418,7 +408,10 @@ export async function resendVerificationCode(input: ResendCodeInput, ipAddress?:
   const policy = await getVerificationPolicy();
   const latestCode = await findLatestVerificationCode(user.id);
 
-  if (latestCode && latestCode.createdAt.getTime() + policy.resendCooldownSeconds * 1000 > Date.now()) {
+  if (
+    latestCode &&
+    latestCode.createdAt.getTime() + policy.resendCooldownSeconds * 1000 > Date.now()
+  ) {
     throw new AppError(
       "Bạn vừa yêu cầu mã gần đây. Vui lòng chờ thêm trước khi gửi lại.",
       429,
@@ -458,6 +451,6 @@ export async function resendVerificationCode(input: ResendCodeInput, ipAddress?:
   logger.info("verification_code_resent", { email: user.email });
 
   return {
-    message: "Đã gửi lại mã xác nhận mới tới email của bạn.",
+    message: "Đã gửi lại mã xác thực mới tới email của bạn.",
   };
 }

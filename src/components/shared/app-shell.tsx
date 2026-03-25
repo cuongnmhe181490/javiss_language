@@ -13,7 +13,7 @@ type AppShellProps = {
 
 export function AppShell({ children, session }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_34%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] text-slate-950 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] dark:text-white">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(56,189,248,0.08),_transparent_28%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] text-slate-950 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(56,189,248,0.1),_transparent_24%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] dark:text-white">
       <header className="border-b border-white/40 bg-white/60 backdrop-blur dark:border-slate-800 dark:bg-slate-950/60">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div>
