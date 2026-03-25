@@ -128,6 +128,19 @@ function buildSuggestedActions(message: string): PublicChatAction[] {
     ];
   }
 
+  if (
+    normalized.includes("đăng nhập") ||
+    normalized.includes("dang nhap") ||
+    normalized.includes("trạng thái") ||
+    normalized.includes("trang thai")
+  ) {
+    return [
+      { label: "Đăng nhập", href: "/login" },
+      { label: "Xác thực tài khoản", href: "/verify" },
+      { label: "Quên mật khẩu", href: "/forgot-password" },
+    ];
+  }
+
   if (normalized.includes("chờ duyệt") || normalized.includes("pending")) {
     return [
       { label: "Xem trang Chờ duyệt", href: "/pending-approval" },
