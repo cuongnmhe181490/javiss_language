@@ -17,6 +17,7 @@ import {
   createAiMessage,
   createAiSpeakingAssessmentSnapshot,
   findLatestCoachConversationForUser,
+  findLatestSpeakingConversationForUser,
   findAiConversationByIdForUser,
   listAiConversationsByUser,
   updateAiConversationState,
@@ -327,10 +328,30 @@ export async function getAiConversationDetail(input: { userId: string; conversat
 }
 
 export async function getStudentAiWidgetData(userId: string) {
-  const conversation = await findLatestCoachConversationForUser(userId);
+  const [conversation, speakingConversation] = await Promise.all([
+    findLatestCoachConversationForUser(userId),
+    findLatestSpeakingConversationForUser(userId),
+  ]);
 
   if (!conversation) {
-    return null;
+    return speakingConversation
+      ? {
+          conversationId: null,
+          title: "AI Coach nhanh",
+          messages: [],
+          latestSpeaking: {
+            conversationId: speakingConversation.id,
+          title: speakingConversation.title,
+          scenario: speakingConversation.scenario,
+          updatedAt: speakingConversation.updatedAt.toISOString(),
+          band:
+              speakingConversation.speakingFinalBand ??
+              speakingConversation.speakingEstimatedBand ??
+              null,
+            isCompleted: speakingConversation.speakingIsCompleted,
+          },
+        }
+      : null;
   }
 
   return {
@@ -341,6 +362,19 @@ export async function getStudentAiWidgetData(userId: string) {
       role: (message.role === AiMessageRole.user ? "user" : "assistant") as "user" | "assistant",
       content: message.content,
     })),
+    latestSpeaking: speakingConversation
+      ? {
+          conversationId: speakingConversation.id,
+          title: speakingConversation.title,
+          scenario: speakingConversation.scenario,
+          updatedAt: speakingConversation.updatedAt.toISOString(),
+          band:
+            speakingConversation.speakingFinalBand ??
+            speakingConversation.speakingEstimatedBand ??
+            null,
+          isCompleted: speakingConversation.speakingIsCompleted,
+        }
+      : null,
   };
 }
 

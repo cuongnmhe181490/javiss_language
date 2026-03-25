@@ -12,13 +12,21 @@ type AppShellProps = {
     roles: string[];
   } | null;
   studentAiWidget?: {
-    conversationId: string;
+    conversationId: string | null;
     title: string;
     messages: Array<{
       id: string;
       role: "assistant" | "user";
       content: string;
     }>;
+    latestSpeaking?: {
+      conversationId: string;
+      title: string;
+      scenario: string | null;
+      updatedAt: string;
+      band: string | null;
+      isCompleted: boolean;
+    } | null;
   } | null;
 };
 

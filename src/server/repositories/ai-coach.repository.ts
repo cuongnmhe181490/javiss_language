@@ -31,6 +31,25 @@ export async function findLatestCoachConversationForUser(userId: string) {
   });
 }
 
+export async function findLatestSpeakingConversationForUser(userId: string) {
+  return prisma.aiConversation.findFirst({
+    where: {
+      userId,
+      kind: AiConversationKind.speaking_mock,
+    },
+    select: {
+      id: true,
+      title: true,
+      scenario: true,
+      updatedAt: true,
+      speakingFinalBand: true,
+      speakingEstimatedBand: true,
+      speakingIsCompleted: true,
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
 export async function findAiConversationByIdForUser(input: {
   id: string;
   userId: string;

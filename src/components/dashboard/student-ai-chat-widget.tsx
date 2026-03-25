@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils/cn";
 
 type StudentChatMessage = {
@@ -15,9 +16,17 @@ type StudentChatMessage = {
 
 type StudentAiChatWidgetProps = {
   initialData?: {
-    conversationId: string;
+    conversationId: string | null;
     title: string;
     messages: StudentChatMessage[];
+    latestSpeaking?: {
+      conversationId: string;
+      title: string;
+      scenario: string | null;
+      updatedAt: string;
+      band: string | null;
+      isCompleted: boolean;
+    } | null;
   } | null;
 };
 
@@ -101,6 +110,7 @@ export function StudentAiChatWidget({ initialData }: StudentAiChatWidgetProps) {
   const serverMessages = initialData?.messages?.length ? initialData.messages : initialMessages;
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [customSpeakingTopic, setCustomSpeakingTopic] = useState("");
   const [isStartingSpeaking, setIsStartingSpeaking] = useState<string | null>(null);
   const [messages, setMessages] = useState<StudentChatMessage[]>(
     () => getStoredMessages() ?? serverMessages,
@@ -232,7 +242,7 @@ export function StudentAiChatWidget({ initialData }: StudentAiChatWidgetProps) {
         },
         body: JSON.stringify({
           part,
-          topic,
+          topic: customSpeakingTopic.trim() || topic,
         }),
       });
       const payload = await response.json();
@@ -319,6 +329,36 @@ export function StudentAiChatWidget({ initialData }: StudentAiChatWidgetProps) {
                   </Button>
                 </Link>
               </div>
+              {initialData?.latestSpeaking ? (
+                <div className="mt-3 rounded-2xl border border-slate-200 bg-white/80 p-3 dark:border-slate-800 dark:bg-slate-950/70">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                      Speaking gần nhất
+                    </p>
+                    {initialData.latestSpeaking.band ? (
+                      <span className="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-medium text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                        Band {initialData.latestSpeaking.band}
+                      </span>
+                    ) : null}
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {initialData.latestSpeaking.isCompleted ? "Đã chốt phiên" : "Đang luyện"}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-6 text-slate-500 dark:text-slate-400">
+                    {initialData.latestSpeaking.scenario ?? initialData.latestSpeaking.title}
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Cập nhật: {new Date(initialData.latestSpeaking.updatedAt).toLocaleString("vi-VN")}
+                    </p>
+                    <Link href={`/dashboard/ai-coach?conversationId=${initialData.latestSpeaking.conversationId}`}>
+                      <Button size="sm" type="button" variant="outline">
+                        Xem phiên gần nhất
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
               <div className="mt-3 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm font-semibold text-slate-950 dark:text-white">
@@ -327,6 +367,19 @@ export function StudentAiChatWidget({ initialData }: StudentAiChatWidgetProps) {
                   <span className="text-xs text-slate-500 dark:text-slate-400">
                     Chọn nhanh một phần thi để vào phiên mock mới.
                   </span>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                    Topic tùy chọn
+                  </label>
+                  <Input
+                    value={customSpeakingTopic}
+                    onChange={(event) => setCustomSpeakingTopic(event.target.value)}
+                    placeholder="Ví dụ: hometown, study abroad, technology"
+                  />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Nếu để trống, hệ thống sẽ dùng topic gợi ý sẵn cho từng part.
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {quickSpeakingOptions.map((option) => (
