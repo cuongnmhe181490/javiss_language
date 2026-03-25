@@ -7,6 +7,10 @@ import { consumeDailyProviderQuota } from "@/lib/rate-limit/provider-quota";
 import { AppError } from "@/lib/utils/app-error";
 
 type PublicChatProviderName = "mock" | "openai" | "gemini";
+type PublicChatAction = {
+  label: string;
+  href: string;
+};
 
 function resolveProviderConfig() {
   if (env.AI_PROVIDER === "openai" && env.OPENAI_API_KEY) {
@@ -103,6 +107,58 @@ function buildMockReply(message: string) {
   return "Javiss Language là nền tảng luyện thi ngôn ngữ bằng AI có kiểm duyệt tài khoản. Nếu bạn muốn bắt đầu, cách nhanh nhất là vào trang Đăng ký để gửi hồ sơ học tập.";
 }
 
+function buildSuggestedActions(message: string): PublicChatAction[] {
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("đăng ký") || normalized.includes("dang ky")) {
+    return [
+      { label: "Mở trang Đăng ký", href: "/register" },
+      { label: "Xem trạng thái chờ duyệt", href: "/pending-approval" },
+    ];
+  }
+
+  if (
+    normalized.includes("xác thực") ||
+    normalized.includes("mã") ||
+    normalized.includes("verify")
+  ) {
+    return [
+      { label: "Đến trang Xác thực", href: "/verify" },
+      { label: "Đăng nhập lại", href: "/login" },
+    ];
+  }
+
+  if (normalized.includes("chờ duyệt") || normalized.includes("pending")) {
+    return [
+      { label: "Xem trang Chờ duyệt", href: "/pending-approval" },
+      { label: "Đi tới Xác thực", href: "/verify" },
+    ];
+  }
+
+  if (normalized.includes("từ chối") || normalized.includes("rejected")) {
+    return [
+      { label: "Xem trạng thái bị từ chối", href: "/rejected" },
+      { label: "Gửi lại đăng ký", href: "/register" },
+    ];
+  }
+
+  if (
+    normalized.includes("quên mật khẩu") ||
+    normalized.includes("đặt lại mật khẩu") ||
+    normalized.includes("reset")
+  ) {
+    return [
+      { label: "Quên mật khẩu", href: "/forgot-password" },
+      { label: "Đăng nhập", href: "/login" },
+    ];
+  }
+
+  return [
+    { label: "Đăng ký ngay", href: "/register" },
+    { label: "Đăng nhập", href: "/login" },
+  ];
+}
+
 export async function sendPublicChatMessage(input: {
   values: PublicChatMessageInput;
   ipAddress?: string | null;
@@ -126,6 +182,7 @@ export async function sendPublicChatMessage(input: {
         provider: "mock" as const,
         modelName: "javiss-public-demo",
         fallbackReason: "daily_quota_reached" as const,
+        actions: buildSuggestedActions(input.values.message),
       };
     }
   }
@@ -136,6 +193,7 @@ export async function sendPublicChatMessage(input: {
       provider: "mock" as const,
       modelName: "javiss-public-demo",
       fallbackReason: null,
+      actions: buildSuggestedActions(input.values.message),
     };
   }
 
@@ -147,6 +205,7 @@ export async function sendPublicChatMessage(input: {
       provider: "mock" as const,
       modelName: "javiss-public-demo",
       fallbackReason: "provider_request_failed" as const,
+      actions: buildSuggestedActions(input.values.message),
     };
   }
 
@@ -176,6 +235,7 @@ export async function sendPublicChatMessage(input: {
       provider: providerConfig.provider,
       modelName: providerConfig.modelName,
       fallbackReason: null,
+      actions: buildSuggestedActions(input.values.message),
     };
   } catch (error) {
     logger.warn("public_chat_provider_failed", {
@@ -196,6 +256,7 @@ export async function sendPublicChatMessage(input: {
       provider: "mock" as const,
       modelName: "javiss-public-demo",
       fallbackReason: "provider_request_failed" as const,
+      actions: buildSuggestedActions(input.values.message),
     };
   }
 }

@@ -1,15 +1,24 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
+
+type ChatAction = {
+  label: string;
+  href: string;
+};
 
 type ChatMessage = {
   id: string;
   role: "assistant" | "user";
   content: string;
+  actions?: ChatAction[];
 };
+
+const STORAGE_KEY = "javiss_public_chat_messages";
 
 const suggestionPrompts = [
   "Quy trình đăng ký và kích hoạt tài khoản diễn ra như thế nào?",
@@ -23,6 +32,10 @@ const initialMessages: ChatMessage[] = [
     role: "assistant",
     content:
       "Chào bạn, tôi là trợ lý tư vấn của Javiss Language. Tôi có thể giúp bạn hiểu cách đăng ký, xác thực tài khoản và các tính năng học tập hiện có.",
+    actions: [
+      { label: "Đăng ký ngay", href: "/register" },
+      { label: "Đăng nhập", href: "/login" },
+    ],
   },
 ];
 
@@ -37,17 +50,52 @@ function getFallbackNotice(reason?: string | null) {
   }
 }
 
+function getStoredMessages() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const raw = window.sessionStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as ChatMessage[];
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 export function PublicAiChatWidget() {
-  const messageCounterRef = useRef(0);
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => getStoredMessages() ?? initialMessages);
+  const messageCounterRef = useRef(messages.length);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-12)));
+  }, [messages]);
 
   const lastAssistantMessage = useMemo(
     () => [...messages].reverse().find((message) => message.role === "assistant"),
     [messages],
   );
+
+  const resetConversation = () => {
+    setMessages(initialMessages);
+    messageCounterRef.current = initialMessages.length;
+
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(initialMessages));
+    }
+  };
 
   const submitMessage = (message: string) => {
     const trimmed = message.trim();
@@ -98,6 +146,7 @@ export function PublicAiChatWidget() {
             id: `assistant-${messageCounterRef.current}`,
             role: "assistant",
             content: payload.data.reply,
+            actions: payload.data.actions,
           },
         ]);
       } catch {
@@ -120,24 +169,42 @@ export function PublicAiChatWidget() {
                 Hỏi nhanh về đăng ký, xác thực và cách sử dụng nền tảng
               </p>
             </div>
-            <Button size="sm" type="button" variant="ghost" onClick={() => setIsOpen(false)}>
-              Thu gọn
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button size="sm" type="button" variant="ghost" onClick={resetConversation}>
+                Làm mới
+              </Button>
+              <Button size="sm" type="button" variant="ghost" onClick={() => setIsOpen(false)}>
+                Thu gọn
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-4 px-4 py-4">
             <div className="max-h-[24rem] space-y-3 overflow-y-auto pr-1">
               {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={cn(
-                    "rounded-2xl px-4 py-3 text-sm leading-7",
-                    message.role === "assistant"
-                      ? "bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                      : "ml-8 bg-sky-600 text-white",
-                  )}
-                >
-                  {message.content}
+                <div key={message.id} className="space-y-2">
+                  <div
+                    className={cn(
+                      "rounded-2xl px-4 py-3 text-sm leading-7",
+                      message.role === "assistant"
+                        ? "bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        : "ml-8 bg-sky-600 text-white",
+                    )}
+                  >
+                    {message.content}
+                  </div>
+
+                  {message.role === "assistant" && message.actions && message.actions.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {message.actions.map((action) => (
+                        <Link key={`${message.id}-${action.href}`} href={action.href}>
+                          <Button size="sm" type="button" variant="outline">
+                            {action.label}
+                          </Button>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               ))}
 
