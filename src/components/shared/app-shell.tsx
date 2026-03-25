@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StudentAiChatWidget } from "@/components/dashboard/student-ai-chat-widget";
 import { PublicAiChatWidget } from "@/components/shared/public-ai-chat-widget";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ export function AppShell({ children, session }: AppShellProps) {
       </header>
       <main className="mx-auto max-w-7xl px-6 py-10">{children}</main>
       {!session ? <PublicAiChatWidget /> : null}
+      {session?.roles.includes("student") ? <StudentAiChatWidget /> : null}
     </div>
   );
 }
