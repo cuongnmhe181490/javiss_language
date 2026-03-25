@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MetricCard } from "@/components/dashboard/metric-card";
+import { SpeakingTrendCard } from "@/components/dashboard/speaking-trend-card";
 import { SectionHeader } from "@/components/shared/section-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
@@ -7,12 +8,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { requireActiveStudentSession } from "@/lib/auth/guards";
 import { findUserById } from "@/server/repositories/user.repository";
 import { vi } from "@/i18n/dictionaries/vi";
+import { listRecentSpeakingAssessmentsByUser } from "@/server/repositories/ai-coach.repository";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const session = await requireActiveStudentSession();
-  const user = await findUserById(session.userId);
+  const [user, speakingAssessments] = await Promise.all([
+    findUserById(session.userId),
+    listRecentSpeakingAssessmentsByUser(session.userId),
+  ]);
 
   if (!user) {
     return null;
@@ -80,6 +85,15 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+      <SpeakingTrendCard
+        items={speakingAssessments.map((assessment) => ({
+          id: assessment.id,
+          estimatedBand: assessment.estimatedBand,
+          createdAt: assessment.createdAt.toISOString(),
+          conversationId: assessment.conversation.id,
+          scenario: assessment.conversation.scenario,
+        }))}
+      />
     </div>
   );
 }

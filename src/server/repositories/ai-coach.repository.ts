@@ -50,6 +50,36 @@ export async function findLatestSpeakingConversationForUser(userId: string) {
   });
 }
 
+export async function listRecentSpeakingAssessmentsByUser(userId: string, take = 6) {
+  return prisma.aiSpeakingAssessmentSnapshot.findMany({
+    where: {
+      conversation: {
+        userId,
+      },
+    },
+    select: {
+      id: true,
+      estimatedBand: true,
+      fluencyBand: true,
+      lexicalBand: true,
+      grammarBand: true,
+      pronunciationBand: true,
+      createdAt: true,
+      conversation: {
+        select: {
+          id: true,
+          title: true,
+          scenario: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take,
+  });
+}
+
 export async function findAiConversationByIdForUser(input: {
   id: string;
   userId: string;
