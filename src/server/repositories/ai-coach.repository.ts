@@ -15,6 +15,22 @@ export async function listAiConversationsByUser(userId: string) {
   });
 }
 
+export async function findLatestCoachConversationForUser(userId: string) {
+  return prisma.aiConversation.findFirst({
+    where: {
+      userId,
+      kind: AiConversationKind.coach,
+    },
+    include: {
+      messages: {
+        orderBy: { createdAt: "asc" },
+        take: 8,
+      },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
 export async function findAiConversationByIdForUser(input: {
   id: string;
   userId: string;

@@ -13,6 +13,14 @@ type StudentChatMessage = {
   content: string;
 };
 
+type StudentAiChatWidgetProps = {
+  initialData?: {
+    conversationId: string;
+    title: string;
+    messages: StudentChatMessage[];
+  } | null;
+};
+
 const STORAGE_KEY = "javiss_student_ai_widget_messages";
 const CONVERSATION_STORAGE_KEY = "javiss_student_ai_widget_conversation_id";
 
@@ -69,14 +77,17 @@ function getStoredConversationId() {
   return window.sessionStorage.getItem(CONVERSATION_STORAGE_KEY);
 }
 
-export function StudentAiChatWidget() {
+export function StudentAiChatWidget({ initialData }: StudentAiChatWidgetProps) {
   const pathname = usePathname();
+  const serverMessages = initialData?.messages?.length ? initialData.messages : initialMessages;
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<StudentChatMessage[]>(
-    () => getStoredMessages() ?? initialMessages,
+    () => getStoredMessages() ?? serverMessages,
   );
-  const [conversationId, setConversationId] = useState<string | null>(() => getStoredConversationId());
+  const [conversationId, setConversationId] = useState<string | null>(
+    () => getStoredConversationId() ?? initialData?.conversationId ?? null,
+  );
   const messageCounterRef = useRef(messages.length);
   const [isPending, startTransition] = useTransition();
 
@@ -251,6 +262,16 @@ export function StudentAiChatWidget() {
                     Mở AI Coach
                   </Button>
                 </Link>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href="/dashboard/ai-coach">
+                  <Button size="sm" type="button">
+                    Luyện speaking ngay
+                  </Button>
+                </Link>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Vào màn hình đầy đủ để mở speaking mock và xem toàn bộ lịch sử.
+                </p>
               </div>
             </div>
 

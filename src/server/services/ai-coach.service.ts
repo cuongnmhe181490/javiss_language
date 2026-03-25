@@ -16,6 +16,7 @@ import {
   createAiConversation,
   createAiMessage,
   createAiSpeakingAssessmentSnapshot,
+  findLatestCoachConversationForUser,
   findAiConversationByIdForUser,
   listAiConversationsByUser,
   updateAiConversationState,
@@ -323,6 +324,24 @@ export async function getAiConversationDetail(input: { userId: string; conversat
   }
 
   return conversation;
+}
+
+export async function getStudentAiWidgetData(userId: string) {
+  const conversation = await findLatestCoachConversationForUser(userId);
+
+  if (!conversation) {
+    return null;
+  }
+
+  return {
+    conversationId: conversation.id,
+    title: conversation.title,
+    messages: conversation.messages.map((message) => ({
+      id: message.id,
+      role: (message.role === AiMessageRole.user ? "user" : "assistant") as "user" | "assistant",
+      content: message.content,
+    })),
+  };
 }
 
 export async function startAiSpeakingSession(input: {

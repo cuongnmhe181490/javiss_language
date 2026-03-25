@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/shared/app-shell";
 import { requireActiveStudentSession } from "@/lib/auth/guards";
 import { vi } from "@/i18n/dictionaries/vi";
+import { getStudentAiWidgetData } from "@/server/services/ai-coach.service";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,10 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await requireActiveStudentSession();
+  const studentAiWidget = await getStudentAiWidgetData(session.userId);
 
   return (
-    <AppShell session={session}>
+    <AppShell session={session} studentAiWidget={studentAiWidget}>
       <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
         <aside className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/80">
           <nav className="grid gap-2 text-sm">
