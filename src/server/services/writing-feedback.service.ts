@@ -227,6 +227,10 @@ export async function generateWritingFeedback(input: {
   try {
     const response = await client.chat.completions.create({
       model: providerConfig.modelName,
+      temperature: 0.2,
+      response_format: {
+        type: "json_object",
+      },
       messages: [
         {
           role: "system",
@@ -243,7 +247,12 @@ export async function generateWritingFeedback(input: {
         },
         {
           role: "user",
-          content: input.values.essay,
+          content: [
+            `Task type: ${input.values.taskType}`,
+            `Prompt: ${input.values.prompt}`,
+            "Essay:",
+            input.values.essay,
+          ].join("\n"),
         },
       ],
     });
