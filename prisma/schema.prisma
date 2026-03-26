@@ -133,6 +133,17 @@ enum AiConversationKind {
   speaking_mock
 }
 
+enum WritingTaskType {
+  task1
+  task2
+}
+
+enum AnalyticsEventType {
+  writing_feedback_requested
+  writing_feedback_completed
+  writing_feedback_fallback_used
+}
+
 model User {
   id                String                @id @default(cuid())
   tenantId          String?
@@ -159,6 +170,8 @@ model User {
   licenses          License[]
   attempts          ExerciseAttempt[]
   aiConversations   AiConversation[]
+  writingFeedbackSubmissions WritingFeedbackSubmission[]
+  analyticsEvents   AnalyticsEvent[]
 
   @@index([tenantId])
   @@index([status])
@@ -486,6 +499,53 @@ model ProgressSnapshot {
 
   @@index([tenantId])
   @@index([userId, createdAt(sort: Desc)])
+}
+
+model WritingFeedbackSubmission {
+  id             String          @id @default(cuid())
+  tenantId       String?
+  userId         String
+  taskType       WritingTaskType
+  prompt         String
+  essay          String
+  wordCount      Int
+  overallBand    Float
+  taskBand       Float
+  coherenceBand  Float
+  lexicalBand    Float
+  grammarBand    Float
+  summary        String
+  strengths      String[]        @default([])
+  improvements   String[]        @default([])
+  sampleRewrite  String
+  provider       AiProvider
+  modelName      String
+  fallbackReason String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([taskType, createdAt(sort: Desc)])
+}
+
+model AnalyticsEvent {
+  id         String             @id @default(cuid())
+  tenantId   String?
+  userId     String?
+  eventType  AnalyticsEventType
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  user       User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([eventType, createdAt(sort: Desc)])
+  @@index([entityType, entityId])
 }
 
 model Topic {

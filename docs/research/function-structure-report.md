@@ -4,7 +4,7 @@ Generated for research ingestion.
 
 - Workspace: `D:\javiss_language`
 - Generated at: `2026-03-27`
-- Git commit: `ac7fac0a4f7ecad8de709aa43c8c8597e1fd4021`
+- Git baseline: `73e93c2` plus current working-tree updates on `2026-03-27`
 - Runtime target: `Next.js 16 App Router`, `TypeScript`, `Prisma`, `PostgreSQL`, `Redis`, `Vercel`
 
 ## 1. System Purpose
@@ -17,6 +17,7 @@ Generated for research ingestion.
 - learner dashboard and admin dashboard
 - AI coaching, speaking mock, public chatbot
 - AI writing feedback
+- writing feedback history and analytics events
 - exam-ready architecture for IELTS now, HSK/JLPT/TOPIK later
 
 The codebase follows a layered structure:
@@ -88,10 +89,12 @@ Key architectural rules already visible in code:
 ### 3.5 Writing Feedback Flow
 
 1. learner opens `/dashboard/writing-feedback`
-2. client form posts to `/api/ai/writing-feedback`
-3. `generateWritingFeedback()` validates, rate-limits, invokes provider
-4. provider returns structured JSON feedback
-5. client renders band summary, strengths, improvements, and rewrite sample
+2. page loads recent writing history and summary analytics from DB
+3. client form posts to `/api/ai/writing-feedback`
+4. `generateWritingFeedback()` validates, rate-limits, invokes provider
+5. provider returns structured JSON feedback
+6. service persists `WritingFeedbackSubmission` and `AnalyticsEvent`
+7. client renders latest review plus historical trend and stored submissions
 
 ## 4. Database Domain Map
 
@@ -114,6 +117,8 @@ Key architectural rules already visible in code:
 - `AiProvider`
 - `AiMessageRole`
 - `AiConversationKind`
+- `WritingTaskType`
+- `AnalyticsEventType`
 
 ### 4.2 Models
 
@@ -166,6 +171,8 @@ Settings and AI:
 - `AiConversation`
 - `AiMessage`
 - `AiSpeakingAssessmentSnapshot`
+- `WritingFeedbackSubmission`
+- `AnalyticsEvent`
 
 ## 5. API Surface
 
@@ -369,6 +376,9 @@ File: `src/server/services/public-chat.service.ts`
 
 File: `src/server/services/writing-feedback.service.ts`
 
+- `getWritingFeedbackDashboardData(userId)`
+  - loads recent persisted writing submissions
+  - computes summary analytics for learner UI
 - `generateWritingFeedback(input)`
   - validates learner existence
   - rate-limits request
@@ -376,6 +386,8 @@ File: `src/server/services/writing-feedback.service.ts`
   - requests structured JSON writing feedback from provider
   - parses into normalized band and recommendation object
   - falls back to mock feedback if provider fails
+  - persists `WritingFeedbackSubmission`
+  - writes `AnalyticsEvent` records for request/completion/fallback
 
 Internal helper logic in this file:
 
@@ -473,6 +485,18 @@ File: `src/server/repositories/settings.repository.ts`
 - `getSettingValue(key)`
 - `getAllSettings()`
 - `upsertSettings(entries)`
+
+File: `src/server/repositories/writing-feedback.repository.ts`
+
+- `createWritingFeedbackSubmission(input)`
+- `listRecentWritingFeedbackSubmissionsByUser(userId, take?)`
+- `countWritingFeedbackSubmissionsByUser(userId)`
+- `aggregateWritingFeedbackByUser(userId)`
+- `groupWritingFeedbackByTaskType(userId)`
+
+File: `src/server/repositories/analytics.repository.ts`
+
+- `createAnalyticsEvent(input)`
 
 ## 8. Auth, Policy, and Security Utilities
 
@@ -789,6 +813,7 @@ Most important extension seams for future work:
 - add DB persistence for writing feedback history
 - add analytics for public chatbot
 - add AI streaming transport for coach and writing feedback
+- add writing-feedback recommendation loop from stored history
 - add multi-exam prompt packs via `ExamPack`, `Rubric`, `PromptTemplate`
 - add teacher workflow on top of existing RBAC role
 - add more provider adapters beyond Gemini/OpenAI/mock
@@ -803,4 +828,3 @@ Most important extension seams for future work:
   - `src/lib/ai/providers.ts`
   - `src/server/services/public-chat.service.ts`
   - `src/server/services/writing-feedback.service.ts`
-
