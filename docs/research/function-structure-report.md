@@ -218,6 +218,7 @@ Settings and AI:
 | `/api/ai/speaking/sessions` | `POST` | `src/app/api/ai/speaking/sessions/route.ts` | `startAiSpeakingSession()` |
 | `/api/ai/writing-feedback` | `POST` | `src/app/api/ai/writing-feedback/route.ts` | `generateWritingFeedback()` |
 | `/api/public-chat` | `POST` | `src/app/api/public-chat/route.ts` | `sendPublicChatMessage()` |
+| `/api/public-analytics` | `POST` | `src/app/api/public-analytics/route.ts` | `trackPublicAnalyticsEvent()` |
 
 ## 6. Service Layer Inventory
 
@@ -372,7 +373,16 @@ File: `src/server/services/public-chat.service.ts`
   - handles public-site chatbot
   - rate-limits by fingerprint/IP
   - uses Gemini/OpenAI/mock provider
+  - classifies intent for analytics
   - returns action links for user navigation
+  - writes analytics events for request/completion/fallback
+
+File: `src/server/services/public-chat-analytics.service.ts`
+
+- `trackPublicAnalyticsEvent(input)`
+  - persists widget-open, action-click, and landing CTA events
+- `getPublicChatAnalyticsSummary()`
+  - aggregates 7-day widget opens, completed chats, tracked clicks, top intents, and top actions for admin UI
 
 File: `src/server/services/writing-feedback.service.ts`
 
@@ -497,6 +507,8 @@ File: `src/server/repositories/writing-feedback.repository.ts`
 File: `src/server/repositories/analytics.repository.ts`
 
 - `createAnalyticsEvent(input)`
+- `listAnalyticsEvents(params?)`
+- `countAnalyticsEvents(params)`
 
 ## 8. Auth, Policy, and Security Utilities
 
@@ -720,7 +732,9 @@ Core AI contracts:
 - `PublicAiChatWidget()`
   - floating public chatbot
   - suggested prompts
-  - action links
+  - tracked action links
+- `PublicAnalyticsLinkButton()`
+  - client-side tracked navigation for public CTA and chatbot action buttons
 
 ### 12.3 Auth and Learner Forms
 
@@ -814,6 +828,7 @@ Most important extension seams for future work:
 - add analytics for public chatbot
 - add AI streaming transport for coach and writing feedback
 - add writing-feedback recommendation loop from stored history
+- add deeper funnel analytics between CTA click -> register submit -> approval -> activation
 - add multi-exam prompt packs via `ExamPack`, `Rubric`, `PromptTemplate`
 - add teacher workflow on top of existing RBAC role
 - add more provider adapters beyond Gemini/OpenAI/mock

@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { AppShell } from "@/components/shared/app-shell";
+import { PublicAnalyticsLinkButton } from "@/components/shared/public-analytics-link-button";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSession } from "@/lib/auth/session";
 import { vi } from "@/i18n/dictionaries/vi";
@@ -127,14 +126,23 @@ export default async function HomePage() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link href="/register">
-                <Button size="lg">{vi.home.primaryCta}</Button>
-              </Link>
-              <Link href="/login">
-                <Button size="lg" variant="outline">
-                  {vi.home.secondaryCta}
-                </Button>
-              </Link>
+              <PublicAnalyticsLinkButton
+                href="/register"
+                label={vi.home.primaryCta}
+                eventName="landing_cta_clicked"
+                source="hero"
+                intent="registration"
+                size="lg"
+              />
+              <PublicAnalyticsLinkButton
+                href="/login"
+                label={vi.home.secondaryCta}
+                eventName="landing_cta_clicked"
+                source="hero"
+                intent="login_support"
+                size="lg"
+                variant="outline"
+              />
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">

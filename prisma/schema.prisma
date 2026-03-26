@@ -142,6 +142,12 @@ enum AnalyticsEventType {
   writing_feedback_requested
   writing_feedback_completed
   writing_feedback_fallback_used
+  public_chat_widget_opened
+  public_chat_message_requested
+  public_chat_message_completed
+  public_chat_fallback_used
+  public_chat_action_clicked
+  landing_cta_clicked
 }
 
 model User {

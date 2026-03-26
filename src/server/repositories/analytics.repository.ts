@@ -20,3 +20,40 @@ export async function createAnalyticsEvent(input: {
     },
   });
 }
+
+export async function listAnalyticsEvents(params?: {
+  eventTypes?: AnalyticsEventType[];
+  from?: Date;
+  take?: number;
+}) {
+  return prisma.analyticsEvent.findMany({
+    where: {
+      eventType: params?.eventTypes ? { in: params.eventTypes } : undefined,
+      createdAt: params?.from
+        ? {
+            gte: params.from,
+          }
+        : undefined,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: params?.take ?? 500,
+  });
+}
+
+export async function countAnalyticsEvents(params: {
+  eventType: AnalyticsEventType;
+  from?: Date;
+}) {
+  return prisma.analyticsEvent.count({
+    where: {
+      eventType: params.eventType,
+      createdAt: params.from
+        ? {
+            gte: params.from,
+          }
+        : undefined,
+    },
+  });
+}

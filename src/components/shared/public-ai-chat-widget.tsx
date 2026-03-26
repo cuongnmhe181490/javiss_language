@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { PublicAnalyticsLinkButton } from "@/components/shared/public-analytics-link-button";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 
@@ -16,9 +16,11 @@ type ChatMessage = {
   role: "assistant" | "user";
   content: string;
   actions?: ChatAction[];
+  intent?: string;
 };
 
 const STORAGE_KEY = "javiss_public_chat_messages";
+const SESSION_ID_KEY = "javiss_public_chat_session_id";
 
 const suggestionPrompts = [
   "Quy trình đăng ký và kích hoạt tài khoản diễn ra như thế nào?",
@@ -32,6 +34,7 @@ const initialMessages: ChatMessage[] = [
     role: "assistant",
     content:
       "Chào bạn, tôi là trợ lý tư vấn của Javiss Language. Tôi có thể giúp bạn hiểu cách đăng ký, xác thực tài khoản và các tính năng học tập hiện có.",
+    intent: "general",
     actions: [
       { label: "Đăng ký ngay", href: "/register" },
       { label: "Đăng nhập", href: "/login" },
@@ -56,6 +59,7 @@ function getStoredMessages() {
   }
 
   const raw = window.sessionStorage.getItem(STORAGE_KEY);
+
   if (!raw) {
     return null;
   }
@@ -68,10 +72,64 @@ function getStoredMessages() {
   }
 }
 
+function getOrCreateSessionId() {
+  if (typeof window === "undefined") {
+    return "public-chat-server";
+  }
+
+  const existing = window.sessionStorage.getItem(SESSION_ID_KEY);
+
+  if (existing) {
+    return existing;
+  }
+
+  const generated =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `public-chat-${Date.now()}`;
+
+  window.sessionStorage.setItem(SESSION_ID_KEY, generated);
+  return generated;
+}
+
+function trackWidgetOpened(sessionId: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const body = JSON.stringify({
+    eventName: "widget_opened",
+    source: "widget",
+    sessionId,
+  });
+
+  if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+    navigator.sendBeacon(
+      "/api/public-analytics",
+      new Blob([body], {
+        type: "application/json",
+      }),
+    );
+    return;
+  }
+
+  void fetch("/api/public-analytics", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body,
+    keepalive: true,
+  });
+}
+
 export function PublicAiChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>(() => getStoredMessages() ?? initialMessages);
+  const [sessionId] = useState(() => getOrCreateSessionId());
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    () => getStoredMessages() ?? initialMessages,
+  );
   const messageCounterRef = useRef(messages.length);
   const [isPending, startTransition] = useTransition();
 
@@ -97,7 +155,7 @@ export function PublicAiChatWidget() {
     }
   };
 
-  const submitMessage = (message: string) => {
+  const submitMessage = (message: string, source: "manual" | "suggestion" = "manual") => {
     const trimmed = message.trim();
 
     if (trimmed.length < 2) {
@@ -124,6 +182,8 @@ export function PublicAiChatWidget() {
           },
           body: JSON.stringify({
             message: trimmed,
+            source,
+            sessionId,
           }),
         });
         const payload = await response.json();
@@ -135,6 +195,7 @@ export function PublicAiChatWidget() {
         }
 
         const fallbackNotice = getFallbackNotice(payload?.data?.fallbackReason);
+
         if (fallbackNotice) {
           toast.message(fallbackNotice);
         }
@@ -147,6 +208,7 @@ export function PublicAiChatWidget() {
             role: "assistant",
             content: payload.data.reply,
             actions: payload.data.actions,
+            intent: payload.data.intent,
           },
         ]);
       } catch {
@@ -197,11 +259,17 @@ export function PublicAiChatWidget() {
                   {message.role === "assistant" && message.actions && message.actions.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {message.actions.map((action) => (
-                        <Link key={`${message.id}-${action.href}`} href={action.href}>
-                          <Button size="sm" type="button" variant="outline">
-                            {action.label}
-                          </Button>
-                        </Link>
+                        <PublicAnalyticsLinkButton
+                          key={`${message.id}-${action.href}`}
+                          href={action.href}
+                          label={action.label}
+                          intent={message.intent}
+                          sessionId={sessionId}
+                          eventName="action_clicked"
+                          source="widget"
+                          size="sm"
+                          variant="outline"
+                        />
                       ))}
                     </div>
                   ) : null}
@@ -225,7 +293,7 @@ export function PublicAiChatWidget() {
                     key={prompt}
                     type="button"
                     className="rounded-full border border-slate-200 bg-white px-3 py-2 text-left text-xs leading-5 text-slate-600 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-sky-800 dark:hover:text-sky-300"
-                    onClick={() => submitMessage(prompt)}
+                    onClick={() => submitMessage(prompt, "suggestion")}
                     disabled={isPending}
                   >
                     {prompt}
@@ -238,7 +306,7 @@ export function PublicAiChatWidget() {
               className="space-y-3"
               onSubmit={(event) => {
                 event.preventDefault();
-                submitMessage(inputValue);
+                submitMessage(inputValue, "manual");
               }}
             >
               <textarea
@@ -267,7 +335,17 @@ export function PublicAiChatWidget() {
         type="button"
         size="lg"
         className="rounded-full px-5 shadow-lg shadow-sky-500/20"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={() =>
+          setIsOpen((current) => {
+            const next = !current;
+
+            if (!current && next) {
+              trackWidgetOpened(sessionId);
+            }
+
+            return next;
+          })
+        }
       >
         {isOpen ? "Ẩn chatbot" : "Hỏi chatbot AI"}
       </Button>
