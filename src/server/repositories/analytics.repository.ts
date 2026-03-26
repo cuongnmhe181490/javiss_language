@@ -21,6 +21,41 @@ export async function createAnalyticsEvent(input: {
   });
 }
 
+export async function findAnalyticsEventForUser(params: {
+  userId: string;
+  eventType: AnalyticsEventType;
+}) {
+  return prisma.analyticsEvent.findFirst({
+    where: {
+      userId: params.userId,
+      eventType: params.eventType,
+    },
+    select: {
+      id: true,
+    },
+  });
+}
+
+export async function createAnalyticsEventOnceForUser(input: {
+  tenantId?: string | null;
+  userId: string;
+  eventType: AnalyticsEventType;
+  entityType?: string | null;
+  entityId?: string | null;
+  metadata?: Prisma.InputJsonValue;
+}) {
+  const existingEvent = await findAnalyticsEventForUser({
+    userId: input.userId,
+    eventType: input.eventType,
+  });
+
+  if (existingEvent) {
+    return existingEvent;
+  }
+
+  return createAnalyticsEvent(input);
+}
+
 export async function listAnalyticsEvents(params?: {
   eventTypes?: AnalyticsEventType[];
   from?: Date;
@@ -54,6 +89,28 @@ export async function countAnalyticsEvents(params: {
             gte: params.from,
           }
         : undefined,
+      },
+  });
+}
+
+export async function countDistinctUsersByEventType(params: {
+  eventType: AnalyticsEventType;
+  from?: Date;
+}) {
+  const rows = await prisma.analyticsEvent.groupBy({
+    by: ["userId"],
+    where: {
+      userId: {
+        not: null,
+      },
+      eventType: params.eventType,
+      createdAt: params.from
+        ? {
+            gte: params.from,
+          }
+        : undefined,
     },
   });
+
+  return rows.length;
 }

@@ -23,6 +23,7 @@ import {
   updateAiConversationState,
 } from "@/server/repositories/ai-coach.repository";
 import { findUserById } from "@/server/repositories/user.repository";
+import { trackSpeakingMockFirstStart } from "@/server/services/learner-retention-analytics.service";
 
 function buildConversationTitle(message: string) {
   const compact = message.replace(/\s+/g, " ").trim();
@@ -410,6 +411,13 @@ export async function startAiSpeakingSession(input: {
     content: buildSpeakingOpeningMessage(input.values),
     provider: providerConfig.provider,
     modelName: providerConfig.modelName,
+  });
+
+  await trackSpeakingMockFirstStart({
+    tenantId: user.tenantId,
+    userId: input.userId,
+    conversationId: conversation.id,
+    scenario: conversation.scenario,
   });
 
   return {

@@ -9,14 +9,22 @@ import { requireActiveStudentSession } from "@/lib/auth/guards";
 import { findUserById } from "@/server/repositories/user.repository";
 import { vi } from "@/i18n/dictionaries/vi";
 import { listRecentSpeakingAssessmentsByUser } from "@/server/repositories/ai-coach.repository";
+import { trackLearnerDashboardFirstVisit } from "@/server/services/learner-retention-analytics.service";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const session = await requireActiveStudentSession();
+  const userPromise = findUserById(session.userId);
+  const speakingAssessmentsPromise = listRecentSpeakingAssessmentsByUser(session.userId);
+
+  await trackLearnerDashboardFirstVisit({
+    userId: session.userId,
+  });
+
   const [user, speakingAssessments] = await Promise.all([
-    findUserById(session.userId),
-    listRecentSpeakingAssessmentsByUser(session.userId),
+    userPromise,
+    speakingAssessmentsPromise,
   ]);
 
   if (!user) {

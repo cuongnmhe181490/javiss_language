@@ -5,11 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireActiveStudentSession } from "@/lib/auth/guards";
 import { getLearningCatalogForUser } from "@/server/repositories/learning.repository";
+import { trackLessonCatalogFirstOpen } from "@/server/services/learner-retention-analytics.service";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLessonsPage() {
   const session = await requireActiveStudentSession();
+  await trackLessonCatalogFirstOpen({
+    userId: session.userId,
+  });
   const catalog = await getLearningCatalogForUser(session.userId);
 
   if (!catalog) {

@@ -9,6 +9,7 @@ import { consumeDailyProviderQuota } from "@/lib/rate-limit/provider-quota";
 import { AppError } from "@/lib/utils/app-error";
 import { createAnalyticsEvent } from "@/server/repositories/analytics.repository";
 import { findUserById } from "@/server/repositories/user.repository";
+import { trackWritingFeedbackFirstCompletion } from "@/server/services/learner-retention-analytics.service";
 import {
   aggregateWritingFeedbackByUser,
   createWritingFeedbackSubmission,
@@ -505,6 +506,13 @@ export async function generateWritingFeedback(input: {
     provider: mapAiProvider(result.provider),
     modelName: result.modelName,
     fallbackReason: result.fallbackReason,
+  });
+
+  await trackWritingFeedbackFirstCompletion({
+    tenantId: user.tenantId,
+    userId: user.id,
+    submissionId: submission.id,
+    taskType: input.values.taskType,
   });
 
   await Promise.all([

@@ -14,6 +14,7 @@ Generated for research ingestion.
 - gated registration with admin approval
 - email verification and activation
 - funnel analytics from public CTA to registration activation
+- retention analytics from activation to first learning actions
 - RBAC for `super_admin`, `admin`, `teacher`, `student`
 - learner dashboard and admin dashboard
 - AI coaching, speaking mock, public chatbot
@@ -392,6 +393,20 @@ File: `src/server/services/registration-funnel-analytics.service.ts`
   - computes click-to-submit, approval, and activation rates
   - groups registration submissions by attributed source
 
+File: `src/server/services/learner-retention-analytics.service.ts`
+
+- `trackLearnerDashboardFirstVisit(input)`
+  - records the first learner dashboard visit per user
+- `trackLessonCatalogFirstOpen(input)`
+  - records the first time a learner opens the lesson catalog
+- `trackSpeakingMockFirstStart(input)`
+  - records the first speaking mock start per user
+- `trackWritingFeedbackFirstCompletion(input)`
+  - records the first completed writing-feedback submission per user
+- `getLearnerRetentionSummary()`
+  - aggregates 30-day retention checkpoints from activation to first learning actions
+  - reports dashboard visit, lesson open, speaking start, writing completion, and overall learning-start rate
+
 File: `src/server/services/writing-feedback.service.ts`
 
 - `getWritingFeedbackDashboardData(userId)`
@@ -515,8 +530,11 @@ File: `src/server/repositories/writing-feedback.repository.ts`
 File: `src/server/repositories/analytics.repository.ts`
 
 - `createAnalyticsEvent(input)`
+- `findAnalyticsEventForUser(params)`
+- `createAnalyticsEventOnceForUser(input)`
 - `listAnalyticsEvents(params?)`
 - `countAnalyticsEvents(params)`
+- `countDistinctUsersByEventType(params)`
 
 ## 8. Auth, Policy, and Security Utilities
 
@@ -745,6 +763,8 @@ Core AI contracts:
   - client-side tracked navigation for public CTA and chatbot action buttons
 - `RegistrationFunnelCard()`
   - admin-facing funnel summary for `click -> submit -> approve -> activate`
+- `LearnerRetentionCard()`
+  - admin-facing retention summary for `activate -> dashboard -> lesson -> speaking -> writing`
 
 ### 12.3 Auth and Learner Forms
 
@@ -840,6 +860,7 @@ Most important extension seams for future work:
 - add writing-feedback recommendation loop from stored history
 - add deeper funnel analytics between CTA click -> register submit -> approval -> activation
 - attribute registrations to public session/source via session storage handoff from landing/chatbot CTA to register form
+- add retention checkpoints after activation, such as first lesson, first speaking mock, first writing feedback
 - add multi-exam prompt packs via `ExamPack`, `Rubric`, `PromptTemplate`
 - add teacher workflow on top of existing RBAC role
 - add more provider adapters beyond Gemini/OpenAI/mock

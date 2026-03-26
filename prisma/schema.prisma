@@ -152,6 +152,10 @@ enum AnalyticsEventType {
   registration_approved
   registration_rejected
   account_activated
+  learner_dashboard_first_visited
+  lesson_catalog_first_opened
+  speaking_mock_first_started
+  writing_feedback_first_completed
 }
 
 model User {

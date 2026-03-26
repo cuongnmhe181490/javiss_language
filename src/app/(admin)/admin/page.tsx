@@ -1,8 +1,10 @@
+import { LearnerRetentionCard } from "@/components/admin/learner-retention-card";
 import { PublicChatAnalyticsCard } from "@/components/admin/public-chat-analytics-card";
 import { RegistrationFunnelCard } from "@/components/admin/registration-funnel-card";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { SectionHeader } from "@/components/shared/section-header";
 import { prisma } from "@/lib/db/prisma";
+import { getLearnerRetentionSummary } from "@/server/services/learner-retention-analytics.service";
 import { getPublicChatAnalyticsSummary } from "@/server/services/public-chat-analytics.service";
 import { getRegistrationFunnelSummary } from "@/server/services/registration-funnel-analytics.service";
 
@@ -16,6 +18,7 @@ export default async function AdminPage() {
     totalUsers,
     publicChatSummary,
     registrationFunnel,
+    learnerRetention,
   ] = await Promise.all([
     prisma.registrationRequest.count({ where: { status: "pending" } }),
     prisma.user.count({ where: { status: "active" } }),
@@ -23,6 +26,7 @@ export default async function AdminPage() {
     prisma.user.count(),
     getPublicChatAnalyticsSummary(),
     getRegistrationFunnelSummary(),
+    getLearnerRetentionSummary(),
   ]);
 
   return (
@@ -54,6 +58,7 @@ export default async function AdminPage() {
         />
       </div>
       <RegistrationFunnelCard {...registrationFunnel} />
+      <LearnerRetentionCard {...learnerRetention} />
       <PublicChatAnalyticsCard {...publicChatSummary} />
     </div>
   );
