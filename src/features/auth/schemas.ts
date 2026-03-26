@@ -11,6 +11,12 @@ export const registerSchema = z.object({
   targetExam: z.string().min(1, "Vui lòng chọn kỳ thi mục tiêu."),
   targetScore: z.string().min(1, "Vui lòng nhập điểm mục tiêu."),
   preferredLanguage: z.string().min(1, "Vui lòng chọn ngôn ngữ muốn học."),
+  attributionSessionId: z.string().max(120, "Mã phiên không hợp lệ.").optional(),
+  attributionSource: z
+    .enum(["widget", "landing", "hero", "faq", "cta", "direct"])
+    .optional(),
+  attributionIntent: z.string().max(80, "Nhãn intent quá dài.").optional(),
+  attributionLabel: z.string().max(200, "Nhãn attribution quá dài.").optional(),
 });
 
 export const loginSchema = z.object({

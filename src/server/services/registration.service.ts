@@ -1,4 +1,4 @@
-import { RegistrationStatus, UserStatus } from "@prisma/client";
+import { AnalyticsEventType, RegistrationStatus, UserStatus } from "@prisma/client";
 import { env } from "@/config/env";
 import type { RegisterInput, ResendCodeInput, VerifyInput } from "@/features/auth/schemas";
 import { prisma } from "@/lib/db/prisma";
@@ -22,6 +22,7 @@ import {
 } from "@/server/repositories/registration.repository";
 import { getSettingValue } from "@/server/repositories/settings.repository";
 import { findUserByEmail } from "@/server/repositories/user.repository";
+import { createAnalyticsEvent } from "@/server/repositories/analytics.repository";
 import { createAuditLog } from "@/server/services/audit.service";
 import {
   notifyAdminsOfRegistration,
@@ -141,6 +142,23 @@ export async function registerUser(input: RegisterInput, ipAddress?: string | nu
     ipAddress,
   });
 
+  await createAnalyticsEvent({
+    userId: result.user.id,
+    eventType: AnalyticsEventType.registration_submitted,
+    entityType: "registration_request",
+    entityId: result.registration.id,
+    metadata: {
+      email: input.email,
+      targetExam: input.targetExam,
+      preferredLanguage: input.preferredLanguage,
+      attributionSessionId: input.attributionSessionId ?? null,
+      attributionSource: input.attributionSource ?? "direct",
+      attributionIntent: input.attributionIntent ?? null,
+      attributionLabel: input.attributionLabel ?? null,
+      ipAddress: ipAddress ?? null,
+    },
+  });
+
   await notifyAdminsOfRegistration({
     name: input.name,
     email: input.email,
@@ -218,6 +236,18 @@ export async function approveRegistration(input: {
     ipAddress: input.ipAddress,
   });
 
+  await createAnalyticsEvent({
+    userId: registration.userId,
+    eventType: AnalyticsEventType.registration_approved,
+    entityType: "registration_request",
+    entityId: registration.id,
+    metadata: {
+      email: registration.email,
+      actorId: input.actorId,
+      ipAddress: input.ipAddress ?? null,
+    },
+  });
+
   await sendVerificationCodeEmail({
     email: registration.email,
     name: registration.fullName,
@@ -271,6 +301,19 @@ export async function rejectRegistration(input: {
     targetId: registration.id,
     ipAddress: input.ipAddress,
     metadata: { reason: input.reason },
+  });
+
+  await createAnalyticsEvent({
+    userId: registration.userId,
+    eventType: AnalyticsEventType.registration_rejected,
+    entityType: "registration_request",
+    entityId: registration.id,
+    metadata: {
+      email: registration.email,
+      actorId: input.actorId,
+      reason: input.reason ?? null,
+      ipAddress: input.ipAddress ?? null,
+    },
   });
 
   await sendRejectionEmail({
@@ -382,6 +425,17 @@ export async function verifyRegistrationCode(input: VerifyInput, ipAddress?: str
     targetType: "user",
     targetId: user.id,
     ipAddress,
+  });
+
+  await createAnalyticsEvent({
+    userId: user.id,
+    eventType: AnalyticsEventType.account_activated,
+    entityType: "user",
+    entityId: user.id,
+    metadata: {
+      email: user.email,
+      ipAddress: ipAddress ?? null,
+    },
   });
 
   return {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { StudentAiChatWidget } from "@/components/dashboard/student-ai-chat-widget";
 import { PublicAiChatWidget } from "@/components/shared/public-ai-chat-widget";
+import { PublicAnalyticsLinkButton } from "@/components/shared/public-analytics-link-button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { vi } from "@/i18n/dictionaries/vi";
@@ -58,14 +59,23 @@ export function AppShell({ children, session, studentAiWidget }: AppShellProps) 
               </>
             ) : (
               <>
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">
-                    {vi.nav.login}
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button size="sm">{vi.nav.register}</Button>
-                </Link>
+                <PublicAnalyticsLinkButton
+                  href="/login"
+                  label={vi.nav.login}
+                  eventName="landing_cta_clicked"
+                  source="cta"
+                  intent="login_support"
+                  size="sm"
+                  variant="ghost"
+                />
+                <PublicAnalyticsLinkButton
+                  href="/register"
+                  label={vi.nav.register}
+                  eventName="landing_cta_clicked"
+                  source="cta"
+                  intent="registration"
+                  size="sm"
+                />
               </>
             )}
           </div>

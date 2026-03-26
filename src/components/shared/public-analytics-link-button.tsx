@@ -2,6 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { Button, type ButtonProps } from "@/components/ui/button";
+import {
+  getOrCreatePublicAttributionSessionId,
+  storePublicAttribution,
+} from "@/lib/public/attribution";
 
 type PublicAnalyticsLinkButtonProps = {
   href: string;
@@ -58,13 +62,25 @@ export function PublicAnalyticsLinkButton({
       size={size}
       className={className}
       onClick={() => {
+        const resolvedSessionId = sessionId ?? getOrCreatePublicAttributionSessionId();
+
+        if (href === "/register") {
+          storePublicAttribution({
+            sessionId: resolvedSessionId,
+            source,
+            intent,
+            label,
+            href,
+          });
+        }
+
         trackPublicAnalytics({
           eventName,
           source,
           label,
           href,
           intent,
-          sessionId,
+          sessionId: resolvedSessionId,
         });
         router.push(href);
       }}

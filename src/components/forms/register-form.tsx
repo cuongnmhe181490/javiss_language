@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { clearPublicAttribution, readPublicAttribution } from "@/lib/public/attribution";
 import { registerSchema, type RegisterInput } from "@/features/auth/schemas";
 import { vi } from "@/i18n/dictionaries/vi";
 
@@ -53,10 +54,18 @@ export function RegisterForm({ exams, languages }: RegisterFormProps) {
 
   const onSubmit = handleSubmit((values) => {
     startTransition(async () => {
+      const attribution = readPublicAttribution();
+
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          ...values,
+          attributionSessionId: attribution?.sessionId,
+          attributionSource: attribution?.source ?? "direct",
+          attributionIntent: attribution?.intent,
+          attributionLabel: attribution?.label,
+        } satisfies RegisterInput),
       });
 
       const payload = await response.json();
@@ -68,6 +77,7 @@ export function RegisterForm({ exams, languages }: RegisterFormProps) {
         return;
       }
 
+      clearPublicAttribution();
       toast.success(payload.data.message);
       router.push(`/pending-approval?submitted=1&email=${encodeURIComponent(values.email)}`);
     });

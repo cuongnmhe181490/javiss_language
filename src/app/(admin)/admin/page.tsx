@@ -1,26 +1,35 @@
 import { PublicChatAnalyticsCard } from "@/components/admin/public-chat-analytics-card";
+import { RegistrationFunnelCard } from "@/components/admin/registration-funnel-card";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { SectionHeader } from "@/components/shared/section-header";
 import { prisma } from "@/lib/db/prisma";
 import { getPublicChatAnalyticsSummary } from "@/server/services/public-chat-analytics.service";
+import { getRegistrationFunnelSummary } from "@/server/services/registration-funnel-analytics.service";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [pendingRegistrations, activeUsers, blockedUsers, totalUsers, publicChatSummary] =
-    await Promise.all([
-      prisma.registrationRequest.count({ where: { status: "pending" } }),
-      prisma.user.count({ where: { status: "active" } }),
-      prisma.user.count({ where: { status: "blocked" } }),
-      prisma.user.count(),
-      getPublicChatAnalyticsSummary(),
-    ]);
+  const [
+    pendingRegistrations,
+    activeUsers,
+    blockedUsers,
+    totalUsers,
+    publicChatSummary,
+    registrationFunnel,
+  ] = await Promise.all([
+    prisma.registrationRequest.count({ where: { status: "pending" } }),
+    prisma.user.count({ where: { status: "active" } }),
+    prisma.user.count({ where: { status: "blocked" } }),
+    prisma.user.count(),
+    getPublicChatAnalyticsSummary(),
+    getRegistrationFunnelSummary(),
+  ]);
 
   return (
     <div className="space-y-8">
       <SectionHeader
         title="Tổng quan quản trị"
-        description="Theo dõi nhanh tình trạng vận hành của nền tảng và nhu cầu từ người dùng mới."
+        description="Theo dõi nhanh tình trạng vận hành của nền tảng, nhu cầu từ người dùng mới và hiệu quả funnel đăng ký."
       />
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
@@ -44,6 +53,7 @@ export default async function AdminPage() {
           description="Quy mô người dùng hiện tại của hệ thống."
         />
       </div>
+      <RegistrationFunnelCard {...registrationFunnel} />
       <PublicChatAnalyticsCard {...publicChatSummary} />
     </div>
   );

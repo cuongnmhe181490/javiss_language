@@ -13,6 +13,7 @@ Generated for research ingestion.
 
 - gated registration with admin approval
 - email verification and activation
+- funnel analytics from public CTA to registration activation
 - RBAC for `super_admin`, `admin`, `teacher`, `student`
 - learner dashboard and admin dashboard
 - AI coaching, speaking mock, public chatbot
@@ -384,6 +385,13 @@ File: `src/server/services/public-chat-analytics.service.ts`
 - `getPublicChatAnalyticsSummary()`
   - aggregates 7-day widget opens, completed chats, tracked clicks, top intents, and top actions for admin UI
 
+File: `src/server/services/registration-funnel-analytics.service.ts`
+
+- `getRegistrationFunnelSummary()`
+  - aggregates 7-day counts for register clicks, submitted registrations, approvals, rejections, and activated accounts
+  - computes click-to-submit, approval, and activation rates
+  - groups registration submissions by attributed source
+
 File: `src/server/services/writing-feedback.service.ts`
 
 - `getWritingFeedbackDashboardData(userId)`
@@ -735,6 +743,8 @@ Core AI contracts:
   - tracked action links
 - `PublicAnalyticsLinkButton()`
   - client-side tracked navigation for public CTA and chatbot action buttons
+- `RegistrationFunnelCard()`
+  - admin-facing funnel summary for `click -> submit -> approve -> activate`
 
 ### 12.3 Auth and Learner Forms
 
@@ -829,6 +839,7 @@ Most important extension seams for future work:
 - add AI streaming transport for coach and writing feedback
 - add writing-feedback recommendation loop from stored history
 - add deeper funnel analytics between CTA click -> register submit -> approval -> activation
+- attribute registrations to public session/source via session storage handoff from landing/chatbot CTA to register form
 - add multi-exam prompt packs via `ExamPack`, `Rubric`, `PromptTemplate`
 - add teacher workflow on top of existing RBAC role
 - add more provider adapters beyond Gemini/OpenAI/mock
