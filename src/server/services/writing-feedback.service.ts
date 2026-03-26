@@ -15,8 +15,8 @@ const writingFeedbackOutputSchema = z.object({
   lexicalBand: z.string().min(1),
   grammarBand: z.string().min(1),
   summary: z.string().min(1),
-  strengths: z.array(z.string().min(1)).min(2).max(4),
-  improvements: z.array(z.string().min(1)).min(2).max(4),
+  strengths: z.array(z.string().min(1)).min(2).max(6),
+  improvements: z.array(z.string().min(1)).min(2).max(6),
   sampleRewrite: z.string().min(1),
 });
 
@@ -102,7 +102,8 @@ function buildWritingInstructions(input: {
     "Hãy chấm sơ bộ bài viết theo tư duy IELTS Writing.",
     "Luôn trả về đúng định dạng JSON, không thêm markdown, không thêm giải thích ngoài JSON.",
     "Giữ giọng điệu đánh giá nghiêm túc nhưng dễ hiểu với người học.",
-    "Các trường summary, strengths, improvements, sampleRewrite phải viết bằng tiếng Việt tự nhiên.",
+    "Các trường summary, strengths, improvements, sampleRewrite bắt buộc phải viết bằng tiếng Việt tự nhiên.",
+    "Nếu các trường nhận xét không phải tiếng Việt thì câu trả lời đó là không hợp lệ.",
     "sampleRewrite chỉ cần viết lại một đoạn ngắn tốt hơn, không viết lại toàn bài.",
     "Bands dùng các mức như 4.5, 5.0, 5.5, 6.0, 6.5, 7.0.",
     "Nếu taskType là task1 thì taskBand hiểu là Task Achievement.",
