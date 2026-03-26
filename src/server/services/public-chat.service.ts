@@ -65,34 +65,32 @@ function getOpenAiClient(provider: PublicChatProviderName) {
 }
 
 function detectPublicChatIntent(message: string): PublicChatIntent {
-  const normalized = message.toLowerCase();
+  const normalized = message
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/đ/g, "d");
 
   if (
-    normalized.includes("đăng ký") ||
     normalized.includes("dang ky") ||
-    normalized.includes("hồ sơ") ||
     normalized.includes("ho so")
   ) {
     return "registration";
   }
 
   if (
-    normalized.includes("chờ duyệt") ||
     normalized.includes("cho duyet") ||
     normalized.includes("pending") ||
-    normalized.includes("bị từ chối") ||
     normalized.includes("bi tu choi") ||
     normalized.includes("rejected") ||
     normalized.includes("blocked") ||
-    normalized.includes("bị khóa")
+    normalized.includes("bi khoa")
   ) {
     return "approval_status";
   }
 
   if (
-    normalized.includes("xác thực") ||
     normalized.includes("xac thuc") ||
-    normalized.includes("mã") ||
     normalized.includes("ma") ||
     normalized.includes("verify")
   ) {
@@ -100,29 +98,24 @@ function detectPublicChatIntent(message: string): PublicChatIntent {
   }
 
   if (
-    normalized.includes("đăng nhập") ||
     normalized.includes("dang nhap") ||
-    normalized.includes("quên mật khẩu") ||
     normalized.includes("quen mat khau") ||
     normalized.includes("reset")
   ) {
     return "login_support";
   }
 
-  if (normalized.includes("speaking") || normalized.includes("nói") || normalized.includes("noi")) {
+  if (normalized.includes("speaking") || normalized.includes("noi")) {
     return "speaking";
   }
 
-  if (normalized.includes("writing") || normalized.includes("viết") || normalized.includes("viet")) {
+  if (normalized.includes("writing") || normalized.includes("viet")) {
     return "writing";
   }
 
   if (
-    normalized.includes("giá") ||
     normalized.includes("gia") ||
-    normalized.includes("phí") ||
     normalized.includes("phi") ||
-    normalized.includes("gói") ||
     normalized.includes("goi") ||
     normalized.includes("plan")
   ) {
@@ -134,15 +127,15 @@ function detectPublicChatIntent(message: string): PublicChatIntent {
     normalized.includes("hsk") ||
     normalized.includes("jlpt") ||
     normalized.includes("topik") ||
-    normalized.includes("tiếng anh") ||
-    normalized.includes("tiếng nhật") ||
-    normalized.includes("tiếng hàn") ||
-    normalized.includes("tiếng trung")
+    normalized.includes("tieng anh") ||
+    normalized.includes("tieng nhat") ||
+    normalized.includes("tieng han") ||
+    normalized.includes("tieng trung")
   ) {
     return "exam_scope";
   }
 
-  if (normalized.includes("dashboard") || normalized.includes("lộ trình") || normalized.includes("lo trinh")) {
+  if (normalized.includes("dashboard") || normalized.includes("lo trinh")) {
     return "dashboard";
   }
 
