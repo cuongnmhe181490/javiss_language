@@ -25,6 +25,21 @@ export const aiSpeakingTurnSchema = z.object({
     .max(4000, "Phần trả lời đang quá dài. Vui lòng rút gọn lại."),
 });
 
+export const aiWritingFeedbackSchema = z.object({
+  taskType: z.enum(["task1", "task2"], {
+    message: "Vui lòng chọn đúng dạng bài viết.",
+  }),
+  prompt: z
+    .string()
+    .min(10, "Vui lòng nhập đề bài rõ ràng hơn.")
+    .max(1200, "Đề bài đang quá dài. Vui lòng rút gọn lại."),
+  essay: z
+    .string()
+    .min(60, "Bài viết còn quá ngắn. Vui lòng nhập ít nhất một đoạn hoàn chỉnh.")
+    .max(12000, "Bài viết đang quá dài. Vui lòng rút gọn trước khi gửi."),
+});
+
 export type AiCoachMessageInput = z.infer<typeof aiCoachMessageSchema>;
 export type AiSpeakingSessionInput = z.infer<typeof aiSpeakingSessionSchema>;
 export type AiSpeakingTurnInput = z.infer<typeof aiSpeakingTurnSchema>;
+export type AiWritingFeedbackInput = z.infer<typeof aiWritingFeedbackSchema>;

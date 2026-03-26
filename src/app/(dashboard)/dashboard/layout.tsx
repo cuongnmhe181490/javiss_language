@@ -28,6 +28,9 @@ export default async function DashboardLayout({
             <Link className="rounded-xl px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800" href="/dashboard/ai-coach">
               AI Coach & Speaking
             </Link>
+            <Link className="rounded-xl px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800" href="/dashboard/writing-feedback">
+              Writing Feedback
+            </Link>
             <Link className="rounded-xl px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800" href="/dashboard/profile">
               {vi.nav.profile}
             </Link>
