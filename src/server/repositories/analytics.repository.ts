@@ -36,6 +36,29 @@ export async function findAnalyticsEventForUser(params: {
   });
 }
 
+export async function findFirstAnalyticsEventForUser(params: {
+  userId: string;
+  eventTypes: AnalyticsEventType[];
+}) {
+  return prisma.analyticsEvent.findFirst({
+    where: {
+      userId: params.userId,
+      eventType: {
+        in: params.eventTypes,
+      },
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      id: true,
+      eventType: true,
+      createdAt: true,
+      metadata: true,
+    },
+  });
+}
+
 export async function createAnalyticsEventOnceForUser(input: {
   tenantId?: string | null;
   userId: string;

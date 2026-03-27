@@ -22,6 +22,7 @@ Generated for research ingestion.
 - action-oriented retention recommendations for admin workflows
 - RBAC for `super_admin`, `admin`, `teacher`, `student`
 - learner dashboard and admin dashboard
+- activation-to-first-learning launcher on the learner dashboard
 - AI coaching, speaking mock, public chatbot
 - AI writing feedback
 - writing feedback history and analytics events
@@ -77,7 +78,15 @@ Key architectural rules already visible in code:
 4. `setSessionCookie()` writes session cookie
 5. route guard + middleware redirect by role/status
 
-### 3.3 AI Coach Flow
+### 3.3 Activation Launcher Flow
+
+1. learner logs in and opens `/dashboard`
+2. page checks whether a first learning action already exists
+3. if not, dashboard renders a guided launcher instead of the generic dashboard
+4. launcher highlights one recommended first path
+5. learner is pushed into AI coach, speaking, writing, or lessons immediately
+
+### 3.4 AI Coach Flow
 
 1. learner opens `/dashboard/ai-coach`
 2. page loads conversation list and selected conversation
@@ -85,7 +94,7 @@ Key architectural rules already visible in code:
 4. `sendAiCoachMessage()` resolves provider, rate limit, fallback, persistence
 5. conversation + messages are stored in Prisma models
 
-### 3.4 Speaking Mock Flow
+### 3.5 Speaking Mock Flow
 
 1. learner starts a speaking session via `/api/ai/speaking/sessions`
 2. `startAiSpeakingSession()` creates `AiConversation(kind=speaking_mock)`
@@ -93,7 +102,7 @@ Key architectural rules already visible in code:
 4. `sendAiCoachMessage()` also generates speaking assessment snapshot
 5. learner can close session via `/api/ai/conversations/[id]/complete`
 
-### 3.5 Writing Feedback Flow
+### 3.6 Writing Feedback Flow
 
 1. learner opens `/dashboard/writing-feedback`
 2. page loads recent writing history and summary analytics from DB
@@ -266,6 +275,14 @@ File: `src/server/services/registration.service.ts`
   - checks resend policy and cooldown
   - issues a new verification code
   - sends verification email again
+
+File: `src/server/services/learning-launcher.service.ts`
+
+- `getStudentLearningLauncherData(userId)`
+  - checks whether learner already has a first learning action
+  - loads goal and weak-skill context
+  - chooses a default first path
+  - returns launcher cards for dashboard rendering
 
 File: `src/server/services/password-reset.service.ts`
 

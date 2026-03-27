@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LearningLauncher } from "@/components/dashboard/learning-launcher";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { SpeakingTrendCard } from "@/components/dashboard/speaking-trend-card";
 import { SectionHeader } from "@/components/shared/section-header";
@@ -9,6 +10,7 @@ import { requireActiveStudentSession } from "@/lib/auth/guards";
 import { findUserById } from "@/server/repositories/user.repository";
 import { vi } from "@/i18n/dictionaries/vi";
 import { listRecentSpeakingAssessmentsByUser } from "@/server/repositories/ai-coach.repository";
+import { getStudentLearningLauncherData } from "@/server/services/learning-launcher.service";
 import { trackLearnerDashboardFirstVisit } from "@/server/services/learner-retention-analytics.service";
 
 export const dynamic = "force-dynamic";
@@ -17,18 +19,30 @@ export default async function DashboardPage() {
   const session = await requireActiveStudentSession();
   const userPromise = findUserById(session.userId);
   const speakingAssessmentsPromise = listRecentSpeakingAssessmentsByUser(session.userId);
+  const launcherPromise = getStudentLearningLauncherData(session.userId);
 
   await trackLearnerDashboardFirstVisit({
     userId: session.userId,
   });
 
-  const [user, speakingAssessments] = await Promise.all([
+  const [user, speakingAssessments, launcherData] = await Promise.all([
     userPromise,
     speakingAssessmentsPromise,
+    launcherPromise,
   ]);
 
   if (!user) {
     return null;
+  }
+
+  if (launcherData && !launcherData.hasStartedLearning) {
+    return (
+      <LearningLauncher
+        goalName={launcherData.goalName}
+        options={launcherData.options}
+        targetScore={launcherData.targetScore}
+      />
+    );
   }
 
   const goal = user.goals[0];
