@@ -145,6 +145,7 @@ The summary now also derives:
 - retention split by the learner's first real learning path
 - rolling 30-day active and repeat usage metrics
 - cross-segmentation between acquisition source / assigned plan and first learning path
+- cross-segmentation between exam target and first learning path
 
 The summary also computes:
 
@@ -195,6 +196,7 @@ And it now exposes deeper cross-segmentation for the strongest combinations:
 
 - registration source × first learning path
 - assigned plan × first learning path
+- target exam × first learning path
 
 And it surfaces a simple repeat-versus-non-repeat comparison for:
 
@@ -319,6 +321,7 @@ It computes the strongest combinations for:
 
 - `registration source × first learning path`
 - `assigned plan × first learning path`
+- `target exam × first learning path`
 
 Each combo reports:
 
@@ -330,6 +333,7 @@ This gives the product team a more actionable question:
 
 - not just `which source is good?`
 - but `which source works best when learners first touch a specific learning surface?`
+- and `which exam-target journey becomes healthier when learners start from a specific learning surface?`
 
 ## 15. Repeat Cohort And Learning Correlation
 
@@ -355,6 +359,6 @@ This is not a causal model. It is an operational signal for product research: if
 
 1. Add retention checkpoints for first completed lesson and first reviewed exercise.
 2. Compare median time-to-first-learning-action across source, plan, and first-path groups.
-3. Add exam-target × first-path cross-segmentation if cohorts become large enough.
+3. Add teacher / region / exam-target cross-segmentation if cohorts become large enough.
 4. Add retention comparison by teacher assignment once the teacher workflow exists.
 5. Correlate first learning path choice with later repeat usage and band gain more formally.

@@ -1173,6 +1173,10 @@ export async function getLearnerRetentionSummary() {
     string,
     { started: Set<string>; repeated: Set<string>; d30Returned: Set<string> }
   >();
+  const examPathSegments = new Map<
+    string,
+    { started: Set<string>; repeated: Set<string>; d30Returned: Set<string> }
+  >();
 
   for (const user of activatedUsersData) {
     const pathKey = firstLearningPathByUser.get(user.id);
@@ -1189,6 +1193,7 @@ export async function getLearnerRetentionSummary() {
       user.licenses[0]?.plan?.name ?? user.entitlements[0]?.plan?.name,
       "Chưa gán gói",
     );
+    const examLabel = normalizeSegmentLabel(user.goals[0]?.exam.name, "Chưa đặt kỳ thi");
     const pathLabel = getLearningPathLabel(pathKey);
     const segmentPayloads = [
       {
@@ -1198,6 +1203,10 @@ export async function getLearnerRetentionSummary() {
       {
         map: planPathSegments,
         label: `${planLabel} → ${pathLabel}`,
+      },
+      {
+        map: examPathSegments,
+        label: `${examLabel} → ${pathLabel}`,
       },
     ];
 
@@ -1401,5 +1410,6 @@ export async function getLearnerRetentionSummary() {
     retentionByFirstPath,
     retentionBySourcePath: toCrossSegmentItems(sourcePathSegments),
     retentionByPlanPath: toCrossSegmentItems(planPathSegments),
+    retentionByExamPath: toCrossSegmentItems(examPathSegments),
   };
 }

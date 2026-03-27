@@ -18,6 +18,7 @@ Generated for research ingestion.
 - time-based retention analytics for D1, D7, D14, and D30 return behavior
 - rolling 30-day activity and repeat-usage analytics
 - cross-segmentation analytics across acquisition source, assigned plan, and first learning path
+- cross-segmentation analytics across target exam and first learning path
 - RBAC for `super_admin`, `admin`, `teacher`, `student`
 - learner dashboard and admin dashboard
 - AI coaching, speaking mock, public chatbot
@@ -412,7 +413,7 @@ File: `src/server/services/learner-retention-analytics.service.ts`
   - records the first completed writing-feedback submission per user
 - `getLearnerRetentionSummary()`
   - aggregates 30-day retention checkpoints from activation to first learning actions
-  - reports dashboard visit, lesson open, speaking start, speaking completion, exercise submission, writing completion, cohort trend, average and median time-to-first-learning-action, segmented retention by source/plan/exam, 7-day repeat usage quality, rolling 30-day usage depth, D1/D7/D14/D30 return rates, retention by first learning path, source×first-path and plan×first-path combinations, and repeat-vs-non-repeat learning outcome comparison
+  - reports dashboard visit, lesson open, speaking start, speaking completion, exercise submission, writing completion, cohort trend, average and median time-to-first-learning-action, segmented retention by source/plan/exam, 7-day repeat usage quality, rolling 30-day usage depth, D1/D7/D14/D30 return rates, retention by first learning path, source×first-path, plan×first-path, exam×first-path combinations, and repeat-vs-non-repeat learning outcome comparison
 
 File: `src/server/services/writing-feedback.service.ts`
 

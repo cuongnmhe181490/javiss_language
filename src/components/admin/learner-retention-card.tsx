@@ -119,6 +119,14 @@ type LearnerRetentionCardProps = {
     d30ReturnedUsers: number;
     d30ReturnRate: string;
   }>;
+  retentionByExamPath: Array<{
+    label: string;
+    startedUsers: number;
+    repeatLearners: number;
+    repeatRate: string;
+    d30ReturnedUsers: number;
+    d30ReturnRate: string;
+  }>;
 };
 
 function getTopActionLabel(value: string | null) {
@@ -213,6 +221,7 @@ export function LearnerRetentionCard({
   retentionByFirstPath,
   retentionBySourcePath,
   retentionByPlanPath,
+  retentionByExamPath,
 }: LearnerRetentionCardProps) {
   return (
     <Card>
@@ -690,7 +699,7 @@ export function LearnerRetentionCard({
           </div>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid gap-4 xl:grid-cols-3">
           {[
             {
               title: "Nguồn đăng ký × hành động học đầu tiên",
@@ -699,6 +708,10 @@ export function LearnerRetentionCard({
             {
               title: "Gói học × hành động học đầu tiên",
               items: retentionByPlanPath,
+            },
+            {
+              title: "Kỳ thi mục tiêu × hành động học đầu tiên",
+              items: retentionByExamPath,
             },
           ].map((section) => (
             <div
