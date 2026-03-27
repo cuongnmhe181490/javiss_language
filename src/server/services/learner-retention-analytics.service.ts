@@ -60,6 +60,12 @@ type RetentionRecommendationItem = {
   priority: number;
 };
 
+type DailyFocusItem = {
+  label: string;
+  value: string;
+  note: string;
+};
+
 function formatPercentage(numerator: number, denominator: number) {
   if (denominator <= 0) {
     return "0.0%";
@@ -1418,6 +1424,39 @@ export async function getLearnerRetentionSummary() {
       ...item,
       priority: index + 1,
     }));
+  const dailyFocus: DailyFocusItem[] = [
+    {
+      label: "Ưu tiên hôm nay",
+      value:
+        prioritizedRecommendations[0]?.title ?? "Giữ nhịp retention hiện tại",
+      note:
+        prioritizedRecommendations[0]?.action ??
+        "Các chỉ số retention đang trong trạng thái ổn định, nên tiếp tục theo dõi cohort mới.",
+    },
+    {
+      label: "Combo nên nhân rộng",
+      value:
+        strongestSourcePath?.label ??
+        strongestFirstPath?.label ??
+        "Chưa đủ dữ liệu",
+      note: strongestSourcePath
+        ? `Đây là combo có repeat 7 ngày nổi bật nhất hiện tại. Nên ưu tiên copy, CTA và onboarding tương ứng.`
+        : strongestFirstPath
+          ? `Đây là bề mặt học đầu tiên đang giữ người học quay lại tốt nhất.`
+          : "Cần thêm dữ liệu before có thể xác định combo nên nhân rộng.",
+    },
+    {
+      label: "Chỉ số cần canh",
+      value:
+        d7Eligible > 0
+          ? `D7 return ${formatPercentage(d7Returned, d7Eligible)}`
+          : `Bắt đầu học ${formatPercentage(startedLearningUsers.size, activatedUsers)}`,
+      note:
+        weakestPlanPath
+          ? `Theo dõi sát combo "${weakestPlanPath.label}" vì đây là nhóm đang kéo retention xuống thấp nhất theo plan.`
+          : "Theo dõi nhóm mới kích hoạt để tránh rơi rụng trong tuần đầu.",
+    },
+  ];
 
   return {
     periodLabel: "30 ngày gần đây",
@@ -1545,5 +1584,6 @@ export async function getLearnerRetentionSummary() {
     retentionByPlanPath: toCrossSegmentItems(planPathSegments),
     retentionByExamPath: toCrossSegmentItems(examPathSegments),
     recommendations: prioritizedRecommendations.slice(0, 4),
+    dailyFocus,
   };
 }

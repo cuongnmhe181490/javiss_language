@@ -375,6 +375,12 @@ Instead of only exposing raw metrics, the admin dashboard now synthesizes a shor
 - strongest source × first-path combination
 - weakest plan × first-path combination
 
+The dashboard also surfaces a compact `daily focus` summary based on the same analytics layer:
+
+- highest-priority issue today
+- strongest combo worth scaling
+- the metric that needs the closest watch
+
 Each recommendation contains:
 
 - a short title

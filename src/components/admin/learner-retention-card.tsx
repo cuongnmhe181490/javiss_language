@@ -135,6 +135,11 @@ type LearnerRetentionCardProps = {
     score: number;
     priority: number;
   }>;
+  dailyFocus: Array<{
+    label: string;
+    value: string;
+    note: string;
+  }>;
 };
 
 function getTopActionLabel(value: string | null) {
@@ -253,6 +258,7 @@ export function LearnerRetentionCard({
   retentionByPlanPath,
   retentionByExamPath,
   recommendations,
+  dailyFocus,
 }: LearnerRetentionCardProps) {
   return (
     <Card>
@@ -263,6 +269,30 @@ export function LearnerRetentionCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+          <p className="text-sm font-semibold text-slate-950 dark:text-white">
+            Trọng tâm hôm nay
+          </p>
+          <div className="mt-4 grid gap-3 xl:grid-cols-3">
+            {dailyFocus.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50"
+              >
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  {item.label}
+                </p>
+                <p className="mt-3 text-sm font-semibold text-slate-950 dark:text-white">
+                  {item.value}
+                </p>
+                <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                  {item.note}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
           <p className="text-sm font-semibold text-slate-950 dark:text-white">
             Gợi ý hành động cho admin
