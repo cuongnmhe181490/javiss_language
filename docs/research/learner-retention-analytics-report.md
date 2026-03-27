@@ -133,6 +133,10 @@ The summary now also derives:
 - retention breakdown by registration source
 - retention breakdown by plan
 - retention breakdown by exam target
+- 7-day repeat learners
+- multi-surface learners in the last 7 days
+- average learning actions per active learner in the last 7 days
+- a composite repeat learner quality score
 
 The summary also computes:
 
@@ -157,6 +161,14 @@ The retention block now also exposes segmented views for:
 - plan assigned to the learner
 - target exam chosen by the learner
 
+It also exposes short-horizon repeat usage indicators:
+
+- repeat learners in the last 7 days
+- learners who used 2 or more product surfaces in the last 7 days
+- average actions per active learner
+- top repeated surface
+- repeat learner quality score
+
 This makes the admin home page answer both questions:
 
 - are we converting visitors into activated learners?
@@ -174,7 +186,26 @@ This upgrade makes it possible to measure:
 - average time to first real learning action
 - which registration sources produce better learning-start quality
 - which plans and exam targets show stronger early retention
+- which learner groups merely start once versus actually come back within 7 days
 - whether product value is being reached after approval and verification
+
+## 10. Repeat Usage Model
+
+For the current admin dashboard, a learner is considered a `repeat learner` when they perform at least `2` learning actions in the last `7 days` across:
+
+- speaking sessions
+- writing feedback submissions
+- submitted exercise attempts
+
+A learner is considered `multi-surface` when they touch at least `2` of those product surfaces within the same 7-day window.
+
+The `repeat learner quality score` is currently a lightweight composite based on:
+
+- repeat learner rate
+- multi-surface learner rate
+- average action depth per active learner
+
+This score is intentionally simple and admin-facing; it is meant to rank current product health, not to be treated as a strict BI metric.
 
 This is the missing link between acquisition and retention.
 

@@ -18,6 +18,14 @@ type LearnerRetentionCardProps = {
   writingCompletionRate: string;
   learningStartRate: string;
   averageTimeToLearningStart: string | null;
+  activeLearnersLast7Days: number;
+  repeatLearnersLast7Days: number;
+  multiSurfaceLearnersLast7Days: number;
+  repeatLearnerRate: string;
+  multiSurfaceLearnerRate: string;
+  averageActionsPerActiveLearner: string | null;
+  repeatLearnerQualityScore: number;
+  topRepeatSurface: string | null;
   topLearningAction: string | null;
   latestSpeakingTopic: string | null;
   stageItems: Array<{
@@ -36,18 +44,24 @@ type LearnerRetentionCardProps = {
     activatedUsers: number;
     startedLearningUsers: number;
     learningStartRate: string;
+    repeatLearners: number;
+    repeatRate: string;
   }>;
   retentionByPlan: Array<{
     label: string;
     activatedUsers: number;
     startedLearningUsers: number;
     learningStartRate: string;
+    repeatLearners: number;
+    repeatRate: string;
   }>;
   retentionByExam: Array<{
     label: string;
     activatedUsers: number;
     startedLearningUsers: number;
     learningStartRate: string;
+    repeatLearners: number;
+    repeatRate: string;
   }>;
 };
 
@@ -61,6 +75,19 @@ function getTopActionLabel(value: string | null) {
       return "Nộp exercise đầu tiên";
     case "writing":
       return "Gửi writing đầu tiên";
+    default:
+      return "Chưa có đủ dữ liệu";
+  }
+}
+
+function getRepeatSurfaceLabel(value: string | null) {
+  switch (value) {
+    case "speaking":
+      return "Speaking";
+    case "writing":
+      return "Writing";
+    case "exercise":
+      return "Exercise";
     default:
       return "Chưa có đủ dữ liệu";
   }
@@ -84,6 +111,14 @@ export function LearnerRetentionCard({
   writingCompletionRate,
   learningStartRate,
   averageTimeToLearningStart,
+  activeLearnersLast7Days,
+  repeatLearnersLast7Days,
+  multiSurfaceLearnersLast7Days,
+  repeatLearnerRate,
+  multiSurfaceLearnerRate,
+  averageActionsPerActiveLearner,
+  repeatLearnerQualityScore,
+  topRepeatSurface,
   topLearningAction,
   latestSpeakingTopic,
   stageItems,
@@ -231,6 +266,13 @@ export function LearnerRetentionCard({
                 </p>
                 <p className="mt-2 text-xs">Tỷ lệ: {writingCompletionRate}</p>
               </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+                <p>7 ngày gần đây</p>
+                <p className="mt-2 font-semibold text-slate-950 dark:text-white">
+                  {repeatLearnersLast7Days}/{activeLearnersLast7Days} học viên quay lại học
+                </p>
+                <p className="mt-2 text-xs">Tỷ lệ repeat: {repeatLearnerRate}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -262,6 +304,53 @@ export function LearnerRetentionCard({
                 Chưa có đủ dữ liệu cohort trong giai đoạn này.
               </p>
             )}
+          </div>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-4">
+          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white">
+              Học viên quay lại 7 ngày
+            </p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
+              {repeatLearnersLast7Days}
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Tỷ lệ từ nhóm đã kích hoạt: {repeatLearnerRate}
+            </p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white">
+              Dùng từ 2 bề mặt trở lên
+            </p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
+              {multiSurfaceLearnersLast7Days}
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Tỷ lệ: {multiSurfaceLearnerRate}
+            </p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white">
+              Hành động trung bình / học viên active
+            </p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
+              {averageActionsPerActiveLearner ?? "0.0"}
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Bề mặt lặp lại nhiều nhất: {getRepeatSurfaceLabel(topRepeatSurface)}
+            </p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white">
+              Chỉ số chất lượng quay lại học
+            </p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
+              {repeatLearnerQualityScore}/100
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Kết hợp repeat rate, multi-surface rate và độ sâu hành động.
+            </p>
           </div>
         </div>
 
@@ -301,7 +390,10 @@ export function LearnerRetentionCard({
                         {item.startedLearningUsers}/{item.activatedUsers} người đã bắt đầu học
                       </p>
                       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        Tỷ lệ: {item.learningStartRate}
+                        Bắt đầu học: {item.learningStartRate}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Quay lại học: {item.repeatLearners}/{item.activatedUsers} ({item.repeatRate})
                       </p>
                     </div>
                   ))

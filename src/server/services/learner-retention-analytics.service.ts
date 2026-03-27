@@ -25,6 +25,8 @@ type SegmentItem = {
   activatedUsers: number;
   startedLearningUsers: number;
   learningStartRate: string;
+  repeatLearners: number;
+  repeatRate: string;
 };
 
 function formatPercentage(numerator: number, denominator: number) {
@@ -61,6 +63,14 @@ function formatHours(value: number | null) {
 
 function normalizeSegmentLabel(value: string | null | undefined, fallback: string) {
   return value && value.trim().length > 0 ? value : fallback;
+}
+
+function formatDecimal(value: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+
+  return value.toFixed(1);
 }
 
 function getWeekStart(date: Date) {
@@ -428,9 +438,152 @@ export async function getLearnerRetentionSummary() {
         })
       : [];
 
-  const sourceSegments = new Map<string, { activated: Set<string>; started: Set<string> }>();
-  const planSegments = new Map<string, { activated: Set<string>; started: Set<string> }>();
-  const examSegments = new Map<string, { activated: Set<string>; started: Set<string> }>();
+  const repeatWindowFrom = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const [speakingRepeatRows, writingRepeatRows, exerciseRepeatRows] =
+    activatedUserIds.length > 0
+      ? await Promise.all([
+          prisma.aiConversation.groupBy({
+            by: ["userId"],
+            where: {
+              userId: {
+                in: activatedUserIds,
+              },
+              kind: "speaking_mock",
+              createdAt: {
+                gte: repeatWindowFrom,
+              },
+            },
+            _count: {
+              _all: true,
+            },
+          }),
+          prisma.writingFeedbackSubmission.groupBy({
+            by: ["userId"],
+            where: {
+              userId: {
+                in: activatedUserIds,
+              },
+              createdAt: {
+                gte: repeatWindowFrom,
+              },
+            },
+            _count: {
+              _all: true,
+            },
+          }),
+          prisma.exerciseAttempt.groupBy({
+            by: ["userId"],
+            where: {
+              userId: {
+                in: activatedUserIds,
+              },
+              status: "submitted",
+              submittedAt: {
+                gte: repeatWindowFrom,
+              },
+            },
+            _count: {
+              _all: true,
+            },
+          }),
+        ])
+      : [[], [], []];
+
+  const repeatUsageByUser = new Map<
+    string,
+    {
+      speaking: number;
+      writing: number;
+      exercise: number;
+    }
+  >();
+
+  for (const row of speakingRepeatRows) {
+    const current = repeatUsageByUser.get(row.userId) ?? {
+      speaking: 0,
+      writing: 0,
+      exercise: 0,
+    };
+    current.speaking = row._count._all;
+    repeatUsageByUser.set(row.userId, current);
+  }
+
+  for (const row of writingRepeatRows) {
+    const current = repeatUsageByUser.get(row.userId) ?? {
+      speaking: 0,
+      writing: 0,
+      exercise: 0,
+    };
+    current.writing = row._count._all;
+    repeatUsageByUser.set(row.userId, current);
+  }
+
+  for (const row of exerciseRepeatRows) {
+    const current = repeatUsageByUser.get(row.userId) ?? {
+      speaking: 0,
+      writing: 0,
+      exercise: 0,
+    };
+    current.exercise = row._count._all;
+    repeatUsageByUser.set(row.userId, current);
+  }
+
+  const repeatLearners = new Set<string>();
+  const multiSurfaceLearners = new Set<string>();
+  let totalLearningActionsLast7Days = 0;
+
+  for (const [userId, usage] of repeatUsageByUser.entries()) {
+    const totalActions = usage.speaking + usage.writing + usage.exercise;
+    const activeSurfaceCount = [usage.speaking, usage.writing, usage.exercise].filter(
+      (count) => count > 0,
+    ).length;
+
+    totalLearningActionsLast7Days += totalActions;
+
+    if (totalActions >= 2) {
+      repeatLearners.add(userId);
+    }
+
+    if (activeSurfaceCount >= 2) {
+      multiSurfaceLearners.add(userId);
+    }
+  }
+
+  const activeLearnersLast7Days = repeatUsageByUser.size;
+  const averageActionsPerActiveLearner =
+    activeLearnersLast7Days > 0
+      ? totalLearningActionsLast7Days / activeLearnersLast7Days
+      : null;
+  const repeatLearnerRate =
+    activatedUsers > 0 ? (repeatLearners.size / activatedUsers) * 100 : 0;
+  const multiSurfaceRate =
+    activatedUsers > 0 ? (multiSurfaceLearners.size / activatedUsers) * 100 : 0;
+  const actionDepthRate =
+    averageActionsPerActiveLearner && averageActionsPerActiveLearner > 0
+      ? Math.min(averageActionsPerActiveLearner / 3, 1) * 100
+      : 0;
+  const repeatLearnerQualityScore = Math.round(
+    repeatLearnerRate * 0.45 + multiSurfaceRate * 0.35 + actionDepthRate * 0.2,
+  );
+  const topRepeatSurface =
+    [
+      { key: "speaking", count: speakingRepeatRows.reduce((sum, row) => sum + row._count._all, 0) },
+      { key: "writing", count: writingRepeatRows.reduce((sum, row) => sum + row._count._all, 0) },
+      { key: "exercise", count: exerciseRepeatRows.reduce((sum, row) => sum + row._count._all, 0) },
+    ].sort((left, right) => right.count - left.count)[0]?.key ?? null;
+
+  const sourceSegments = new Map<
+    string,
+    { activated: Set<string>; started: Set<string>; repeated: Set<string> }
+  >();
+  const planSegments = new Map<
+    string,
+    { activated: Set<string>; started: Set<string>; repeated: Set<string> }
+  >();
+  const examSegments = new Map<
+    string,
+    { activated: Set<string>; started: Set<string>; repeated: Set<string> }
+  >();
 
   for (const user of activatedUsersData) {
     const sourceLabel = normalizeSegmentLabel(
@@ -453,6 +606,7 @@ export async function getLearnerRetentionSummary() {
       const current = segment.map.get(segment.label) ?? {
         activated: new Set<string>(),
         started: new Set<string>(),
+        repeated: new Set<string>(),
       };
 
       current.activated.add(user.id);
@@ -461,12 +615,19 @@ export async function getLearnerRetentionSummary() {
         current.started.add(user.id);
       }
 
+      if (repeatLearners.has(user.id)) {
+        current.repeated.add(user.id);
+      }
+
       segment.map.set(segment.label, current);
     }
   }
 
   function toSegmentItems(
-    map: Map<string, { activated: Set<string>; started: Set<string> }>,
+    map: Map<
+      string,
+      { activated: Set<string>; started: Set<string>; repeated: Set<string> }
+    >,
   ): SegmentItem[] {
     return [...map.entries()]
       .map(([label, value]) => ({
@@ -477,8 +638,17 @@ export async function getLearnerRetentionSummary() {
           value.started.size,
           value.activated.size,
         ),
+        repeatLearners: value.repeated.size,
+        repeatRate: formatPercentage(
+          value.repeated.size,
+          value.activated.size,
+        ),
       }))
       .sort((left, right) => {
+        if (right.repeatLearners !== left.repeatLearners) {
+          return right.repeatLearners - left.repeatLearners;
+        }
+
         if (right.startedLearningUsers !== left.startedLearningUsers) {
           return right.startedLearningUsers - left.startedLearningUsers;
         }
@@ -520,6 +690,14 @@ export async function getLearnerRetentionSummary() {
     writingCompletionRate: formatPercentage(firstWritingCompletions, activatedUsers),
     learningStartRate: formatPercentage(startedLearningUsers.size, activatedUsers),
     averageTimeToLearningStart: formatHours(averageTimeToLearningStartHours),
+    activeLearnersLast7Days,
+    repeatLearnersLast7Days: repeatLearners.size,
+    multiSurfaceLearnersLast7Days: multiSurfaceLearners.size,
+    repeatLearnerRate: formatPercentage(repeatLearners.size, activatedUsers),
+    multiSurfaceLearnerRate: formatPercentage(multiSurfaceLearners.size, activatedUsers),
+    averageActionsPerActiveLearner: formatDecimal(averageActionsPerActiveLearner),
+    repeatLearnerQualityScore,
+    topRepeatSurface,
     topLearningAction:
       [...learningActionCounts.entries()]
         .sort((left, right) => right[1] - left[1])[0]?.[0] ?? null,
