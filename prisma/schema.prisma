@@ -155,6 +155,8 @@ enum AnalyticsEventType {
   learner_dashboard_first_visited
   lesson_catalog_first_opened
   speaking_mock_first_started
+  speaking_mock_first_completed
+  exercise_first_submitted
   writing_feedback_first_completed
 }
 

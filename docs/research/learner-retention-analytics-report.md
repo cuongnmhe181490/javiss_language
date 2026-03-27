@@ -21,6 +21,8 @@ The `AnalyticsEventType` enum now includes:
 - `learner_dashboard_first_visited`
 - `lesson_catalog_first_opened`
 - `speaking_mock_first_started`
+- `speaking_mock_first_completed`
+- `exercise_first_submitted`
 - `writing_feedback_first_completed`
 
 These events reuse the existing `AnalyticsEvent` model and stay aligned with the existing repository/service pattern.
@@ -77,6 +79,26 @@ After a `WritingFeedbackSubmission` is persisted, the service calls:
 
 This measures first successful use of the writing-feedback feature.
 
+### 4.5 First speaking completion
+
+File: `src/server/services/ai-coach.service.ts`
+
+Inside `completeAiSpeakingSession()`, after the conversation is closed, the service now calls:
+
+- `trackSpeakingMockFirstCompletion({ userId, conversationId })`
+
+This distinguishes between learners who only start speaking and learners who actually finish a full mock session.
+
+### 4.6 First submitted exercise
+
+File: `src/server/services/learning.service.ts`
+
+When an exercise attempt is submitted, the service now calls:
+
+- `trackExerciseFirstSubmission({ userId, exerciseId, attemptId })`
+
+This measures the first completed structured practice action outside the AI surfaces.
+
 ## 5. Idempotency
 
 File: `src/server/repositories/analytics.repository.ts`
@@ -99,8 +121,15 @@ File: `src/server/services/learner-retention-analytics.service.ts`
 - learners who reached dashboard
 - learners who opened lessons
 - learners who started speaking
+- learners who completed a speaking session
+- learners who submitted an exercise
 - learners who completed writing feedback
 - learners who performed at least one real learning action
+
+The summary now also derives:
+
+- average time from activation to first learning action
+- recent activation cohorts by week
 
 The summary also computes:
 
@@ -131,14 +160,17 @@ This upgrade makes it possible to measure:
 - activation-to-dashboard adoption
 - activation-to-learning-start conversion
 - early adoption of speaking and writing
+- speaking start versus speaking completion
+- structured practice adoption through exercise submission
+- average time to first real learning action
 - whether product value is being reached after approval and verification
 
 This is the missing link between acquisition and retention.
 
 ## 9. Recommended Next Steps
 
-1. Add retention checkpoints for first submitted exercise and first completed speaking session.
-2. Measure time-to-first-learning-action after activation.
-3. Add cohort analysis by activation week.
+1. Add retention checkpoints for first completed lesson and first reviewed exercise.
+2. Add median alongside average time-to-first-learning-action.
+3. Expand cohort analysis beyond 30 days and split by source.
 4. Split retention by exam target, source, and plan.
 5. Join retention data with writing/speaking progress to detect which first actions correlate with repeat usage.

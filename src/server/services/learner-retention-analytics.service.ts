@@ -12,6 +12,13 @@ type RetentionStageItem = {
   rateFromActivated: string;
 };
 
+type CohortItem = {
+  cohortLabel: string;
+  activatedUsers: number;
+  startedLearningUsers: number;
+  learningStartRate: string;
+};
+
 function formatPercentage(numerator: number, denominator: number) {
   if (denominator <= 0) {
     return "0.0%";
@@ -30,6 +37,36 @@ function getMetadataValue(
 
   const value = (metadata as Record<string, Prisma.JsonValue | undefined>)[key];
   return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+function formatHours(value: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+
+  if (value < 24) {
+    return `${value.toFixed(1)} giờ`;
+  }
+
+  return `${(value / 24).toFixed(1)} ngày`;
+}
+
+function getWeekStart(date: Date) {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const day = (start.getDay() + 6) % 7;
+  start.setDate(start.getDate() - day);
+
+  return start;
+}
+
+function getWeekLabel(date: Date) {
+  const start = getWeekStart(date);
+
+  return start.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+  });
 }
 
 async function trackFirstLearnerEvent(input: {
@@ -100,6 +137,38 @@ export async function trackSpeakingMockFirstStart(input: {
   });
 }
 
+export async function trackSpeakingMockFirstCompletion(input: {
+  tenantId?: string | null;
+  userId: string;
+  conversationId: string;
+}) {
+  await trackFirstLearnerEvent({
+    tenantId: input.tenantId,
+    userId: input.userId,
+    eventType: AnalyticsEventType.speaking_mock_first_completed,
+    entityType: "ai_conversation",
+    entityId: input.conversationId,
+  });
+}
+
+export async function trackExerciseFirstSubmission(input: {
+  tenantId?: string | null;
+  userId: string;
+  exerciseId: string;
+  attemptId: string;
+}) {
+  await trackFirstLearnerEvent({
+    tenantId: input.tenantId,
+    userId: input.userId,
+    eventType: AnalyticsEventType.exercise_first_submitted,
+    entityType: "exercise_attempt",
+    entityId: input.attemptId,
+    metadata: {
+      exerciseId: input.exerciseId,
+    },
+  });
+}
+
 export async function trackWritingFeedbackFirstCompletion(input: {
   tenantId?: string | null;
   userId: string;
@@ -125,7 +194,10 @@ export async function getLearnerRetentionSummary() {
     firstDashboardVisits,
     firstLessonOpens,
     firstSpeakingStarts,
+    firstSpeakingCompletions,
+    firstExerciseSubmissions,
     firstWritingCompletions,
+    activationEvents,
     learningStartEvents,
   ] = await Promise.all([
     countDistinctUsersByEventType({
@@ -145,13 +217,28 @@ export async function getLearnerRetentionSummary() {
       from,
     }),
     countDistinctUsersByEventType({
+      eventType: AnalyticsEventType.speaking_mock_first_completed,
+      from,
+    }),
+    countDistinctUsersByEventType({
+      eventType: AnalyticsEventType.exercise_first_submitted,
+      from,
+    }),
+    countDistinctUsersByEventType({
       eventType: AnalyticsEventType.writing_feedback_first_completed,
       from,
+    }),
+    listAnalyticsEvents({
+      eventTypes: [AnalyticsEventType.account_activated],
+      from,
+      take: 2000,
     }),
     listAnalyticsEvents({
       eventTypes: [
         AnalyticsEventType.lesson_catalog_first_opened,
         AnalyticsEventType.speaking_mock_first_started,
+        AnalyticsEventType.speaking_mock_first_completed,
+        AnalyticsEventType.exercise_first_submitted,
         AnalyticsEventType.writing_feedback_first_completed,
       ],
       from,
@@ -181,6 +268,13 @@ export async function getLearnerRetentionSummary() {
       );
     }
 
+    if (event.eventType === AnalyticsEventType.exercise_first_submitted) {
+      learningActionCounts.set(
+        "exercise",
+        (learningActionCounts.get("exercise") ?? 0) + 1,
+      );
+    }
+
     if (event.eventType === AnalyticsEventType.writing_feedback_first_completed) {
       learningActionCounts.set(
         "writing",
@@ -194,19 +288,100 @@ export async function getLearnerRetentionSummary() {
       (event) => event.eventType === AnalyticsEventType.speaking_mock_first_started,
     ) ?? null;
 
+  const activationByUser = new Map<string, Date>();
+  const firstLearningActionByUser = new Map<string, Date>();
+  const cohortMap = new Map<
+    string,
+    {
+      cohortLabel: string;
+      activatedUsers: Set<string>;
+      startedLearningUsers: Set<string>;
+    }
+  >();
+
+  for (const event of activationEvents) {
+    if (!event.userId) {
+      continue;
+    }
+
+    if (!activationByUser.has(event.userId)) {
+      activationByUser.set(event.userId, event.createdAt);
+    }
+
+    const cohortStart = getWeekStart(event.createdAt);
+    const cohortKey = cohortStart.toISOString();
+    const current = cohortMap.get(cohortKey) ?? {
+      cohortLabel: getWeekLabel(event.createdAt),
+      activatedUsers: new Set<string>(),
+      startedLearningUsers: new Set<string>(),
+    };
+    current.activatedUsers.add(event.userId);
+    cohortMap.set(cohortKey, current);
+  }
+
+  for (const event of [...learningStartEvents].reverse()) {
+    if (!event.userId) {
+      continue;
+    }
+
+    if (!firstLearningActionByUser.has(event.userId)) {
+      firstLearningActionByUser.set(event.userId, event.createdAt);
+    }
+  }
+
+  const timeDiffHours: number[] = [];
+
+  for (const [userId, activatedAt] of activationByUser.entries()) {
+    const firstActionAt = firstLearningActionByUser.get(userId);
+
+    if (firstActionAt) {
+      timeDiffHours.push(
+        (firstActionAt.getTime() - activatedAt.getTime()) / (1000 * 60 * 60),
+      );
+
+      const cohortKey = getWeekStart(activatedAt).toISOString();
+      const current = cohortMap.get(cohortKey);
+      current?.startedLearningUsers.add(userId);
+    }
+  }
+
+  const averageTimeToLearningStartHours =
+    timeDiffHours.length > 0
+      ? timeDiffHours.reduce((sum, value) => sum + value, 0) / timeDiffHours.length
+      : null;
+
+  const cohortItems = [...cohortMap.entries()]
+    .map(([cohortKey, value]) => ({
+      cohortKey,
+      cohortLabel: value.cohortLabel,
+      activatedUsers: value.activatedUsers.size,
+      startedLearningUsers: value.startedLearningUsers.size,
+      learningStartRate: formatPercentage(
+        value.startedLearningUsers.size,
+        value.activatedUsers.size,
+      ),
+    }))
+    .sort((left, right) => right.cohortKey.localeCompare(left.cohortKey))
+    .slice(0, 4);
+
   return {
     periodLabel: "30 ngày gần đây",
     activatedUsers,
     firstDashboardVisits,
     firstLessonOpens,
     firstSpeakingStarts,
+    firstSpeakingCompletions,
+    firstExerciseSubmissions,
     firstWritingCompletions,
     startedLearningUsers: startedLearningUsers.size,
     dashboardVisitRate: formatPercentage(firstDashboardVisits, activatedUsers),
     lessonOpenRate: formatPercentage(firstLessonOpens, activatedUsers),
     speakingStartRate: formatPercentage(firstSpeakingStarts, activatedUsers),
+    speakingCompletionRate: formatPercentage(firstSpeakingCompletions, activatedUsers),
+    exerciseSubmissionRate: formatPercentage(firstExerciseSubmissions, activatedUsers),
     writingCompletionRate: formatPercentage(firstWritingCompletions, activatedUsers),
     learningStartRate: formatPercentage(startedLearningUsers.size, activatedUsers),
+    averageTimeToLearningStart: formatHours(averageTimeToLearningStartHours),
     topLearningAction:
       [...learningActionCounts.entries()]
         .sort((left, right) => right[1] - left[1])[0]?.[0] ?? null,
@@ -229,10 +404,28 @@ export async function getLearnerRetentionSummary() {
         rateFromActivated: formatPercentage(firstSpeakingStarts, activatedUsers),
       },
       {
+        label: "Hoàn tất speaking đầu tiên",
+        count: firstSpeakingCompletions,
+        rateFromActivated: formatPercentage(firstSpeakingCompletions, activatedUsers),
+      },
+      {
+        label: "Nộp exercise đầu tiên",
+        count: firstExerciseSubmissions,
+        rateFromActivated: formatPercentage(firstExerciseSubmissions, activatedUsers),
+      },
+      {
         label: "Gửi writing đầu tiên",
         count: firstWritingCompletions,
         rateFromActivated: formatPercentage(firstWritingCompletions, activatedUsers),
       },
     ] satisfies RetentionStageItem[],
+    cohortItems: cohortItems.map(
+      (item): CohortItem => ({
+        cohortLabel: item.cohortLabel,
+        activatedUsers: item.activatedUsers,
+        startedLearningUsers: item.startedLearningUsers,
+        learningStartRate: item.learningStartRate,
+      }),
+    ),
   };
 }

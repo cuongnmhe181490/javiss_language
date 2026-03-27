@@ -401,11 +401,15 @@ File: `src/server/services/learner-retention-analytics.service.ts`
   - records the first time a learner opens the lesson catalog
 - `trackSpeakingMockFirstStart(input)`
   - records the first speaking mock start per user
+- `trackSpeakingMockFirstCompletion(input)`
+  - records the first completed speaking mock per user
+- `trackExerciseFirstSubmission(input)`
+  - records the first submitted exercise attempt per user
 - `trackWritingFeedbackFirstCompletion(input)`
   - records the first completed writing-feedback submission per user
 - `getLearnerRetentionSummary()`
   - aggregates 30-day retention checkpoints from activation to first learning actions
-  - reports dashboard visit, lesson open, speaking start, writing completion, and overall learning-start rate
+  - reports dashboard visit, lesson open, speaking start, speaking completion, exercise submission, writing completion, cohort trend, and time-to-first-learning-action
 
 File: `src/server/services/writing-feedback.service.ts`
 
