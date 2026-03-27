@@ -18,6 +18,8 @@ type CohortItem = {
   activatedUsers: number;
   startedLearningUsers: number;
   learningStartRate: string;
+  repeatLearners: number;
+  repeatRate: string;
 };
 
 type SegmentItem = {
@@ -71,6 +73,35 @@ function formatDecimal(value: number | null) {
   }
 
   return value.toFixed(1);
+}
+
+function formatSignedDecimal(value: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+
+  return `${value >= 0 ? "+" : ""}${value.toFixed(1)}`;
+}
+
+function parseNumeric(value: string | number | null | undefined) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number.parseFloat(value.trim());
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+}
+
+function averageNumbers(values: number[]) {
+  if (values.length === 0) {
+    return null;
+  }
+
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 function getWeekStart(date: Date) {
@@ -319,6 +350,7 @@ export async function getLearnerRetentionSummary() {
       cohortLabel: string;
       activatedUsers: Set<string>;
       startedLearningUsers: Set<string>;
+      repeatedUsers: Set<string>;
     }
   >();
 
@@ -337,6 +369,7 @@ export async function getLearnerRetentionSummary() {
       cohortLabel: getWeekLabel(event.createdAt),
       activatedUsers: new Set<string>(),
       startedLearningUsers: new Set<string>(),
+      repeatedUsers: new Set<string>(),
     };
     current.activatedUsers.add(event.userId);
     cohortMap.set(cohortKey, current);
@@ -549,6 +582,16 @@ export async function getLearnerRetentionSummary() {
     }
   }
 
+  for (const [userId, activatedAt] of activationByUser.entries()) {
+    if (!repeatLearners.has(userId)) {
+      continue;
+    }
+
+    const cohortKey = getWeekStart(activatedAt).toISOString();
+    const current = cohortMap.get(cohortKey);
+    current?.repeatedUsers.add(userId);
+  }
+
   const activeLearnersLast7Days = repeatUsageByUser.size;
   const averageActionsPerActiveLearner =
     activeLearnersLast7Days > 0
@@ -571,6 +614,205 @@ export async function getLearnerRetentionSummary() {
       { key: "writing", count: writingRepeatRows.reduce((sum, row) => sum + row._count._all, 0) },
       { key: "exercise", count: exerciseRepeatRows.reduce((sum, row) => sum + row._count._all, 0) },
     ].sort((left, right) => right.count - left.count)[0]?.key ?? null;
+
+  const [speakingActivityRows, writingActivityRows, exerciseActivityRows, latestSnapshots] =
+    activatedUserIds.length > 0
+      ? await Promise.all([
+          prisma.aiConversation.findMany({
+            where: {
+              userId: {
+                in: activatedUserIds,
+              },
+              kind: "speaking_mock",
+            },
+            select: {
+              userId: true,
+              createdAt: true,
+              speakingCompletedAt: true,
+              speakingFinalBand: true,
+              speakingEstimatedBand: true,
+            },
+            orderBy: {
+              updatedAt: "desc",
+            },
+          }),
+          prisma.writingFeedbackSubmission.findMany({
+            where: {
+              userId: {
+                in: activatedUserIds,
+              },
+            },
+            select: {
+              userId: true,
+              createdAt: true,
+              overallBand: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+          }),
+          prisma.exerciseAttempt.findMany({
+            where: {
+              userId: {
+                in: activatedUserIds,
+              },
+              status: "submitted",
+            },
+            select: {
+              userId: true,
+              createdAt: true,
+              submittedAt: true,
+            },
+            orderBy: {
+              submittedAt: "desc",
+            },
+          }),
+          prisma.progressSnapshot.findMany({
+            where: {
+              userId: {
+                in: activatedUserIds,
+              },
+            },
+            select: {
+              userId: true,
+              overallProgress: true,
+              speakingProgress: true,
+              writingProgress: true,
+              createdAt: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+          }),
+        ])
+      : [[], [], [], []];
+
+  const activityDatesByUser = new Map<string, Date[]>();
+
+  for (const row of speakingActivityRows) {
+    const current = activityDatesByUser.get(row.userId) ?? [];
+    current.push(row.createdAt);
+    if (row.speakingCompletedAt) {
+      current.push(row.speakingCompletedAt);
+    }
+    activityDatesByUser.set(row.userId, current);
+  }
+
+  for (const row of writingActivityRows) {
+    const current = activityDatesByUser.get(row.userId) ?? [];
+    current.push(row.createdAt);
+    activityDatesByUser.set(row.userId, current);
+  }
+
+  for (const row of exerciseActivityRows) {
+    const current = activityDatesByUser.get(row.userId) ?? [];
+    current.push(row.submittedAt ?? row.createdAt);
+    activityDatesByUser.set(row.userId, current);
+  }
+
+  let d1Eligible = 0;
+  let d1Returned = 0;
+  let d7Eligible = 0;
+  let d7Returned = 0;
+  let d14Eligible = 0;
+  let d14Returned = 0;
+
+  for (const [userId, activatedAt] of activationByUser.entries()) {
+    const activityDates = activityDatesByUser.get(userId) ?? [];
+    const elapsedMs = Date.now() - activatedAt.getTime();
+    const day1Threshold = activatedAt.getTime() + 24 * 60 * 60 * 1000;
+    const day7Threshold = activatedAt.getTime() + 7 * 24 * 60 * 60 * 1000;
+    const day14Threshold = activatedAt.getTime() + 14 * 24 * 60 * 60 * 1000;
+
+    if (elapsedMs >= 24 * 60 * 60 * 1000) {
+      d1Eligible += 1;
+      if (activityDates.some((date) => date.getTime() >= day1Threshold)) {
+        d1Returned += 1;
+      }
+    }
+
+    if (elapsedMs >= 7 * 24 * 60 * 60 * 1000) {
+      d7Eligible += 1;
+      if (activityDates.some((date) => date.getTime() >= day7Threshold)) {
+        d7Returned += 1;
+      }
+    }
+
+    if (elapsedMs >= 14 * 24 * 60 * 60 * 1000) {
+      d14Eligible += 1;
+      if (activityDates.some((date) => date.getTime() >= day14Threshold)) {
+        d14Returned += 1;
+      }
+    }
+  }
+
+  const latestSpeakingBandByUser = new Map<string, number>();
+  const latestWritingBandByUser = new Map<string, number>();
+  const latestProgressByUser = new Map<
+    string,
+    { overallProgress: number; speakingProgress: number; writingProgress: number }
+  >();
+
+  for (const row of speakingActivityRows) {
+    if (latestSpeakingBandByUser.has(row.userId)) {
+      continue;
+    }
+
+    const band = parseNumeric(row.speakingFinalBand ?? row.speakingEstimatedBand);
+    if (band !== null) {
+      latestSpeakingBandByUser.set(row.userId, band);
+    }
+  }
+
+  for (const row of writingActivityRows) {
+    if (latestWritingBandByUser.has(row.userId)) {
+      continue;
+    }
+
+    latestWritingBandByUser.set(row.userId, row.overallBand);
+  }
+
+  for (const row of latestSnapshots) {
+    if (latestProgressByUser.has(row.userId)) {
+      continue;
+    }
+
+    latestProgressByUser.set(row.userId, {
+      overallProgress: row.overallProgress,
+      speakingProgress: row.speakingProgress,
+      writingProgress: row.writingProgress,
+    });
+  }
+
+  const repeatGroup = {
+    speakingBands: [] as number[],
+    writingBands: [] as number[],
+    overallProgress: [] as number[],
+  };
+  const nonRepeatGroup = {
+    speakingBands: [] as number[],
+    writingBands: [] as number[],
+    overallProgress: [] as number[],
+  };
+
+  for (const userId of activatedUserIds) {
+    const bucket = repeatLearners.has(userId) ? repeatGroup : nonRepeatGroup;
+    const speakingBand = latestSpeakingBandByUser.get(userId);
+    const writingBand = latestWritingBandByUser.get(userId);
+    const progress = latestProgressByUser.get(userId);
+
+    if (typeof speakingBand === "number") {
+      bucket.speakingBands.push(speakingBand);
+    }
+
+    if (typeof writingBand === "number") {
+      bucket.writingBands.push(writingBand);
+    }
+
+    if (progress) {
+      bucket.overallProgress.push(progress.overallProgress);
+    }
+  }
 
   const sourceSegments = new Map<
     string,
@@ -668,9 +910,21 @@ export async function getLearnerRetentionSummary() {
         value.startedLearningUsers.size,
         value.activatedUsers.size,
       ),
+      repeatLearners: value.repeatedUsers.size,
+      repeatRate: formatPercentage(
+        value.repeatedUsers.size,
+        value.activatedUsers.size,
+      ),
     }))
     .sort((left, right) => right.cohortKey.localeCompare(left.cohortKey))
     .slice(0, 4);
+
+  const repeatSpeakingBandAverage = averageNumbers(repeatGroup.speakingBands);
+  const nonRepeatSpeakingBandAverage = averageNumbers(nonRepeatGroup.speakingBands);
+  const repeatWritingBandAverage = averageNumbers(repeatGroup.writingBands);
+  const nonRepeatWritingBandAverage = averageNumbers(nonRepeatGroup.writingBands);
+  const repeatOverallProgressAverage = averageNumbers(repeatGroup.overallProgress);
+  const nonRepeatOverallProgressAverage = averageNumbers(nonRepeatGroup.overallProgress);
 
   return {
     periodLabel: "30 ngày gần đây",
@@ -695,9 +949,39 @@ export async function getLearnerRetentionSummary() {
     multiSurfaceLearnersLast7Days: multiSurfaceLearners.size,
     repeatLearnerRate: formatPercentage(repeatLearners.size, activatedUsers),
     multiSurfaceLearnerRate: formatPercentage(multiSurfaceLearners.size, activatedUsers),
+    d1EligibleUsers: d1Eligible,
+    d1ReturnedUsers: d1Returned,
+    d1ReturnRate: formatPercentage(d1Returned, d1Eligible),
+    d7EligibleUsers: d7Eligible,
+    d7ReturnedUsers: d7Returned,
+    d7ReturnRate: formatPercentage(d7Returned, d7Eligible),
+    d14EligibleUsers: d14Eligible,
+    d14ReturnedUsers: d14Returned,
+    d14ReturnRate: formatPercentage(d14Returned, d14Eligible),
     averageActionsPerActiveLearner: formatDecimal(averageActionsPerActiveLearner),
     repeatLearnerQualityScore,
     topRepeatSurface,
+    repeatSpeakingBandAverage: formatDecimal(repeatSpeakingBandAverage),
+    nonRepeatSpeakingBandAverage: formatDecimal(nonRepeatSpeakingBandAverage),
+    repeatWritingBandAverage: formatDecimal(repeatWritingBandAverage),
+    nonRepeatWritingBandAverage: formatDecimal(nonRepeatWritingBandAverage),
+    repeatOverallProgressAverage: formatDecimal(repeatOverallProgressAverage),
+    nonRepeatOverallProgressAverage: formatDecimal(nonRepeatOverallProgressAverage),
+    speakingBandLift: formatSignedDecimal(
+      repeatSpeakingBandAverage !== null && nonRepeatSpeakingBandAverage !== null
+        ? repeatSpeakingBandAverage - nonRepeatSpeakingBandAverage
+        : null,
+    ),
+    writingBandLift: formatSignedDecimal(
+      repeatWritingBandAverage !== null && nonRepeatWritingBandAverage !== null
+        ? repeatWritingBandAverage - nonRepeatWritingBandAverage
+        : null,
+    ),
+    progressLift: formatSignedDecimal(
+      repeatOverallProgressAverage !== null && nonRepeatOverallProgressAverage !== null
+        ? repeatOverallProgressAverage - nonRepeatOverallProgressAverage
+        : null,
+    ),
     topLearningAction:
       [...learningActionCounts.entries()]
         .sort((left, right) => right[1] - left[1])[0]?.[0] ?? null,
@@ -741,6 +1025,8 @@ export async function getLearnerRetentionSummary() {
         activatedUsers: item.activatedUsers,
         startedLearningUsers: item.startedLearningUsers,
         learningStartRate: item.learningStartRate,
+        repeatLearners: item.repeatLearners,
+        repeatRate: item.repeatRate,
       }),
     ),
     retentionBySource: toSegmentItems(sourceSegments),

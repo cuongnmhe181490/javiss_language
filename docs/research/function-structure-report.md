@@ -15,6 +15,7 @@ Generated for research ingestion.
 - email verification and activation
 - funnel analytics from public CTA to registration activation
 - retention analytics from activation to first learning actions
+- time-based retention analytics for D1, D7, and D14 return behavior
 - RBAC for `super_admin`, `admin`, `teacher`, `student`
 - learner dashboard and admin dashboard
 - AI coaching, speaking mock, public chatbot
@@ -409,7 +410,7 @@ File: `src/server/services/learner-retention-analytics.service.ts`
   - records the first completed writing-feedback submission per user
 - `getLearnerRetentionSummary()`
   - aggregates 30-day retention checkpoints from activation to first learning actions
-  - reports dashboard visit, lesson open, speaking start, speaking completion, exercise submission, writing completion, cohort trend, time-to-first-learning-action, segmented retention by source/plan/exam, and 7-day repeat usage quality
+  - reports dashboard visit, lesson open, speaking start, speaking completion, exercise submission, writing completion, cohort trend, time-to-first-learning-action, segmented retention by source/plan/exam, 7-day repeat usage quality, D1/D7/D14 return rates, and repeat-vs-non-repeat learning outcome comparison
 
 File: `src/server/services/writing-feedback.service.ts`
 

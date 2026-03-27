@@ -23,9 +23,27 @@ type LearnerRetentionCardProps = {
   multiSurfaceLearnersLast7Days: number;
   repeatLearnerRate: string;
   multiSurfaceLearnerRate: string;
+  d1EligibleUsers: number;
+  d1ReturnedUsers: number;
+  d1ReturnRate: string;
+  d7EligibleUsers: number;
+  d7ReturnedUsers: number;
+  d7ReturnRate: string;
+  d14EligibleUsers: number;
+  d14ReturnedUsers: number;
+  d14ReturnRate: string;
   averageActionsPerActiveLearner: string | null;
   repeatLearnerQualityScore: number;
   topRepeatSurface: string | null;
+  repeatSpeakingBandAverage: string | null;
+  nonRepeatSpeakingBandAverage: string | null;
+  repeatWritingBandAverage: string | null;
+  nonRepeatWritingBandAverage: string | null;
+  repeatOverallProgressAverage: string | null;
+  nonRepeatOverallProgressAverage: string | null;
+  speakingBandLift: string | null;
+  writingBandLift: string | null;
+  progressLift: string | null;
   topLearningAction: string | null;
   latestSpeakingTopic: string | null;
   stageItems: Array<{
@@ -38,6 +56,8 @@ type LearnerRetentionCardProps = {
     activatedUsers: number;
     startedLearningUsers: number;
     learningStartRate: string;
+    repeatLearners: number;
+    repeatRate: string;
   }>;
   retentionBySource: Array<{
     label: string;
@@ -116,9 +136,27 @@ export function LearnerRetentionCard({
   multiSurfaceLearnersLast7Days,
   repeatLearnerRate,
   multiSurfaceLearnerRate,
+  d1EligibleUsers,
+  d1ReturnedUsers,
+  d1ReturnRate,
+  d7EligibleUsers,
+  d7ReturnedUsers,
+  d7ReturnRate,
+  d14EligibleUsers,
+  d14ReturnedUsers,
+  d14ReturnRate,
   averageActionsPerActiveLearner,
   repeatLearnerQualityScore,
   topRepeatSurface,
+  repeatSpeakingBandAverage,
+  nonRepeatSpeakingBandAverage,
+  repeatWritingBandAverage,
+  nonRepeatWritingBandAverage,
+  repeatOverallProgressAverage,
+  nonRepeatOverallProgressAverage,
+  speakingBandLift,
+  writingBandLift,
+  progressLift,
   topLearningAction,
   latestSpeakingTopic,
   stageItems,
@@ -297,6 +335,9 @@ export function LearnerRetentionCard({
                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                     Tỷ lệ bắt đầu học: {item.learningStartRate}
                   </p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Quay lại học: {item.repeatLearners}/{item.activatedUsers} ({item.repeatRate})
+                  </p>
                 </div>
               ))
             ) : (
@@ -351,6 +392,110 @@ export function LearnerRetentionCard({
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Kết hợp repeat rate, multi-surface rate và độ sâu hành động.
             </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-3">
+          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white">
+              D1 return rate
+            </p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
+              {d1ReturnRate}
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              {d1ReturnedUsers}/{d1EligibleUsers} học viên quay lại sau 24 giờ kể từ lúc kích hoạt.
+            </p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white">
+              D7 return rate
+            </p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
+              {d7ReturnRate}
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              {d7ReturnedUsers}/{d7EligibleUsers} học viên còn quay lại sau 7 ngày.
+            </p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white">
+              D14 return rate
+            </p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
+              {d14ReturnRate}
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              {d14ReturnedUsers}/{d14EligibleUsers} học viên còn giữ được nhịp học sau 14 ngày.
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+          <p className="text-sm font-semibold text-slate-950 dark:text-white">
+            Tương quan giữa quay lại học và chất lượng học tập
+          </p>
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+              <p className="text-sm font-medium text-slate-950 dark:text-white">
+                Speaking band gần nhất
+              </p>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+                Nhóm quay lại:{" "}
+                <span className="font-semibold text-slate-950 dark:text-white">
+                  {repeatSpeakingBandAverage ?? "Chưa đủ dữ liệu"}
+                </span>
+              </p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                Nhóm không quay lại:{" "}
+                <span className="font-semibold text-slate-950 dark:text-white">
+                  {nonRepeatSpeakingBandAverage ?? "Chưa đủ dữ liệu"}
+                </span>
+              </p>
+              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                Chênh lệch: {speakingBandLift ?? "Chưa đủ dữ liệu"} band
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+              <p className="text-sm font-medium text-slate-950 dark:text-white">
+                Writing band gần nhất
+              </p>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+                Nhóm quay lại:{" "}
+                <span className="font-semibold text-slate-950 dark:text-white">
+                  {repeatWritingBandAverage ?? "Chưa đủ dữ liệu"}
+                </span>
+              </p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                Nhóm không quay lại:{" "}
+                <span className="font-semibold text-slate-950 dark:text-white">
+                  {nonRepeatWritingBandAverage ?? "Chưa đủ dữ liệu"}
+                </span>
+              </p>
+              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                Chênh lệch: {writingBandLift ?? "Chưa đủ dữ liệu"} band
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+              <p className="text-sm font-medium text-slate-950 dark:text-white">
+                Tiến độ tổng thể gần nhất
+              </p>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+                Nhóm quay lại:{" "}
+                <span className="font-semibold text-slate-950 dark:text-white">
+                  {repeatOverallProgressAverage ?? "Chưa đủ dữ liệu"}
+                </span>
+              </p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                Nhóm không quay lại:{" "}
+                <span className="font-semibold text-slate-950 dark:text-white">
+                  {nonRepeatOverallProgressAverage ?? "Chưa đủ dữ liệu"}
+                </span>
+              </p>
+              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                Chênh lệch: {progressLift ?? "Chưa đủ dữ liệu"} điểm tiến độ
+              </p>
+            </div>
           </div>
         </div>
 
