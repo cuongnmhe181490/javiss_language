@@ -103,6 +103,22 @@ type LearnerRetentionCardProps = {
     d30ReturnedUsers: number;
     d30ReturnRate: string;
   }>;
+  retentionBySourcePath: Array<{
+    label: string;
+    startedUsers: number;
+    repeatLearners: number;
+    repeatRate: string;
+    d30ReturnedUsers: number;
+    d30ReturnRate: string;
+  }>;
+  retentionByPlanPath: Array<{
+    label: string;
+    startedUsers: number;
+    repeatLearners: number;
+    repeatRate: string;
+    d30ReturnedUsers: number;
+    d30ReturnRate: string;
+  }>;
 };
 
 function getTopActionLabel(value: string | null) {
@@ -195,6 +211,8 @@ export function LearnerRetentionCard({
   retentionByPlan,
   retentionByExam,
   retentionByFirstPath,
+  retentionBySourcePath,
+  retentionByPlanPath,
 }: LearnerRetentionCardProps) {
   return (
     <Card>
@@ -670,6 +688,55 @@ export function LearnerRetentionCard({
               </p>
             )}
           </div>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          {[
+            {
+              title: "Nguồn đăng ký × hành động học đầu tiên",
+              items: retentionBySourcePath,
+            },
+            {
+              title: "Gói học × hành động học đầu tiên",
+              items: retentionByPlanPath,
+            },
+          ].map((section) => (
+            <div
+              key={section.title}
+              className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60"
+            >
+              <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                {section.title}
+              </p>
+              <div className="mt-4 space-y-3">
+                {section.items.length > 0 ? (
+                  section.items.map((item) => (
+                    <div
+                      key={`${section.title}-${item.label}`}
+                      className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/50"
+                    >
+                      <p className="text-sm font-medium text-slate-950 dark:text-white">
+                        {item.label}
+                      </p>
+                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        Người bắt đầu theo combo này: {item.startedUsers}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Quay lại 7 ngày: {item.repeatLearners}/{item.startedUsers} ({item.repeatRate})
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        D30 return: {item.d30ReturnedUsers}/{item.startedUsers} ({item.d30ReturnRate})
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Chưa có đủ dữ liệu để phân tích chéo cho nhóm này.
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

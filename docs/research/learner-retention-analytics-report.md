@@ -144,6 +144,7 @@ The summary now also derives:
 - rough learning-quality correlation between repeat and non-repeat learners
 - retention split by the learner's first real learning path
 - rolling 30-day active and repeat usage metrics
+- cross-segmentation between acquisition source / assigned plan and first learning path
 
 The summary also computes:
 
@@ -190,6 +191,11 @@ It now also exposes retention by first learning path:
 - started from exercise submission
 - started from writing feedback
 
+And it now exposes deeper cross-segmentation for the strongest combinations:
+
+- registration source × first learning path
+- assigned plan × first learning path
+
 And it surfaces a simple repeat-versus-non-repeat comparison for:
 
 - latest speaking band
@@ -226,6 +232,7 @@ This upgrade makes it possible to measure:
 - whether retention still holds by day 30
 - whether short-horizon repeat usage still translates into healthy rolling 30-day usage
 - which first learning path leads to stronger repeat usage and long-tail return
+- which acquisition-and-onboarding combinations lead to the healthiest retention
 - whether repeat learners also show stronger speaking, writing, and progress signals
 - whether product value is being reached after approval and verification
 
@@ -304,7 +311,27 @@ This helps answer a product question that the previous dashboard could not answe
 
 - which first learning experience produces the healthiest follow-up behavior?
 
-## 14. Repeat Cohort And Learning Correlation
+## 14. Cross-Segmentation Layer
+
+The admin dashboard now goes one step deeper than standalone segment tables.
+
+It computes the strongest combinations for:
+
+- `registration source × first learning path`
+- `assigned plan × first learning path`
+
+Each combo reports:
+
+- how many learners started there
+- 7-day repeat learner rate
+- D30 return rate
+
+This gives the product team a more actionable question:
+
+- not just `which source is good?`
+- but `which source works best when learners first touch a specific learning surface?`
+
+## 15. Repeat Cohort And Learning Correlation
 
 The service now enriches retention analysis in two additional ways:
 
@@ -324,10 +351,10 @@ The admin dashboard now compares the latest available learner outcomes between r
 
 This is not a causal model. It is an operational signal for product research: if repeat learners consistently outperform non-repeat learners, improving return behavior becomes easier to justify as a product priority.
 
-## 15. Recommended Next Steps
+## 16. Recommended Next Steps
 
 1. Add retention checkpoints for first completed lesson and first reviewed exercise.
-2. Add plan-level and source-level rolling 30-day reporting once cohorts are larger.
-3. Compare median time-to-first-learning-action across source, plan, and first-path groups.
+2. Compare median time-to-first-learning-action across source, plan, and first-path groups.
+3. Add exam-target × first-path cross-segmentation if cohorts become large enough.
 4. Add retention comparison by teacher assignment once the teacher workflow exists.
 5. Correlate first learning path choice with later repeat usage and band gain more formally.

@@ -42,6 +42,15 @@ type FirstPathItem = {
   d30ReturnRate: string;
 };
 
+type CrossSegmentItem = {
+  label: string;
+  startedUsers: number;
+  repeatLearners: number;
+  repeatRate: string;
+  d30ReturnedUsers: number;
+  d30ReturnRate: string;
+};
+
 function formatPercentage(numerator: number, denominator: number) {
   if (denominator <= 0) {
     return "0.0%";
@@ -1156,6 +1165,92 @@ export async function getLearnerRetentionSummary() {
       return right.startedUsers - left.startedUsers;
     }) satisfies FirstPathItem[];
 
+  const sourcePathSegments = new Map<
+    string,
+    { started: Set<string>; repeated: Set<string>; d30Returned: Set<string> }
+  >();
+  const planPathSegments = new Map<
+    string,
+    { started: Set<string>; repeated: Set<string>; d30Returned: Set<string> }
+  >();
+
+  for (const user of activatedUsersData) {
+    const pathKey = firstLearningPathByUser.get(user.id);
+
+    if (!pathKey) {
+      continue;
+    }
+
+    const sourceLabel = normalizeSegmentLabel(
+      firstRegistrationSourceByUser.get(user.id),
+      "direct",
+    );
+    const planLabel = normalizeSegmentLabel(
+      user.licenses[0]?.plan?.name ?? user.entitlements[0]?.plan?.name,
+      "Chưa gán gói",
+    );
+    const pathLabel = getLearningPathLabel(pathKey);
+    const segmentPayloads = [
+      {
+        map: sourcePathSegments,
+        label: `${sourceLabel} → ${pathLabel}`,
+      },
+      {
+        map: planPathSegments,
+        label: `${planLabel} → ${pathLabel}`,
+      },
+    ];
+
+    for (const segment of segmentPayloads) {
+      const current = segment.map.get(segment.label) ?? {
+        started: new Set<string>(),
+        repeated: new Set<string>(),
+        d30Returned: new Set<string>(),
+      };
+
+      current.started.add(user.id);
+
+      if (repeatLearners.has(user.id)) {
+        current.repeated.add(user.id);
+      }
+
+      if (d30ReturnedUsers.has(user.id)) {
+        current.d30Returned.add(user.id);
+      }
+
+      segment.map.set(segment.label, current);
+    }
+  }
+
+  function toCrossSegmentItems(
+    map: Map<
+      string,
+      { started: Set<string>; repeated: Set<string>; d30Returned: Set<string> }
+    >,
+  ): CrossSegmentItem[] {
+    return [...map.entries()]
+      .map(([label, value]) => ({
+        label,
+        startedUsers: value.started.size,
+        repeatLearners: value.repeated.size,
+        repeatRate: formatPercentage(value.repeated.size, value.started.size),
+        d30ReturnedUsers: value.d30Returned.size,
+        d30ReturnRate: formatPercentage(value.d30Returned.size, value.started.size),
+      }))
+      .sort((left, right) => {
+        if (right.repeatLearners !== left.repeatLearners) {
+          return right.repeatLearners - left.repeatLearners;
+        }
+
+        if (right.d30ReturnedUsers !== left.d30ReturnedUsers) {
+          return right.d30ReturnedUsers - left.d30ReturnedUsers;
+        }
+
+        return right.startedUsers - left.startedUsers;
+      })
+      .slice(0, 6);
+  }
+
   const cohortItems = [...cohortMap.entries()]
     .map(([cohortKey, value]) => ({
       cohortKey,
@@ -1304,5 +1399,7 @@ export async function getLearnerRetentionSummary() {
     retentionByPlan: toSegmentItems(planSegments),
     retentionByExam: toSegmentItems(examSegments),
     retentionByFirstPath,
+    retentionBySourcePath: toCrossSegmentItems(sourcePathSegments),
+    retentionByPlanPath: toCrossSegmentItems(planPathSegments),
   };
 }
