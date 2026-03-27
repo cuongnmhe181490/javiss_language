@@ -130,6 +130,9 @@ The summary now also derives:
 
 - average time from activation to first learning action
 - recent activation cohorts by week
+- retention breakdown by registration source
+- retention breakdown by plan
+- retention breakdown by exam target
 
 The summary also computes:
 
@@ -148,6 +151,12 @@ Files:
 
 The admin dashboard now shows a dedicated retention block next to the acquisition funnel and public-chat analytics.
 
+The retention block now also exposes segmented views for:
+
+- source that brought the learner into registration
+- plan assigned to the learner
+- target exam chosen by the learner
+
 This makes the admin home page answer both questions:
 
 - are we converting visitors into activated learners?
@@ -163,6 +172,8 @@ This upgrade makes it possible to measure:
 - speaking start versus speaking completion
 - structured practice adoption through exercise submission
 - average time to first real learning action
+- which registration sources produce better learning-start quality
+- which plans and exam targets show stronger early retention
 - whether product value is being reached after approval and verification
 
 This is the missing link between acquisition and retention.
@@ -172,5 +183,5 @@ This is the missing link between acquisition and retention.
 1. Add retention checkpoints for first completed lesson and first reviewed exercise.
 2. Add median alongside average time-to-first-learning-action.
 3. Expand cohort analysis beyond 30 days and split by source.
-4. Split retention by exam target, source, and plan.
+4. Add retention comparison by teacher assignment once the teacher workflow exists.
 5. Join retention data with writing/speaking progress to detect which first actions correlate with repeat usage.

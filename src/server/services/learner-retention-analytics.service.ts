@@ -1,5 +1,6 @@
 import { AnalyticsEventType, type Prisma } from "@prisma/client";
 import { logger } from "@/lib/logger";
+import { prisma } from "@/lib/db/prisma";
 import {
   countDistinctUsersByEventType,
   createAnalyticsEventOnceForUser,
@@ -14,6 +15,13 @@ type RetentionStageItem = {
 
 type CohortItem = {
   cohortLabel: string;
+  activatedUsers: number;
+  startedLearningUsers: number;
+  learningStartRate: string;
+};
+
+type SegmentItem = {
+  label: string;
   activatedUsers: number;
   startedLearningUsers: number;
   learningStartRate: string;
@@ -49,6 +57,10 @@ function formatHours(value: number | null) {
   }
 
   return `${(value / 24).toFixed(1)} ngày`;
+}
+
+function normalizeSegmentLabel(value: string | null | undefined, fallback: string) {
+  return value && value.trim().length > 0 ? value : fallback;
 }
 
 function getWeekStart(date: Date) {
@@ -290,6 +302,7 @@ export async function getLearnerRetentionSummary() {
 
   const activationByUser = new Map<string, Date>();
   const firstLearningActionByUser = new Map<string, Date>();
+  const firstRegistrationSourceByUser = new Map<string, string>();
   const cohortMap = new Map<
     string,
     {
@@ -317,6 +330,24 @@ export async function getLearnerRetentionSummary() {
     };
     current.activatedUsers.add(event.userId);
     cohortMap.set(cohortKey, current);
+  }
+
+  const registrationSubmissionEvents = await listAnalyticsEvents({
+    eventTypes: [AnalyticsEventType.registration_submitted],
+    take: 4000,
+  });
+
+  for (const event of [...registrationSubmissionEvents].reverse()) {
+    if (!event.userId || !activationByUser.has(event.userId)) {
+      continue;
+    }
+
+    if (!firstRegistrationSourceByUser.has(event.userId)) {
+      firstRegistrationSourceByUser.set(
+        event.userId,
+        getMetadataValue(event.metadata, "attributionSource") ?? "direct",
+      );
+    }
   }
 
   for (const event of [...learningStartEvents].reverse()) {
@@ -349,6 +380,113 @@ export async function getLearnerRetentionSummary() {
     timeDiffHours.length > 0
       ? timeDiffHours.reduce((sum, value) => sum + value, 0) / timeDiffHours.length
       : null;
+
+  const activatedUserIds = [...activationByUser.keys()];
+  const activatedUsersData =
+    activatedUserIds.length > 0
+      ? await prisma.user.findMany({
+          where: {
+            id: {
+              in: activatedUserIds,
+            },
+          },
+          include: {
+            goals: {
+              include: {
+                exam: true,
+              },
+              orderBy: {
+                createdAt: "desc",
+              },
+              take: 1,
+            },
+            licenses: {
+              include: {
+                plan: true,
+              },
+              where: {
+                status: "active",
+              },
+              orderBy: {
+                createdAt: "desc",
+              },
+              take: 1,
+            },
+            entitlements: {
+              include: {
+                plan: true,
+              },
+              where: {
+                status: "active",
+              },
+              orderBy: {
+                createdAt: "desc",
+              },
+              take: 1,
+            },
+          },
+        })
+      : [];
+
+  const sourceSegments = new Map<string, { activated: Set<string>; started: Set<string> }>();
+  const planSegments = new Map<string, { activated: Set<string>; started: Set<string> }>();
+  const examSegments = new Map<string, { activated: Set<string>; started: Set<string> }>();
+
+  for (const user of activatedUsersData) {
+    const sourceLabel = normalizeSegmentLabel(
+      firstRegistrationSourceByUser.get(user.id),
+      "direct",
+    );
+    const planLabel = normalizeSegmentLabel(
+      user.licenses[0]?.plan?.name ?? user.entitlements[0]?.plan?.name,
+      "Chưa gán gói",
+    );
+    const examLabel = normalizeSegmentLabel(user.goals[0]?.exam.name, "Chưa đặt kỳ thi");
+
+    const segmentPayloads = [
+      { map: sourceSegments, label: sourceLabel },
+      { map: planSegments, label: planLabel },
+      { map: examSegments, label: examLabel },
+    ];
+
+    for (const segment of segmentPayloads) {
+      const current = segment.map.get(segment.label) ?? {
+        activated: new Set<string>(),
+        started: new Set<string>(),
+      };
+
+      current.activated.add(user.id);
+
+      if (startedLearningUsers.has(user.id)) {
+        current.started.add(user.id);
+      }
+
+      segment.map.set(segment.label, current);
+    }
+  }
+
+  function toSegmentItems(
+    map: Map<string, { activated: Set<string>; started: Set<string> }>,
+  ): SegmentItem[] {
+    return [...map.entries()]
+      .map(([label, value]) => ({
+        label,
+        activatedUsers: value.activated.size,
+        startedLearningUsers: value.started.size,
+        learningStartRate: formatPercentage(
+          value.started.size,
+          value.activated.size,
+        ),
+      }))
+      .sort((left, right) => {
+        if (right.startedLearningUsers !== left.startedLearningUsers) {
+          return right.startedLearningUsers - left.startedLearningUsers;
+        }
+
+        return right.activatedUsers - left.activatedUsers;
+      })
+      .slice(0, 5);
+  }
 
   const cohortItems = [...cohortMap.entries()]
     .map(([cohortKey, value]) => ({
@@ -427,5 +565,8 @@ export async function getLearnerRetentionSummary() {
         learningStartRate: item.learningStartRate,
       }),
     ),
+    retentionBySource: toSegmentItems(sourceSegments),
+    retentionByPlan: toSegmentItems(planSegments),
+    retentionByExam: toSegmentItems(examSegments),
   };
 }

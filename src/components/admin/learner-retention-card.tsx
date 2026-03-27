@@ -31,6 +31,24 @@ type LearnerRetentionCardProps = {
     startedLearningUsers: number;
     learningStartRate: string;
   }>;
+  retentionBySource: Array<{
+    label: string;
+    activatedUsers: number;
+    startedLearningUsers: number;
+    learningStartRate: string;
+  }>;
+  retentionByPlan: Array<{
+    label: string;
+    activatedUsers: number;
+    startedLearningUsers: number;
+    learningStartRate: string;
+  }>;
+  retentionByExam: Array<{
+    label: string;
+    activatedUsers: number;
+    startedLearningUsers: number;
+    learningStartRate: string;
+  }>;
 };
 
 function getTopActionLabel(value: string | null) {
@@ -70,6 +88,9 @@ export function LearnerRetentionCard({
   latestSpeakingTopic,
   stageItems,
   cohortItems,
+  retentionBySource,
+  retentionByPlan,
+  retentionByExam,
 }: LearnerRetentionCardProps) {
   return (
     <Card>
@@ -242,6 +263,56 @@ export function LearnerRetentionCard({
               </p>
             )}
           </div>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-3">
+          {[
+            {
+              title: "Retention theo nguồn đăng ký",
+              items: retentionBySource,
+            },
+            {
+              title: "Retention theo gói học",
+              items: retentionByPlan,
+            },
+            {
+              title: "Retention theo kỳ thi mục tiêu",
+              items: retentionByExam,
+            },
+          ].map((section) => (
+            <div
+              key={section.title}
+              className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60"
+            >
+              <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                {section.title}
+              </p>
+              <div className="mt-4 space-y-3">
+                {section.items.length > 0 ? (
+                  section.items.map((item) => (
+                    <div
+                      key={`${section.title}-${item.label}`}
+                      className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/50"
+                    >
+                      <p className="text-sm font-medium text-slate-950 dark:text-white">
+                        {item.label}
+                      </p>
+                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        {item.startedLearningUsers}/{item.activatedUsers} người đã bắt đầu học
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Tỷ lệ: {item.learningStartRate}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Chưa có đủ dữ liệu cho nhóm này.
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
