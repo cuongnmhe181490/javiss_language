@@ -414,7 +414,7 @@ File: `src/server/services/learner-retention-analytics.service.ts`
   - records the first completed writing-feedback submission per user
 - `getLearnerRetentionSummary()`
   - aggregates 30-day retention checkpoints from activation to first learning actions
-  - reports dashboard visit, lesson open, speaking start, speaking completion, exercise submission, writing completion, cohort trend, average and median time-to-first-learning-action, segmented retention by source/plan/exam, 7-day repeat usage quality, rolling 30-day usage depth, D1/D7/D14/D30 return rates, retention by first learning path, source×first-path, plan×first-path, exam×first-path combinations, repeat-vs-non-repeat learning outcome comparison, and synthesized admin recommendations
+  - reports dashboard visit, lesson open, speaking start, speaking completion, exercise submission, writing completion, cohort trend, average and median time-to-first-learning-action, segmented retention by source/plan/exam, 7-day repeat usage quality, rolling 30-day usage depth, D1/D7/D14/D30 return rates, retention by first learning path, source×first-path, plan×first-path, exam×first-path combinations, repeat-vs-non-repeat learning outcome comparison, and synthesized admin recommendations with severity/score/priority
 
 File: `src/server/services/writing-feedback.service.ts`
 

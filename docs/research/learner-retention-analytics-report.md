@@ -380,6 +380,9 @@ Each recommendation contains:
 - a short title
 - a plain-language diagnosis
 - a suggested next action
+- a severity level
+- a numeric score
+- a priority order
 
 This keeps the admin home page useful even when the operator does not want to manually inspect every segment table.
 

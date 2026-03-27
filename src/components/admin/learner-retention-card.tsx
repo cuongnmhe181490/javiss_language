@@ -131,6 +131,9 @@ type LearnerRetentionCardProps = {
     title: string;
     summary: string;
     action: string;
+    severity: "critical" | "high" | "medium";
+    score: number;
+    priority: number;
   }>;
 };
 
@@ -159,6 +162,28 @@ function getRepeatSurfaceLabel(value: string | null) {
       return "Exercise";
     default:
       return "Chưa có đủ dữ liệu";
+  }
+}
+
+function getRecommendationSeverityLabel(value: "critical" | "high" | "medium") {
+  switch (value) {
+    case "critical":
+      return "Cần xử lý ngay";
+    case "high":
+      return "Ưu tiên cao";
+    default:
+      return "Ưu tiên vừa";
+  }
+}
+
+function getRecommendationSeverityClasses(value: "critical" | "high" | "medium") {
+  switch (value) {
+    case "critical":
+      return "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300";
+    case "high":
+      return "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300";
+    default:
+      return "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-300";
   }
 }
 
@@ -249,6 +274,19 @@ export function LearnerRetentionCard({
                   key={item.title}
                   className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50"
                 >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                      Ưu tiên #{item.priority}
+                    </span>
+                    <span
+                      className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getRecommendationSeverityClasses(item.severity)}`}
+                    >
+                      {getRecommendationSeverityLabel(item.severity)}
+                    </span>
+                    <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                      Điểm {item.score}
+                    </span>
+                  </div>
                   <p className="text-sm font-medium text-slate-950 dark:text-white">
                     {item.title}
                   </p>
