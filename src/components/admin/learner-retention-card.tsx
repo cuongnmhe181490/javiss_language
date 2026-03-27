@@ -18,11 +18,18 @@ type LearnerRetentionCardProps = {
   writingCompletionRate: string;
   learningStartRate: string;
   averageTimeToLearningStart: string | null;
+  medianTimeToLearningStart: string | null;
   activeLearnersLast7Days: number;
   repeatLearnersLast7Days: number;
   multiSurfaceLearnersLast7Days: number;
   repeatLearnerRate: string;
   multiSurfaceLearnerRate: string;
+  rolling30ActiveLearners: number;
+  rolling30RepeatLearners: number;
+  rolling30MultiSurfaceLearners: number;
+  rolling30RepeatRate: string;
+  rolling30MultiSurfaceRate: string;
+  rolling30AverageActionsPerActiveLearner: string | null;
   d1EligibleUsers: number;
   d1ReturnedUsers: number;
   d1ReturnRate: string;
@@ -144,11 +151,18 @@ export function LearnerRetentionCard({
   writingCompletionRate,
   learningStartRate,
   averageTimeToLearningStart,
+  medianTimeToLearningStart,
   activeLearnersLast7Days,
   repeatLearnersLast7Days,
   multiSurfaceLearnersLast7Days,
   repeatLearnerRate,
   multiSurfaceLearnerRate,
+  rolling30ActiveLearners,
+  rolling30RepeatLearners,
+  rolling30MultiSurfaceLearners,
+  rolling30RepeatRate,
+  rolling30MultiSurfaceRate,
+  rolling30AverageActionsPerActiveLearner,
   d1EligibleUsers,
   d1ReturnedUsers,
   d1ReturnRate,
@@ -301,6 +315,9 @@ export function LearnerRetentionCard({
                 <p className="mt-2 font-semibold text-slate-950 dark:text-white">
                   {averageTimeToLearningStart ?? "Chưa đủ dữ liệu"}
                 </p>
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  Median: {medianTimeToLearningStart ?? "Chưa đủ dữ liệu"}
+                </p>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50">
                 <p>Hành vi nổi bật nhất</p>
@@ -408,6 +425,42 @@ export function LearnerRetentionCard({
             </p>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Kết hợp repeat rate, multi-surface rate và độ sâu hành động.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-3">
+          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white">
+              Rolling 30 ngày active
+            </p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
+              {rolling30ActiveLearners}
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Học viên có ít nhất một hành động học trong 30 ngày gần nhất.
+            </p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white">
+              Rolling 30 ngày quay lại
+            </p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
+              {rolling30RepeatLearners}
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Tỷ lệ: {rolling30RepeatRate}. Multi-surface: {rolling30MultiSurfaceLearners} ({rolling30MultiSurfaceRate})
+            </p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white">
+              Độ sâu hành vi 30 ngày
+            </p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
+              {rolling30AverageActionsPerActiveLearner ?? "0.0"}
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Số hành động học trung bình trên mỗi học viên active trong 30 ngày gần nhất.
             </p>
           </div>
         </div>

@@ -115,6 +115,21 @@ function averageNumbers(values: number[]) {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
+function medianNumbers(values: number[]) {
+  if (values.length === 0) {
+    return null;
+  }
+
+  const sortedValues = [...values].sort((left, right) => left - right);
+  const middleIndex = Math.floor(sortedValues.length / 2);
+
+  if (sortedValues.length % 2 === 0) {
+    return (sortedValues[middleIndex - 1] + sortedValues[middleIndex]) / 2;
+  }
+
+  return sortedValues[middleIndex];
+}
+
 function getLearningPathKey(eventType: AnalyticsEventType) {
   switch (eventType) {
     case AnalyticsEventType.lesson_catalog_first_opened:
@@ -477,6 +492,7 @@ export async function getLearnerRetentionSummary() {
     timeDiffHours.length > 0
       ? timeDiffHours.reduce((sum, value) => sum + value, 0) / timeDiffHours.length
       : null;
+  const medianTimeToLearningStartHours = medianNumbers(timeDiffHours);
 
   const activatedUserIds = [...activationByUser.keys()];
   const activatedUsersData =
@@ -526,7 +542,15 @@ export async function getLearnerRetentionSummary() {
       : [];
 
   const repeatWindowFrom = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const [speakingRepeatRows, writingRepeatRows, exerciseRepeatRows] =
+  const rolling30WindowFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const [
+    speakingRepeatRows,
+    writingRepeatRows,
+    exerciseRepeatRows,
+    speakingRolling30Rows,
+    writingRolling30Rows,
+    exerciseRolling30Rows,
+  ] =
     activatedUserIds.length > 0
       ? await Promise.all([
           prisma.aiConversation.groupBy({
@@ -573,8 +597,52 @@ export async function getLearnerRetentionSummary() {
               _all: true,
             },
           }),
+          prisma.aiConversation.groupBy({
+            by: ["userId"],
+            where: {
+              userId: {
+                in: activatedUserIds,
+              },
+              kind: "speaking_mock",
+              createdAt: {
+                gte: rolling30WindowFrom,
+              },
+            },
+            _count: {
+              _all: true,
+            },
+          }),
+          prisma.writingFeedbackSubmission.groupBy({
+            by: ["userId"],
+            where: {
+              userId: {
+                in: activatedUserIds,
+              },
+              createdAt: {
+                gte: rolling30WindowFrom,
+              },
+            },
+            _count: {
+              _all: true,
+            },
+          }),
+          prisma.exerciseAttempt.groupBy({
+            by: ["userId"],
+            where: {
+              userId: {
+                in: activatedUserIds,
+              },
+              status: "submitted",
+              submittedAt: {
+                gte: rolling30WindowFrom,
+              },
+            },
+            _count: {
+              _all: true,
+            },
+          }),
         ])
-      : [[], [], []];
+      : [[], [], [], [], [], []];
 
   const repeatUsageByUser = new Map<
     string,
@@ -668,6 +736,72 @@ export async function getLearnerRetentionSummary() {
       { key: "writing", count: writingRepeatRows.reduce((sum, row) => sum + row._count._all, 0) },
       { key: "exercise", count: exerciseRepeatRows.reduce((sum, row) => sum + row._count._all, 0) },
     ].sort((left, right) => right.count - left.count)[0]?.key ?? null;
+
+  const rolling30UsageByUser = new Map<
+    string,
+    {
+      speaking: number;
+      writing: number;
+      exercise: number;
+    }
+  >();
+
+  for (const row of speakingRolling30Rows) {
+    const current = rolling30UsageByUser.get(row.userId) ?? {
+      speaking: 0,
+      writing: 0,
+      exercise: 0,
+    };
+    current.speaking = row._count._all;
+    rolling30UsageByUser.set(row.userId, current);
+  }
+
+  for (const row of writingRolling30Rows) {
+    const current = rolling30UsageByUser.get(row.userId) ?? {
+      speaking: 0,
+      writing: 0,
+      exercise: 0,
+    };
+    current.writing = row._count._all;
+    rolling30UsageByUser.set(row.userId, current);
+  }
+
+  for (const row of exerciseRolling30Rows) {
+    const current = rolling30UsageByUser.get(row.userId) ?? {
+      speaking: 0,
+      writing: 0,
+      exercise: 0,
+    };
+    current.exercise = row._count._all;
+    rolling30UsageByUser.set(row.userId, current);
+  }
+
+  const rolling30RepeatLearners = new Set<string>();
+  const rolling30MultiSurfaceLearners = new Set<string>();
+  let rolling30TotalActions = 0;
+
+  for (const [userId, usage] of rolling30UsageByUser.entries()) {
+    const totalActions = usage.speaking + usage.writing + usage.exercise;
+    const activeSurfaceCount = [usage.speaking, usage.writing, usage.exercise].filter(
+      (count) => count > 0,
+    ).length;
+
+    rolling30TotalActions += totalActions;
+
+    if (totalActions >= 2) {
+      rolling30RepeatLearners.add(userId);
+    }
+
+    if (activeSurfaceCount >= 2) {
+      rolling30MultiSurfaceLearners.add(userId);
+    }
+  }
+
+  const rolling30ActiveLearners = rolling30UsageByUser.size;
+  const rolling30AverageActionsPerActiveLearner =
+    rolling30ActiveLearners > 0
+      ? rolling30TotalActions / rolling30ActiveLearners
+      : null;
 
   const [speakingActivityRows, writingActivityRows, exerciseActivityRows, latestSnapshots] =
     activatedUserIds.length > 0
@@ -1066,11 +1200,23 @@ export async function getLearnerRetentionSummary() {
     writingCompletionRate: formatPercentage(firstWritingCompletions, activatedUsers),
     learningStartRate: formatPercentage(startedLearningUsers.size, activatedUsers),
     averageTimeToLearningStart: formatHours(averageTimeToLearningStartHours),
+    medianTimeToLearningStart: formatHours(medianTimeToLearningStartHours),
     activeLearnersLast7Days,
     repeatLearnersLast7Days: repeatLearners.size,
     multiSurfaceLearnersLast7Days: multiSurfaceLearners.size,
     repeatLearnerRate: formatPercentage(repeatLearners.size, activatedUsers),
     multiSurfaceLearnerRate: formatPercentage(multiSurfaceLearners.size, activatedUsers),
+    rolling30ActiveLearners,
+    rolling30RepeatLearners: rolling30RepeatLearners.size,
+    rolling30MultiSurfaceLearners: rolling30MultiSurfaceLearners.size,
+    rolling30RepeatRate: formatPercentage(rolling30RepeatLearners.size, activatedUsers),
+    rolling30MultiSurfaceRate: formatPercentage(
+      rolling30MultiSurfaceLearners.size,
+      activatedUsers,
+    ),
+    rolling30AverageActionsPerActiveLearner: formatDecimal(
+      rolling30AverageActionsPerActiveLearner,
+    ),
     d1EligibleUsers: d1Eligible,
     d1ReturnedUsers: d1Returned,
     d1ReturnRate: formatPercentage(d1Returned, d1Eligible),

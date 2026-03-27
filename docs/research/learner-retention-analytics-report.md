@@ -136,12 +136,14 @@ The summary now also derives:
 - 7-day repeat learners
 - multi-surface learners in the last 7 days
 - average learning actions per active learner in the last 7 days
+- median time from activation to first learning action
 - a composite repeat learner quality score
 - D1, D7, and D14 return rates based on post-activation activity
 - D30 return rate based on post-activation activity
 - repeat rate by activation cohort
 - rough learning-quality correlation between repeat and non-repeat learners
 - retention split by the learner's first real learning path
+- rolling 30-day active and repeat usage metrics
 
 The summary also computes:
 
@@ -194,6 +196,13 @@ And it surfaces a simple repeat-versus-non-repeat comparison for:
 - latest writing band
 - latest overall learning progress
 
+It now also exposes rolling 30-day health signals:
+
+- active learners in the last 30 days
+- repeat learners in the last 30 days
+- multi-surface learners in the last 30 days
+- average learning actions per active learner in the last 30 days
+
 This makes the admin home page answer both questions:
 
 - are we converting visitors into activated learners?
@@ -209,11 +218,13 @@ This upgrade makes it possible to measure:
 - speaking start versus speaking completion
 - structured practice adoption through exercise submission
 - average time to first real learning action
+- median time to first real learning action
 - which registration sources produce better learning-start quality
 - which plans and exam targets show stronger early retention
 - which learner groups merely start once versus actually come back within 7 days
 - how much of that return behavior survives to day 1, day 7, and day 14
 - whether retention still holds by day 30
+- whether short-horizon repeat usage still translates into healthy rolling 30-day usage
 - which first learning path leads to stronger repeat usage and long-tail return
 - whether repeat learners also show stronger speaking, writing, and progress signals
 - whether product value is being reached after approval and verification
@@ -257,7 +268,23 @@ Learning activity for this purpose is derived from persisted product actions:
 
 This keeps the metric aligned with server-tracked product behavior.
 
-## 12. First Learning Path Retention
+## 12. Rolling 30-Day Retention Lens
+
+The admin dashboard now complements the 7-day repeat view with a broader rolling 30-day lens:
+
+- learners with at least one learning action in the last 30 days
+- learners with at least two learning actions in the last 30 days
+- learners who touched multiple product surfaces in that same period
+- average action depth per active learner in the 30-day window
+
+This helps separate:
+
+- short-term re-engagement
+- sustained month-level usage
+
+The dashboard also now shows both `average` and `median` time to first learning action. Median is important because a few late-start learners can skew the average upward.
+
+## 13. First Learning Path Retention
 
 The latest upgrade also classifies each learner by the first persisted learning surface they touched:
 
@@ -277,7 +304,7 @@ This helps answer a product question that the previous dashboard could not answe
 
 - which first learning experience produces the healthiest follow-up behavior?
 
-## 13. Repeat Cohort And Learning Correlation
+## 14. Repeat Cohort And Learning Correlation
 
 The service now enriches retention analysis in two additional ways:
 
@@ -297,10 +324,10 @@ The admin dashboard now compares the latest available learner outcomes between r
 
 This is not a causal model. It is an operational signal for product research: if repeat learners consistently outperform non-repeat learners, improving return behavior becomes easier to justify as a product priority.
 
-## 14. Recommended Next Steps
+## 15. Recommended Next Steps
 
 1. Add retention checkpoints for first completed lesson and first reviewed exercise.
-2. Add median alongside average time-to-first-learning-action.
-3. Add plan-level and source-level D30 reporting once cohorts are larger.
+2. Add plan-level and source-level rolling 30-day reporting once cohorts are larger.
+3. Compare median time-to-first-learning-action across source, plan, and first-path groups.
 4. Add retention comparison by teacher assignment once the teacher workflow exists.
 5. Correlate first learning path choice with later repeat usage and band gain more formally.
