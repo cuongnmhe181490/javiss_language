@@ -51,6 +51,12 @@ type CrossSegmentItem = {
   d30ReturnRate: string;
 };
 
+type RetentionRecommendationItem = {
+  title: string;
+  summary: string;
+  action: string;
+};
+
 function formatPercentage(numerator: number, denominator: number) {
   if (denominator <= 0) {
     return "0.0%";
@@ -137,6 +143,14 @@ function medianNumbers(values: number[]) {
   }
 
   return sortedValues[middleIndex];
+}
+
+function formatRateValue(numerator: number, denominator: number) {
+  if (denominator <= 0) {
+    return 0;
+  }
+
+  return (numerator / denominator) * 100;
 }
 
 function getLearningPathKey(eventType: AnalyticsEventType) {
@@ -1285,6 +1299,91 @@ export async function getLearnerRetentionSummary() {
   const nonRepeatWritingBandAverage = averageNumbers(nonRepeatGroup.writingBands);
   const repeatOverallProgressAverage = averageNumbers(repeatGroup.overallProgress);
   const nonRepeatOverallProgressAverage = averageNumbers(nonRepeatGroup.overallProgress);
+  const strongestFirstPath =
+    retentionByFirstPath.length > 0
+      ? [...retentionByFirstPath].sort((left, right) => {
+          const leftRate = formatRateValue(left.repeatLearners, left.startedUsers);
+          const rightRate = formatRateValue(right.repeatLearners, right.startedUsers);
+
+          if (rightRate !== leftRate) {
+            return rightRate - leftRate;
+          }
+
+          return right.startedUsers - left.startedUsers;
+        })[0]
+      : null;
+  const weakestFirstPath =
+    retentionByFirstPath.length > 1
+      ? [...retentionByFirstPath].sort((left, right) => {
+          const leftRate = formatRateValue(left.repeatLearners, left.startedUsers);
+          const rightRate = formatRateValue(right.repeatLearners, right.startedUsers);
+
+          if (leftRate !== rightRate) {
+            return leftRate - rightRate;
+          }
+
+          return left.startedUsers - right.startedUsers;
+        })[0]
+      : null;
+  const strongestSourcePath =
+    [...toCrossSegmentItems(sourcePathSegments)].sort((left, right) => {
+      const leftRate = formatRateValue(left.repeatLearners, left.startedUsers);
+      const rightRate = formatRateValue(right.repeatLearners, right.startedUsers);
+
+      if (rightRate !== leftRate) {
+        return rightRate - leftRate;
+      }
+
+      return right.startedUsers - left.startedUsers;
+    })[0] ?? null;
+  const weakestPlanPath =
+    [...toCrossSegmentItems(planPathSegments)].sort((left, right) => {
+      const leftRate = formatRateValue(left.repeatLearners, left.startedUsers);
+      const rightRate = formatRateValue(right.repeatLearners, right.startedUsers);
+
+      if (leftRate !== rightRate) {
+        return leftRate - rightRate;
+      }
+
+      return left.startedUsers - right.startedUsers;
+    })[0] ?? null;
+  const retentionRecommendations: RetentionRecommendationItem[] = [];
+
+  if (activatedUsers > 0 && startedLearningUsers.size / activatedUsers < 0.55) {
+    retentionRecommendations.push({
+      title: "Tăng lực đẩy onboarding sau kích hoạt",
+      summary: `${startedLearningUsers.size}/${activatedUsers} học viên đã kích hoạt thực sự bắt đầu học. Điểm nghẽn đang nằm ở đoạn sau khi đăng nhập lần đầu.`,
+      action: strongestFirstPath
+        ? `Đưa CTA mở thẳng "${strongestFirstPath.label}" vào dashboard, email chào mừng và màn pending/verify để kéo người học vào bề mặt có repeat tốt nhất.`
+        : "Đưa CTA vào bài học đầu tiên và speaking mock ngay sau khi người học kích hoạt tài khoản.",
+    });
+  }
+
+  if (d7Eligible > 0 && d7Returned / d7Eligible < 0.25) {
+    retentionRecommendations.push({
+      title: "Giảm rơi rụng ở tuần đầu",
+      summary: `Tỷ lệ quay lại D7 hiện là ${formatPercentage(d7Returned, d7Eligible)}, thấp hơn mức an toàn cho một vòng lặp học ổn định.`,
+      action: weakestFirstPath
+        ? `Rà lại hành trình "${weakestFirstPath.label}" vì đây là điểm chạm đầu tiên đang kéo repeat xuống thấp nhất. Nên thêm follow-up lesson hoặc speaking prompt ngay sau lần dùng đầu tiên.`
+        : "Thêm nhắc học lại và đề xuất bài tiếp theo sau lần dùng đầu tiên để giữ người học quay lại trong 7 ngày đầu.",
+    });
+  }
+
+  if (strongestSourcePath) {
+    retentionRecommendations.push({
+      title: "Nhân rộng combo acquisition hiệu quả nhất",
+      summary: `Combo "${strongestSourcePath.label}" đang cho tỷ lệ quay lại 7 ngày tốt nhất trong các nhóm hiện có.`,
+      action: `Ưu tiên copywriting, CTA và onboarding flow theo combo này. Nếu đủ traffic, dùng nó làm baseline cho landing và chatbot công khai.`,
+    });
+  }
+
+  if (weakestPlanPath) {
+    retentionRecommendations.push({
+      title: "Kiểm tra nhóm plan có retention yếu",
+      summary: `Combo "${weakestPlanPath.label}" đang có tín hiệu giữ chân thấp nhất trong các nhóm plan × first path.`,
+      action: "Soát lại entitlement, nội dung mở khóa ban đầu và CTA trong dashboard cho nhóm này để tránh user vào mà chưa thấy giá trị đủ nhanh.",
+    });
+  }
 
   return {
     periodLabel: "30 ngày gần đây",
@@ -1411,5 +1510,6 @@ export async function getLearnerRetentionSummary() {
     retentionBySourcePath: toCrossSegmentItems(sourcePathSegments),
     retentionByPlanPath: toCrossSegmentItems(planPathSegments),
     retentionByExamPath: toCrossSegmentItems(examPathSegments),
+    recommendations: retentionRecommendations.slice(0, 4),
   };
 }

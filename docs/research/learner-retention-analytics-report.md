@@ -146,6 +146,7 @@ The summary now also derives:
 - rolling 30-day active and repeat usage metrics
 - cross-segmentation between acquisition source / assigned plan and first learning path
 - cross-segmentation between exam target and first learning path
+- action-oriented admin recommendations derived from retention bottlenecks and strongest segments
 
 The summary also computes:
 
@@ -198,6 +199,13 @@ And it now exposes deeper cross-segmentation for the strongest combinations:
 - assigned plan × first learning path
 - target exam × first learning path
 
+It also now generates an admin-facing recommendation block based on:
+
+- activation-to-learning-start bottlenecks
+- D7 return weakness
+- strongest acquisition × first-path combo
+- weakest plan × first-path combo
+
 And it surfaces a simple repeat-versus-non-repeat comparison for:
 
 - latest speaking band
@@ -235,6 +243,7 @@ This upgrade makes it possible to measure:
 - whether short-horizon repeat usage still translates into healthy rolling 30-day usage
 - which first learning path leads to stronger repeat usage and long-tail return
 - which acquisition-and-onboarding combinations lead to the healthiest retention
+- what the admin team should do next without manually interpreting every metric block
 - whether repeat learners also show stronger speaking, writing, and progress signals
 - whether product value is being reached after approval and verification
 
@@ -355,10 +364,29 @@ The admin dashboard now compares the latest available learner outcomes between r
 
 This is not a causal model. It is an operational signal for product research: if repeat learners consistently outperform non-repeat learners, improving return behavior becomes easier to justify as a product priority.
 
-## 16. Recommended Next Steps
+## 16. Admin Recommendation Layer
+
+The latest upgrade turns retention analytics into action suggestions.
+
+Instead of only exposing raw metrics, the admin dashboard now synthesizes a short recommendation list from:
+
+- low activation-to-learning-start conversion
+- weak D7 return rate
+- strongest source × first-path combination
+- weakest plan × first-path combination
+
+Each recommendation contains:
+
+- a short title
+- a plain-language diagnosis
+- a suggested next action
+
+This keeps the admin home page useful even when the operator does not want to manually inspect every segment table.
+
+## 17. Recommended Next Steps
 
 1. Add retention checkpoints for first completed lesson and first reviewed exercise.
 2. Compare median time-to-first-learning-action across source, plan, and first-path groups.
 3. Add teacher / region / exam-target cross-segmentation if cohorts become large enough.
 4. Add retention comparison by teacher assignment once the teacher workflow exists.
-5. Correlate first learning path choice with later repeat usage and band gain more formally.
+5. Replace heuristic recommendation rules with scored playbooks once more history accumulates.

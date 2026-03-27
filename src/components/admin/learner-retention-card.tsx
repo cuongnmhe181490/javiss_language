@@ -127,6 +127,11 @@ type LearnerRetentionCardProps = {
     d30ReturnedUsers: number;
     d30ReturnRate: string;
   }>;
+  recommendations: Array<{
+    title: string;
+    summary: string;
+    action: string;
+  }>;
 };
 
 function getTopActionLabel(value: string | null) {
@@ -222,6 +227,7 @@ export function LearnerRetentionCard({
   retentionBySourcePath,
   retentionByPlanPath,
   retentionByExamPath,
+  recommendations,
 }: LearnerRetentionCardProps) {
   return (
     <Card>
@@ -232,6 +238,36 @@ export function LearnerRetentionCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+          <p className="text-sm font-semibold text-slate-950 dark:text-white">
+            Gợi ý hành động cho admin
+          </p>
+          <div className="mt-4 grid gap-3 xl:grid-cols-2">
+            {recommendations.length > 0 ? (
+              recommendations.map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50"
+                >
+                  <p className="text-sm font-medium text-slate-950 dark:text-white">
+                    {item.title}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                    {item.summary}
+                  </p>
+                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                    Gợi ý: {item.action}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Chưa có đủ dữ liệu để sinh khuyến nghị hành động cho admin.
+              </p>
+            )}
+          </div>
+        </div>
+
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
           <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50">
             <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
