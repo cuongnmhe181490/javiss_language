@@ -138,8 +138,10 @@ The summary now also derives:
 - average learning actions per active learner in the last 7 days
 - a composite repeat learner quality score
 - D1, D7, and D14 return rates based on post-activation activity
+- D30 return rate based on post-activation activity
 - repeat rate by activation cohort
 - rough learning-quality correlation between repeat and non-repeat learners
+- retention split by the learner's first real learning path
 
 The summary also computes:
 
@@ -177,6 +179,14 @@ It now also exposes time-based return signals:
 - D1 return rate
 - D7 return rate
 - D14 return rate
+- D30 return rate
+
+It now also exposes retention by first learning path:
+
+- started from lesson catalog
+- started from speaking mock
+- started from exercise submission
+- started from writing feedback
 
 And it surfaces a simple repeat-versus-non-repeat comparison for:
 
@@ -203,6 +213,8 @@ This upgrade makes it possible to measure:
 - which plans and exam targets show stronger early retention
 - which learner groups merely start once versus actually come back within 7 days
 - how much of that return behavior survives to day 1, day 7, and day 14
+- whether retention still holds by day 30
+- which first learning path leads to stronger repeat usage and long-tail return
 - whether repeat learners also show stronger speaking, writing, and progress signals
 - whether product value is being reached after approval and verification
 
@@ -233,6 +245,7 @@ The latest upgrade adds a second lens on retention:
 - `D1`: learner performed any learning activity at least 24 hours after activation
 - `D7`: learner performed any learning activity at least 7 days after activation
 - `D14`: learner performed any learning activity at least 14 days after activation
+- `D30`: learner performed any learning activity at least 30 days after activation
 
 Eligible users are only counted once they have actually existed long enough to reach that checkpoint. This prevents fresh activations from artificially depressing D7 and D14 rates.
 
@@ -244,7 +257,27 @@ Learning activity for this purpose is derived from persisted product actions:
 
 This keeps the metric aligned with server-tracked product behavior.
 
-## 12. Repeat Cohort And Learning Correlation
+## 12. First Learning Path Retention
+
+The latest upgrade also classifies each learner by the first persisted learning surface they touched:
+
+- lesson catalog
+- speaking mock
+- exercise submission
+- writing feedback
+
+For each first-path group, the admin dashboard now shows:
+
+- number of learners who started there
+- repeat learner rate in the 7-day window
+- D7 return rate
+- D30 return rate
+
+This helps answer a product question that the previous dashboard could not answer:
+
+- which first learning experience produces the healthiest follow-up behavior?
+
+## 13. Repeat Cohort And Learning Correlation
 
 The service now enriches retention analysis in two additional ways:
 
@@ -264,10 +297,10 @@ The admin dashboard now compares the latest available learner outcomes between r
 
 This is not a causal model. It is an operational signal for product research: if repeat learners consistently outperform non-repeat learners, improving return behavior becomes easier to justify as a product priority.
 
-## 13. Recommended Next Steps
+## 14. Recommended Next Steps
 
 1. Add retention checkpoints for first completed lesson and first reviewed exercise.
 2. Add median alongside average time-to-first-learning-action.
-3. Expand time-based return from D14 to D30 for plan-level reporting.
+3. Add plan-level and source-level D30 reporting once cohorts are larger.
 4. Add retention comparison by teacher assignment once the teacher workflow exists.
-5. Correlate first learning path choice with later repeat usage and band gain.
+5. Correlate first learning path choice with later repeat usage and band gain more formally.

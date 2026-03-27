@@ -31,6 +31,17 @@ type SegmentItem = {
   repeatRate: string;
 };
 
+type FirstPathItem = {
+  label: string;
+  startedUsers: number;
+  repeatLearners: number;
+  repeatRate: string;
+  d7ReturnedUsers: number;
+  d7ReturnRate: string;
+  d30ReturnedUsers: number;
+  d30ReturnRate: string;
+};
+
 function formatPercentage(numerator: number, denominator: number) {
   if (denominator <= 0) {
     return "0.0%";
@@ -102,6 +113,36 @@ function averageNumbers(values: number[]) {
   }
 
   return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function getLearningPathKey(eventType: AnalyticsEventType) {
+  switch (eventType) {
+    case AnalyticsEventType.lesson_catalog_first_opened:
+      return "lesson";
+    case AnalyticsEventType.speaking_mock_first_started:
+      return "speaking";
+    case AnalyticsEventType.exercise_first_submitted:
+      return "exercise";
+    case AnalyticsEventType.writing_feedback_first_completed:
+      return "writing";
+    default:
+      return null;
+  }
+}
+
+function getLearningPathLabel(pathKey: string) {
+  switch (pathKey) {
+    case "lesson":
+      return "Bắt đầu từ khu bài luyện";
+    case "speaking":
+      return "Bắt đầu từ speaking mock";
+    case "exercise":
+      return "Bắt đầu từ exercise";
+    case "writing":
+      return "Bắt đầu từ writing feedback";
+    default:
+      return "Hành động khác";
+  }
 }
 
 function getWeekStart(date: Date) {
@@ -340,6 +381,7 @@ export async function getLearnerRetentionSummary() {
     learningStartEvents.find(
       (event) => event.eventType === AnalyticsEventType.speaking_mock_first_started,
     ) ?? null;
+  const firstLearningPathByUser = new Map<string, string>();
 
   const activationByUser = new Map<string, Date>();
   const firstLearningActionByUser = new Map<string, Date>();
@@ -393,13 +435,25 @@ export async function getLearnerRetentionSummary() {
     }
   }
 
-  for (const event of [...learningStartEvents].reverse()) {
+  const learningStartEventsAscending = [...learningStartEvents].sort(
+    (left, right) => left.createdAt.getTime() - right.createdAt.getTime(),
+  );
+
+  for (const event of learningStartEventsAscending) {
     if (!event.userId) {
       continue;
     }
 
     if (!firstLearningActionByUser.has(event.userId)) {
       firstLearningActionByUser.set(event.userId, event.createdAt);
+    }
+
+    if (!firstLearningPathByUser.has(event.userId)) {
+      const learningPathKey = getLearningPathKey(event.eventType);
+
+      if (learningPathKey) {
+        firstLearningPathByUser.set(event.userId, learningPathKey);
+      }
     }
   }
 
@@ -716,6 +770,10 @@ export async function getLearnerRetentionSummary() {
   let d7Returned = 0;
   let d14Eligible = 0;
   let d14Returned = 0;
+  let d30Eligible = 0;
+  let d30Returned = 0;
+  const d7ReturnedUsers = new Set<string>();
+  const d30ReturnedUsers = new Set<string>();
 
   for (const [userId, activatedAt] of activationByUser.entries()) {
     const activityDates = activityDatesByUser.get(userId) ?? [];
@@ -723,6 +781,7 @@ export async function getLearnerRetentionSummary() {
     const day1Threshold = activatedAt.getTime() + 24 * 60 * 60 * 1000;
     const day7Threshold = activatedAt.getTime() + 7 * 24 * 60 * 60 * 1000;
     const day14Threshold = activatedAt.getTime() + 14 * 24 * 60 * 60 * 1000;
+    const day30Threshold = activatedAt.getTime() + 30 * 24 * 60 * 60 * 1000;
 
     if (elapsedMs >= 24 * 60 * 60 * 1000) {
       d1Eligible += 1;
@@ -735,6 +794,7 @@ export async function getLearnerRetentionSummary() {
       d7Eligible += 1;
       if (activityDates.some((date) => date.getTime() >= day7Threshold)) {
         d7Returned += 1;
+        d7ReturnedUsers.add(userId);
       }
     }
 
@@ -742,6 +802,14 @@ export async function getLearnerRetentionSummary() {
       d14Eligible += 1;
       if (activityDates.some((date) => date.getTime() >= day14Threshold)) {
         d14Returned += 1;
+      }
+    }
+
+    if (elapsedMs >= 30 * 24 * 60 * 60 * 1000) {
+      d30Eligible += 1;
+      if (activityDates.some((date) => date.getTime() >= day30Threshold)) {
+        d30Returned += 1;
+        d30ReturnedUsers.add(userId);
       }
     }
   }
@@ -900,6 +968,60 @@ export async function getLearnerRetentionSummary() {
       .slice(0, 5);
   }
 
+  const firstPathSegments = new Map<
+    string,
+    {
+      started: Set<string>;
+      repeated: Set<string>;
+      d7Returned: Set<string>;
+      d30Returned: Set<string>;
+    }
+  >();
+
+  for (const [userId, pathKey] of firstLearningPathByUser.entries()) {
+    const current = firstPathSegments.get(pathKey) ?? {
+      started: new Set<string>(),
+      repeated: new Set<string>(),
+      d7Returned: new Set<string>(),
+      d30Returned: new Set<string>(),
+    };
+
+    current.started.add(userId);
+
+    if (repeatLearners.has(userId)) {
+      current.repeated.add(userId);
+    }
+
+    if (d7ReturnedUsers.has(userId)) {
+      current.d7Returned.add(userId);
+    }
+
+    if (d30ReturnedUsers.has(userId)) {
+      current.d30Returned.add(userId);
+    }
+
+    firstPathSegments.set(pathKey, current);
+  }
+
+  const retentionByFirstPath = [...firstPathSegments.entries()]
+    .map(([pathKey, value]) => ({
+      label: getLearningPathLabel(pathKey),
+      startedUsers: value.started.size,
+      repeatLearners: value.repeated.size,
+      repeatRate: formatPercentage(value.repeated.size, value.started.size),
+      d7ReturnedUsers: value.d7Returned.size,
+      d7ReturnRate: formatPercentage(value.d7Returned.size, value.started.size),
+      d30ReturnedUsers: value.d30Returned.size,
+      d30ReturnRate: formatPercentage(value.d30Returned.size, value.started.size),
+    }))
+    .sort((left, right) => {
+      if (right.repeatLearners !== left.repeatLearners) {
+        return right.repeatLearners - left.repeatLearners;
+      }
+
+      return right.startedUsers - left.startedUsers;
+    }) satisfies FirstPathItem[];
+
   const cohortItems = [...cohortMap.entries()]
     .map(([cohortKey, value]) => ({
       cohortKey,
@@ -958,6 +1080,9 @@ export async function getLearnerRetentionSummary() {
     d14EligibleUsers: d14Eligible,
     d14ReturnedUsers: d14Returned,
     d14ReturnRate: formatPercentage(d14Returned, d14Eligible),
+    d30EligibleUsers: d30Eligible,
+    d30ReturnedUsers: d30Returned,
+    d30ReturnRate: formatPercentage(d30Returned, d30Eligible),
     averageActionsPerActiveLearner: formatDecimal(averageActionsPerActiveLearner),
     repeatLearnerQualityScore,
     topRepeatSurface,
@@ -1032,5 +1157,6 @@ export async function getLearnerRetentionSummary() {
     retentionBySource: toSegmentItems(sourceSegments),
     retentionByPlan: toSegmentItems(planSegments),
     retentionByExam: toSegmentItems(examSegments),
+    retentionByFirstPath,
   };
 }

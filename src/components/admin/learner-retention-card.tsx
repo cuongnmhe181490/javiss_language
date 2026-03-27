@@ -32,6 +32,9 @@ type LearnerRetentionCardProps = {
   d14EligibleUsers: number;
   d14ReturnedUsers: number;
   d14ReturnRate: string;
+  d30EligibleUsers: number;
+  d30ReturnedUsers: number;
+  d30ReturnRate: string;
   averageActionsPerActiveLearner: string | null;
   repeatLearnerQualityScore: number;
   topRepeatSurface: string | null;
@@ -82,6 +85,16 @@ type LearnerRetentionCardProps = {
     learningStartRate: string;
     repeatLearners: number;
     repeatRate: string;
+  }>;
+  retentionByFirstPath: Array<{
+    label: string;
+    startedUsers: number;
+    repeatLearners: number;
+    repeatRate: string;
+    d7ReturnedUsers: number;
+    d7ReturnRate: string;
+    d30ReturnedUsers: number;
+    d30ReturnRate: string;
   }>;
 };
 
@@ -145,6 +158,9 @@ export function LearnerRetentionCard({
   d14EligibleUsers,
   d14ReturnedUsers,
   d14ReturnRate,
+  d30EligibleUsers,
+  d30ReturnedUsers,
+  d30ReturnRate,
   averageActionsPerActiveLearner,
   repeatLearnerQualityScore,
   topRepeatSurface,
@@ -164,6 +180,7 @@ export function LearnerRetentionCard({
   retentionBySource,
   retentionByPlan,
   retentionByExam,
+  retentionByFirstPath,
 }: LearnerRetentionCardProps) {
   return (
     <Card>
@@ -395,7 +412,7 @@ export function LearnerRetentionCard({
           </div>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-3">
+        <div className="grid gap-4 xl:grid-cols-4">
           <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
             <p className="text-sm font-semibold text-slate-950 dark:text-white">
               D1 return rate
@@ -427,6 +444,17 @@ export function LearnerRetentionCard({
             </p>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               {d14ReturnedUsers}/{d14EligibleUsers} học viên còn giữ được nhịp học sau 14 ngày.
+            </p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white">
+              D30 return rate
+            </p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
+              {d30ReturnRate}
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              {d30ReturnedUsers}/{d30EligibleUsers} học viên còn duy trì việc học sau 30 ngày.
             </p>
           </div>
         </div>
@@ -550,6 +578,45 @@ export function LearnerRetentionCard({
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+          <p className="text-sm font-semibold text-slate-950 dark:text-white">
+            Retention theo hành động học đầu tiên
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {retentionByFirstPath.length > 0 ? (
+              retentionByFirstPath.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50"
+                >
+                  <p className="text-sm font-medium text-slate-950 dark:text-white">
+                    {item.label}
+                  </p>
+                  <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+                    Người bắt đầu theo hướng này:{" "}
+                    <span className="font-semibold text-slate-950 dark:text-white">
+                      {item.startedUsers}
+                    </span>
+                  </p>
+                  <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    Quay lại 7 ngày: {item.repeatLearners}/{item.startedUsers} ({item.repeatRate})
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    D7 return: {item.d7ReturnedUsers}/{item.startedUsers} ({item.d7ReturnRate})
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    D30 return: {item.d30ReturnedUsers}/{item.startedUsers} ({item.d30ReturnRate})
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Chưa có đủ dữ liệu để phân tích theo hành động học đầu tiên.
+              </p>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
