@@ -1,0 +1,651 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Tenant {
+  id                         String                      @id @default(uuid()) @db.Uuid
+  slug                       String                      @unique @db.VarChar(120)
+  name                       String                      @db.VarChar(160)
+  region                     String                      @db.VarChar(40)
+  plan                       String                      @db.VarChar(40)
+  dataResidency              String                      @db.VarChar(40)
+  featureFlags               Json                        @default("{}")
+  brandingConfig             Json?
+  retentionPolicy            Json?
+  status                     String                      @default("active") @db.VarChar(40)
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  auditEvents                AuditEvent[]
+  aiAgents                   AIAgent[]
+  aiConversations            AIConversation[]
+  aiMessages                 AIMessage[]
+  authIdentities             AuthIdentity[]
+  assignments                Assignment[]
+  contentItems               ContentItem[]
+  contentReviewEvents        ContentReviewEvent[]
+  contentSources             ContentSource[]
+  contentVersions            ContentVersion[]
+  courseProgress             CourseProgress[]
+  courses                    Course[]
+  exercises                  Exercise[]
+  grammarPoints              GrammarPoint[]
+  lessonBlocks               LessonBlock[]
+  lessonProgress             LessonProgress[]
+  lessons                    Lesson[]
+  memberships                UserTenantMembership[]
+  modules                    Module[]
+  promptVersions             PromptVersion[]
+  rateBuckets                RateLimitBucket[]
+  speakingRealtimeTokens     SpeakingRealtimeToken[]
+  speakingSessions           SpeakingSession[]
+  speakingTranscriptSegments SpeakingTranscriptSegment[]
+  stepUpSessions             StepUpSession[]
+  users                      User[]
+  vocabularyItems            VocabularyItem[]
+
+  @@index([status])
+  @@index([region])
+}
+
+model User {
+  id                     String                  @id @default(uuid()) @db.Uuid
+  tenantId               String                  @db.Uuid
+  externalId             String?                 @db.VarChar(180)
+  email                  String                  @db.VarChar(320)
+  displayName            String                  @db.VarChar(160)
+  locale                 String                  @default("en") @db.VarChar(20)
+  status                 String                  @default("active") @db.VarChar(40)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  authIdentities         AuthIdentity[]
+  aiConversations        AIConversation[]
+  courseProgress         CourseProgress[]
+  lessonProgress         LessonProgress[]
+  memberships            UserTenantMembership[]
+  stepUpSessions         StepUpSession[]
+  speakingRealtimeTokens SpeakingRealtimeToken[]
+  speakingSessions       SpeakingSession[]
+  tenant                 Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, email])
+  @@unique([tenantId, externalId])
+  @@index([tenantId, status])
+}
+
+model UserTenantMembership {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  userId    String   @db.Uuid
+  roles     String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model AuditEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String?  @db.Uuid
+  actorId      String?  @db.Uuid
+  actorRole    String?  @db.VarChar(80)
+  action       String   @db.VarChar(160)
+  resourceType String   @db.VarChar(120)
+  resourceId   String?  @db.VarChar(180)
+  outcome      String   @db.VarChar(40)
+  ip           String?  @db.VarChar(80)
+  userAgent    String?
+  requestId    String   @db.VarChar(160)
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now())
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, action])
+  @@index([tenantId, outcome])
+  @@index([actorId])
+  @@index([requestId])
+}
+
+model AuthIdentity {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  tenantId  String   @db.Uuid
+  provider  String   @db.VarChar(80)
+  subject   String   @db.VarChar(240)
+  email     String   @db.VarChar(320)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([provider, subject])
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model StepUpSession {
+  id         String    @id @default(uuid()) @db.Uuid
+  tenantId   String    @db.Uuid
+  userId     String    @db.Uuid
+  method     String    @db.VarChar(80)
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  consumedAt DateTime?
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, userId, expiresAt])
+}
+
+model RateLimitBucket {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String?  @db.Uuid
+  key       String   @unique @db.VarChar(260)
+  points    Int
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([resetAt])
+}
+
+model Course {
+  id             String           @id @default(uuid()) @db.Uuid
+  tenantId       String           @db.Uuid
+  language       String           @db.VarChar(8)
+  trackType      String           @db.VarChar(40)
+  targetLevel    String           @db.VarChar(40)
+  title          String           @db.VarChar(180)
+  slug           String           @db.VarChar(140)
+  description    String
+  status         String           @default("draft") @db.VarChar(40)
+  version        Int              @default(1)
+  createdBy      String?          @db.Uuid
+  publishedAt    DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  assignments    Assignment[]
+  courseProgress CourseProgress[]
+  lessons        Lesson[]
+  modules        Module[]
+  tenant         Tenant           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@index([tenantId, language])
+  @@index([tenantId, status])
+  @@index([tenantId, trackType])
+}
+
+model Module {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  courseId    String   @db.Uuid
+  title       String   @db.VarChar(180)
+  description String?
+  orderIndex  Int
+  status      String   @default("draft") @db.VarChar(40)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, courseId])
+  @@index([tenantId, courseId, orderIndex])
+}
+
+model Lesson {
+  id               String            @id @default(uuid()) @db.Uuid
+  tenantId         String            @db.Uuid
+  courseId         String            @db.Uuid
+  moduleId         String            @db.Uuid
+  title            String            @db.VarChar(180)
+  slug             String            @db.VarChar(140)
+  description      String?
+  language         String            @db.VarChar(8)
+  targetLevel      String            @db.VarChar(40)
+  estimatedMinutes Int
+  objectives       Json              @default("[]")
+  status           String            @default("draft") @db.VarChar(40)
+  version          Int               @default(1)
+  createdBy        String?           @db.Uuid
+  publishedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  blocks           LessonBlock[]
+  course           Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  exercises        Exercise[]
+  lessonProgress   LessonProgress[]
+  speakingSessions SpeakingSession[]
+  module           Module            @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, courseId, slug])
+  @@index([tenantId])
+  @@index([tenantId, courseId])
+  @@index([tenantId, moduleId])
+  @@index([tenantId, status])
+}
+
+model LessonBlock {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  lessonId   String   @db.Uuid
+  type       String   @db.VarChar(40)
+  orderIndex Int
+  content    Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, lessonId])
+  @@index([tenantId, lessonId, orderIndex])
+}
+
+model VocabularyItem {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @db.Uuid
+  language     String   @db.VarChar(8)
+  term         String   @db.VarChar(180)
+  reading      String?  @db.VarChar(180)
+  romanization String?  @db.VarChar(180)
+  meaning      String
+  partOfSpeech String?  @db.VarChar(80)
+  level        String   @db.VarChar(40)
+  tags         String[]
+  sourceId     String?  @db.VarChar(180)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, language])
+  @@index([tenantId, level])
+  @@index([tenantId, term])
+}
+
+model GrammarPoint {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  language    String   @db.VarChar(8)
+  title       String   @db.VarChar(180)
+  pattern     String   @db.VarChar(240)
+  explanation String
+  level       String   @db.VarChar(40)
+  examples    Json     @default("[]")
+  sourceId    String?  @db.VarChar(180)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, language])
+  @@index([tenantId, level])
+}
+
+model Exercise {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  lessonId    String   @db.Uuid
+  type        String   @db.VarChar(40)
+  prompt      String
+  content     Json
+  answerKey   Json
+  explanation String?
+  points      Int      @default(0)
+  orderIndex  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, lessonId])
+  @@index([tenantId, lessonId, orderIndex])
+}
+
+model LessonProgress {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenantId       String    @db.Uuid
+  userId         String    @db.Uuid
+  lessonId       String    @db.Uuid
+  status         String    @default("not_started") @db.VarChar(40)
+  score          Int?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  lastActivityAt DateTime
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  lesson         Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, userId, lessonId])
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@index([tenantId, lessonId])
+  @@index([tenantId, status])
+}
+
+model CourseProgress {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenantId         String   @db.Uuid
+  userId           String   @db.Uuid
+  courseId         String   @db.Uuid
+  status           String   @default("not_started") @db.VarChar(40)
+  completedLessons Int      @default(0)
+  totalLessons     Int      @default(0)
+  progressPercent  Int      @default(0)
+  lastLessonId     String?  @db.Uuid
+  updatedAt        DateTime @updatedAt
+  course           Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, userId, courseId])
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@index([tenantId, courseId])
+}
+
+model Assignment {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @db.Uuid
+  courseId     String    @db.Uuid
+  assigneeType String    @db.VarChar(40)
+  assigneeId   String    @db.VarChar(180)
+  assignedBy   String    @db.Uuid
+  dueDate      DateTime?
+  status       String    @default("active") @db.VarChar(40)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  course       Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, courseId])
+  @@index([tenantId, assigneeType, assigneeId])
+  @@index([tenantId, dueDate])
+}
+
+model ContentSource {
+  id                      String    @id @default(uuid()) @db.Uuid
+  tenantId                String    @db.Uuid
+  sourceName              String    @db.VarChar(180)
+  sourceType              String    @default("document") @db.VarChar(80)
+  reference               String    @db.VarChar(500)
+  licenseType             String    @db.VarChar(80)
+  allowedUsage            String[]
+  commercialAllowed       Boolean   @default(false)
+  attributionRequired     Boolean   @default(false)
+  attributionText         String?
+  expirationDate          DateTime?
+  dataResidencyConstraint String?   @db.VarChar(40)
+  status                  String    @default("draft") @db.VarChar(40)
+  createdBy               String?   @db.Uuid
+  reviewedBy              String?   @db.Uuid
+  approvedAt              DateTime?
+  metadata                Json      @default("{}")
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  tenant                  Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, reference])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, licenseType])
+}
+
+model ContentItem {
+  id             String               @id @default(uuid()) @db.Uuid
+  tenantId       String               @db.Uuid
+  type           String               @db.VarChar(40)
+  title          String               @db.VarChar(180)
+  slug           String               @db.VarChar(140)
+  language       String?              @db.VarChar(8)
+  level          String?              @db.VarChar(40)
+  status         String               @default("draft") @db.VarChar(40)
+  currentVersion Int                  @default(0)
+  createdBy      String?              @db.Uuid
+  publishedAt    DateTime?
+  metadata       Json                 @default("{}")
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  reviewEvents   ContentReviewEvent[]
+  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  versions       ContentVersion[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, type])
+  @@index([tenantId, language])
+}
+
+model ContentVersion {
+  id            String               @id @default(uuid()) @db.Uuid
+  tenantId      String               @db.Uuid
+  contentItemId String               @db.Uuid
+  version       Int
+  status        String               @default("draft") @db.VarChar(40)
+  body          Json
+  sourceIds     String[]
+  validation    Json                 @default("{}")
+  aiQa          Json                 @default("{}")
+  changeSummary String?
+  createdBy     String?              @db.Uuid
+  reviewedBy    String?              @db.Uuid
+  publishedAt   DateTime?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  item          ContentItem          @relation(fields: [contentItemId], references: [id], onDelete: Cascade)
+  reviewEvents  ContentReviewEvent[]
+  tenant        Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, contentItemId, version])
+  @@index([tenantId])
+  @@index([tenantId, contentItemId])
+  @@index([tenantId, status])
+}
+
+model ContentReviewEvent {
+  id            String          @id @default(uuid()) @db.Uuid
+  tenantId      String          @db.Uuid
+  contentItemId String          @db.Uuid
+  versionId     String?         @db.Uuid
+  actorId       String          @db.Uuid
+  action        String          @db.VarChar(80)
+  outcome       String          @db.VarChar(40)
+  comments      String?
+  metadata      Json            @default("{}")
+  createdAt     DateTime        @default(now())
+  item          ContentItem     @relation(fields: [contentItemId], references: [id], onDelete: Cascade)
+  tenant        Tenant          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  version       ContentVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, contentItemId])
+  @@index([tenantId, action])
+  @@index([tenantId, outcome])
+}
+
+model AIAgent {
+  id             String           @id @default(uuid()) @db.Uuid
+  tenantId       String           @db.Uuid
+  name           String           @db.VarChar(160)
+  scope          String           @db.VarChar(80)
+  allowedTools   String[]
+  promptVersion  String           @db.VarChar(80)
+  policyVersion  String           @db.VarChar(80)
+  status         String           @default("active") @db.VarChar(40)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  conversations  AIConversation[]
+  promptVersions PromptVersion[]
+  tenant         Tenant           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, scope])
+  @@index([tenantId, status])
+}
+
+model PromptVersion {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @db.Uuid
+  agentId      String   @db.Uuid
+  version      String   @db.VarChar(80)
+  purpose      String   @db.VarChar(160)
+  promptText   String
+  inputSchema  Json
+  outputSchema Json
+  safetyRules  Json
+  evalStatus   String   @default("draft") @db.VarChar(40)
+  createdBy    String?  @db.Uuid
+  approvedBy   String?  @db.Uuid
+  createdAt    DateTime @default(now())
+  agent        AIAgent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([agentId, version])
+  @@index([tenantId])
+  @@index([tenantId, agentId])
+  @@index([tenantId, evalStatus])
+}
+
+model AIConversation {
+  id        String      @id @default(uuid()) @db.Uuid
+  tenantId  String      @db.Uuid
+  userId    String      @db.Uuid
+  agentId   String      @db.Uuid
+  lessonId  String?     @db.Uuid
+  courseId  String?     @db.Uuid
+  title     String      @db.VarChar(180)
+  status    String      @default("active") @db.VarChar(40)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  agent     AIAgent     @relation(fields: [agentId], references: [id], onDelete: Restrict)
+  messages  AIMessage[]
+  tenant    Tenant      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@index([tenantId, agentId])
+  @@index([tenantId, status])
+}
+
+model AIMessage {
+  id             String         @id @default(uuid()) @db.Uuid
+  tenantId       String         @db.Uuid
+  conversationId String         @db.Uuid
+  role           String         @db.VarChar(40)
+  content        String
+  citations      Json           @default("[]")
+  safetyFlags    Json           @default("{}")
+  provider       String         @db.VarChar(80)
+  modelId        String         @db.VarChar(120)
+  promptVersion  String?        @db.VarChar(80)
+  policyVersion  String?        @db.VarChar(80)
+  inputTokens    Int            @default(0)
+  outputTokens   Int            @default(0)
+  costEstimate   Float          @default(0)
+  createdAt      DateTime       @default(now())
+  conversation   AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, conversationId, createdAt])
+  @@index([tenantId, role])
+}
+
+model SpeakingSession {
+  id                 String                      @id @default(uuid()) @db.Uuid
+  tenantId           String                      @db.Uuid
+  userId             String                      @db.Uuid
+  lessonId           String?                     @db.Uuid
+  mode               String                      @db.VarChar(40)
+  status             String                      @default("created") @db.VarChar(40)
+  targetLanguage     String                      @db.VarChar(8)
+  scenario           Json                        @default("{}")
+  roomName           String                      @db.VarChar(180)
+  sfuProvider        String                      @db.VarChar(80)
+  sttProvider        String                      @db.VarChar(80)
+  ttsProvider        String                      @db.VarChar(80)
+  llmProvider        String                      @db.VarChar(80)
+  qos                Json                        @default("{}")
+  startedAt          DateTime?
+  endedAt            DateTime?
+  expiresAt          DateTime
+  latencyMs          Int?
+  costEstimate       Float                       @default(0)
+  createdAt          DateTime                    @default(now())
+  updatedAt          DateTime                    @updatedAt
+  lesson             Lesson?                     @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  realtimeTokens     SpeakingRealtimeToken[]
+  tenant             Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  transcriptSegments SpeakingTranscriptSegment[]
+  user               User                        @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@index([tenantId, lessonId])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+}
+
+model SpeakingRealtimeToken {
+  id        String          @id @default(uuid()) @db.Uuid
+  tenantId  String          @db.Uuid
+  sessionId String          @db.Uuid
+  userId    String          @db.Uuid
+  tokenHash String          @unique @db.VarChar(128)
+  purpose   String          @db.VarChar(40)
+  expiresAt DateTime
+  createdAt DateTime        @default(now())
+  revokedAt DateTime?
+  session   SpeakingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, sessionId])
+  @@index([tenantId, userId])
+  @@index([expiresAt])
+}
+
+model SpeakingTranscriptSegment {
+  id           String          @id @default(uuid()) @db.Uuid
+  tenantId     String          @db.Uuid
+  sessionId    String          @db.Uuid
+  sequence     Int
+  speaker      String          @db.VarChar(40)
+  text         String
+  language     String          @db.VarChar(8)
+  romanization String?
+  isFinal      Boolean         @default(false)
+  confidence   Float?
+  startedAtMs  Int?
+  endedAtMs    Int?
+  createdAt    DateTime        @default(now())
+  session      SpeakingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, sessionId, sequence])
+  @@index([tenantId])
+  @@index([tenantId, sessionId, createdAt])
+  @@index([tenantId, speaker])
+}

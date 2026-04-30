@@ -1,0 +1,40 @@
+{
+  "name": "polyglot-ai-academy",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.30.0",
+  "scripts": {
+    "dev": "pnpm --filter @polyglot/web dev",
+    "dev:api": "pnpm --filter @polyglot/api dev",
+    "dev:web": "pnpm --filter @polyglot/web dev",
+    "api:smoke": "node apps/api/scripts/smoke-api.mjs",
+    "ai:eval": "pnpm --filter @polyglot/api ai:eval",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test",
+    "test:api": "pnpm --filter @polyglot/api test",
+    "test:integration": "pnpm --filter @polyglot/api test:integration",
+    "db:verify": "node scripts/verify-db-seed.mjs",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name local_dev",
+    "prisma:seed": "prisma db seed",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "prisma": "^7.8.0",
+    "turbo": "^2.6.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "pg": "^8.20.0"
+  }
+}
