@@ -1,0 +1,28 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#f8f5ed"/>
+  <path d="M0 0h1200v630H0z" fill="url(#bg)"/>
+  <path d="M80 80h1040v470H80z" fill="#ffffff" fill-opacity="0.54" stroke="#d8d2c4"/>
+  <circle cx="988" cy="154" r="68" fill="#0f5fa8" fill-opacity="0.11"/>
+  <circle cx="1028" cy="196" r="108" fill="#139c88" fill-opacity="0.12"/>
+  <text x="120" y="175" fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">Polyglot AI Academy</text>
+  <text x="120" y="290" fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800">AI language learning</text>
+  <text x="120" y="370" fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800">for serious teams</text>
+  <text x="120" y="450" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="32">Speaking realtime, AI coach, tenant analytics</text>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">
+    <rect x="120" y="496" width="86" height="52" rx="12" fill="#0f5fa8"/>
+    <text x="146" y="532" fill="#fff">EN</text>
+    <rect x="222" y="496" width="86" height="52" rx="12" fill="#e11d48"/>
+    <text x="248" y="532" fill="#fff">ZH</text>
+    <rect x="324" y="496" width="86" height="52" rx="12" fill="#7c3aed"/>
+    <text x="351" y="532" fill="#fff">JA</text>
+    <rect x="426" y="496" width="86" height="52" rx="12" fill="#059669"/>
+    <text x="451" y="532" fill="#fff">KO</text>
+  </g>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f8f5ed"/>
+      <stop offset="0.52" stop-color="#eef2f0"/>
+      <stop offset="1" stop-color="#e6eef4"/>
+    </linearGradient>
+  </defs>
+</svg>

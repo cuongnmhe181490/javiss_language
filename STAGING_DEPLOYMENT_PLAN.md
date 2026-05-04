@@ -2,6 +2,11 @@
 
 ## Recommended Architecture
 
+PR-013 platform decision: use a Docker-capable container host for the API.
+Railway is the primary recommendation for the current staging shape; Render is
+the backup option. Keep Vercel for the already deployed web app unless the API
+is redesigned for serverless functions.
+
 - Web service: Next.js app.
 - API service: Node.js API.
 - Managed PostgreSQL.
@@ -77,9 +82,16 @@ Expected staging readiness can be `degraded` only if auth mode intentionally rep
 
 ```powershell
 $env:API_SMOKE_BASE_URL="https://<api-staging-origin>"
+$env:API_SMOKE_AUTH_MODE="oidc"
 $env:API_SMOKE_EXPECT_PERSISTENCE="1"
+$env:API_SMOKE_ADMIN_TOKEN="<set externally>"
+$env:API_SMOKE_AUDITOR_TOKEN="<set externally>"
+$env:API_SMOKE_LEARNER_TOKEN="<set externally>"
+$env:API_SMOKE_CONTENT_EDITOR_TOKEN="<set externally>"
 pnpm api:smoke
 ```
+
+Do not write smoke tokens into files or shell history in shared terminals.
 
 Run rate-limit stress only with approval:
 

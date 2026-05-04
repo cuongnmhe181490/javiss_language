@@ -197,3 +197,117 @@ Remaining P2:
 3. Persisted eval run history.
 
 PR-010 did not change product domain scope. It documents the release boundary and operational checklist needed before demo/staging.
+
+## 15. PR-012 Staging backend readiness result
+
+PR-012 added staging backend deployment readiness artifacts without deploying the API or adding domain features.
+
+Deployment artifacts:
+
+- `apps/api/Dockerfile`
+- `apps/api/.dockerignore`
+- `.dockerignore`
+- `API_DEPLOYMENT.md`
+- `STAGING_ENV_MATRIX.md`
+- `STAGING_DATABASE_RUNBOOK.md`
+- `WEB_API_INTEGRATION_READINESS.md`
+- `PR012_STAGING_BACKEND_DEPLOYMENT_READINESS.md`
+
+Remote smoke readiness:
+
+- `API_SMOKE_BASE_URL` supports remote base URLs.
+- `API_SMOKE_AUTH_MODE=oidc` supports role-specific bearer tokens through `API_SMOKE_ADMIN_TOKEN`, `API_SMOKE_AUDITOR_TOKEN`, `API_SMOKE_LEARNER_TOKEN`, and `API_SMOKE_CONTENT_EDITOR_TOKEN`.
+- OIDC smoke skips the audit export step-up success path until a real staging step-up flow or persisted fixture exists.
+
+Remaining staging blockers:
+
+1. Platform/container credentials.
+2. Managed PostgreSQL and Redis.
+3. OIDC issuer/audience/JWKS and smoke test tokens.
+4. A decision on whether staging demo seed data is allowed.
+
+## 16. PR-013 Staging backend provisioning result
+
+PR-013 status: READY-FOR-MANUAL-PROVISIONING.
+
+The API was not deployed because the environment does not yet have a staging
+API project/runtime, managed `DATABASE_URL`, managed `REDIS_URL`, OIDC
+issuer/audience/JWKS configuration, or OIDC smoke tokens. Vercel CLI is logged
+in and the web project exists, but Vercel is not the recommended runtime for the
+current Docker-based long-running API service. Railway is the primary
+recommendation; Render is the backup option.
+
+PR-013 artifacts:
+
+- `PR013_STAGING_BACKEND_PROVISIONING.md`
+- `STAGING_PLATFORM_DECISION.md`
+- `STAGING_ENV_CHECKLIST.md`
+- `STAGING_DEPLOY_MANUAL_STEPS.md`
+- `REMOTE_SMOKE_REPORT.md`
+
+Remote smoke status:
+
+- Public remote health smoke: blocked because no API staging URL exists.
+- Authenticated OIDC smoke: blocked because no API staging URL or role-specific
+  smoke tokens exist.
+- Local persistence and quality gates remain the validation baseline until
+  manual staging provisioning is complete.
+
+PR-013 local verification:
+
+- `pnpm typecheck`: pass.
+- `pnpm lint`: pass.
+- `pnpm test`: pass, including 106 API tests and 3 web tests.
+- `pnpm test:integration`: pass, 11 tests against real Docker Postgres/Redis
+  env.
+- `pnpm build`: pass.
+- `pnpm format:check`: pass.
+- `pnpm ai:eval`: pass, 10 fixtures.
+- Local persistence smoke: pass.
+- Local rate-limit smoke: pass.
+
+## 17. PR-014 OIDC staging readiness result
+
+PR-014 status: READY-FOR-OIDC-PROVISIONING.
+
+OIDC staging strategy is now documented. The recommended path is a real staging
+OIDC provider with production-mode `AUTH_MODE=oidc`; private platform-protected
+staging is acceptable only as a temporary infrastructure check and must not
+expose `AUTH_MODE=dev-header` publicly.
+
+PR-014 artifacts:
+
+- `PR014_OIDC_STAGING_READINESS.md`
+- `OIDC_STAGING_CLAIMS.md`
+- `STAGING_SMOKE_USERS.md`
+- `REMOTE_SMOKE_OIDC_TOKENS.md`
+- `RAILWAY_STAGING_CHECKLIST.md`
+
+Important auth constraint:
+
+- Current code maps `sub` directly to `actor.userId`.
+- Current code maps `tenant_id` directly to `actor.tenantId`.
+- `actor.userId` and `actor.tenantId` must be UUIDs.
+- Tenant slug mapping is not implemented in the auth layer.
+
+Remaining deploy blockers:
+
+1. Railway or Render project/runtime.
+2. Managed Postgres.
+3. Managed Redis.
+4. Real OIDC issuer/audience/JWKS.
+5. Role-specific staging smoke tokens.
+6. Staging seed/demo data decision.
+
+PR-014 local verification:
+
+- `pnpm typecheck`: pass.
+- `pnpm lint`: pass.
+- `pnpm test`: pass, including 106 API tests and 3 web tests.
+- `pnpm test:integration`: pass, 11 tests against real Docker Postgres/Redis
+  env.
+- `pnpm build`: pass.
+- `pnpm format:check`: pass.
+- `pnpm ai:eval`: pass, 10 fixtures.
+- Local persistence smoke: pass.
+- Local rate-limit smoke: pass.

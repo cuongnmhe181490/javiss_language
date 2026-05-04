@@ -1,0 +1,14 @@
+.env
+.env.*
+*.log
+.api-smoke*.log
+.local-api*.log
+.pr003c-api*.log
+.smoke-api*.log
+dist
+node_modules
+coverage
+.turbo
+.next
+.vercel
+Dockerfile

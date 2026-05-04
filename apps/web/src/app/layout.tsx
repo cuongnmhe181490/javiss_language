@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { absoluteUrl, resolveSiteUrl } from "@/lib/site-url";
 import { AppProviders } from "./providers";
 import "./globals.css";
 
@@ -13,21 +14,43 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const description =
+  "Nền tảng học tiếng Anh, Trung, Nhật, Hàn bằng AI tutor, speaking realtime và dữ liệu học tập có kiểm chứng.";
+
+const socialDescription =
+  "AI tutor, speaking coach và learning OS cho người học ngôn ngữ nghiêm túc.";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("http://localhost:3000"),
+  metadataBase: new URL(resolveSiteUrl()),
   title: {
     default: "Polyglot AI Academy",
     template: "%s | Polyglot AI Academy",
   },
-  description:
-    "Nền tảng học tiếng Anh, Trung, Nhật, Hàn bằng AI tutor, speaking realtime và dữ liệu học tập có kiểm chứng.",
+  description,
+  alternates: {
+    canonical: absoluteUrl("/"),
+  },
   openGraph: {
     title: "Polyglot AI Academy",
-    description: "AI tutor, speaking coach và learning OS cho người học ngôn ngữ nghiêm túc.",
-    url: "/",
+    description: socialDescription,
+    url: absoluteUrl("/"),
     siteName: "Polyglot AI Academy",
+    images: [
+      {
+        url: "/og-image.svg",
+        width: 1200,
+        height: 630,
+        alt: "Polyglot AI Academy",
+      },
+    ],
     locale: "vi_VN",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Polyglot AI Academy",
+    description: socialDescription,
+    images: ["/og-image.svg"],
   },
   robots: {
     index: true,

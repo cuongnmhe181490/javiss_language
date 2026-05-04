@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests --pool=threads"
+    "test": "vitest run --passWithNoTests --pool=threads",
+    "smoke:routes": "node scripts/smoke-routes.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -1,4 +1,5 @@
 const baseUrl = process.env.API_SMOKE_BASE_URL ?? "http://127.0.0.1:4000";
+const smokeAuthMode = process.env.API_SMOKE_AUTH_MODE ?? "dev-header";
 
 const tenantId = "11111111-1111-4111-8111-111111111111";
 const tenantBetaId = "22222222-2222-4222-8222-222222222222";
@@ -11,31 +12,43 @@ const sampleLessonId = "99999999-9999-4999-8999-999999999991";
 const sampleTutorAgentId = "17171717-1717-4171-8171-171717171711";
 const sampleContentSourceId = "20202020-2020-4202-8202-202020202011";
 
-const adminHeaders = {
-  "x-dev-tenant-id": tenantId,
-  "x-dev-user-id": userId,
-  "x-dev-roles": "tenant_admin",
-};
+const adminHeaders = actorHeaders({
+  dev: {
+    "x-dev-roles": "tenant_admin",
+    "x-dev-tenant-id": tenantId,
+    "x-dev-user-id": userId,
+  },
+  tokenEnv: "API_SMOKE_ADMIN_TOKEN",
+});
 
-const auditorHeaders = {
-  "x-dev-tenant-id": tenantId,
-  "x-dev-user-id": auditorUserId,
-  "x-dev-roles": "security_auditor",
-};
+const auditorHeaders = actorHeaders({
+  dev: {
+    "x-dev-roles": "security_auditor",
+    "x-dev-tenant-id": tenantId,
+    "x-dev-user-id": auditorUserId,
+  },
+  tokenEnv: "API_SMOKE_AUDITOR_TOKEN",
+});
 
-const learnerHeaders = {
-  "content-type": "application/json",
-  "x-dev-tenant-id": tenantId,
-  "x-dev-user-id": learnerUserId,
-  "x-dev-roles": "learner",
-};
+const learnerHeaders = actorHeaders({
+  contentType: true,
+  dev: {
+    "x-dev-roles": "learner",
+    "x-dev-tenant-id": tenantId,
+    "x-dev-user-id": learnerUserId,
+  },
+  tokenEnv: "API_SMOKE_LEARNER_TOKEN",
+});
 
-const contentEditorHeaders = {
-  "content-type": "application/json",
-  "x-dev-tenant-id": tenantId,
-  "x-dev-user-id": userId,
-  "x-dev-roles": "content_editor",
-};
+const contentEditorHeaders = actorHeaders({
+  contentType: true,
+  dev: {
+    "x-dev-roles": "content_editor",
+    "x-dev-tenant-id": tenantId,
+    "x-dev-user-id": userId,
+  },
+  tokenEnv: "API_SMOKE_CONTENT_EDITOR_TOKEN",
+});
 
 await check("GET /health", () => request("/health", { expectedStatus: 200 }));
 await check("GET /health/live", () => request("/health/live", { expectedStatus: 200 }));
@@ -85,31 +98,35 @@ const exportsBefore = await check("GET audit export count before export", () =>
     headers: auditorHeaders,
   }),
 );
-await check("POST audit export with step-up is queued", () =>
-  request(`/v1/tenants/${tenantId}/audit-events/export?format=json`, {
-    expectedStatus: 202,
-    headers: {
-      ...auditorHeaders,
-      "x-dev-mfa-verified-at": new Date().toISOString(),
-    },
-    method: "POST",
-  }),
-);
-await check("GET audit export success event persisted", async () => {
-  const exportsAfter = await request(
-    `/v1/tenants/${tenantId}/audit-events?action=audit:export&outcome=success`,
-    {
-      expectedStatus: 200,
-      headers: auditorHeaders,
-    },
+if (smokeAuthMode === "oidc") {
+  console.log("SKIP audit export step-up success smoke in OIDC mode");
+} else {
+  await check("POST audit export with step-up is queued", () =>
+    request(`/v1/tenants/${tenantId}/audit-events/export?format=json`, {
+      expectedStatus: 202,
+      headers: {
+        ...auditorHeaders,
+        "x-dev-mfa-verified-at": new Date().toISOString(),
+      },
+      method: "POST",
+    }),
   );
-
-  if ((exportsAfter.total ?? 0) <= (exportsBefore.total ?? 0)) {
-    throw new Error(
-      `Expected audit export success count to increase, before=${exportsBefore.total}, after=${exportsAfter.total}`,
+  await check("GET audit export success event persisted", async () => {
+    const exportsAfter = await request(
+      `/v1/tenants/${tenantId}/audit-events?action=audit:export&outcome=success`,
+      {
+        expectedStatus: 200,
+        headers: auditorHeaders,
+      },
     );
-  }
-});
+
+    if ((exportsAfter.total ?? 0) <= (exportsBefore.total ?? 0)) {
+      throw new Error(
+        `Expected audit export success count to increase, before=${exportsBefore.total}, after=${exportsAfter.total}`,
+      );
+    }
+  });
+}
 const learnerCourses = await check("GET learner courses", () =>
   request("/v1/courses", {
     expectedStatus: 200,
@@ -697,4 +714,28 @@ function assertCheck(readinessBody, name, expectedStatus) {
       `Expected readiness check ${name}=${expectedStatus}, got ${actualStatus ?? "missing"}`,
     );
   }
+}
+
+function actorHeaders(input) {
+  const headers = input.contentType ? { "content-type": "application/json" } : {};
+
+  if (smokeAuthMode === "oidc") {
+    const token = process.env[input.tokenEnv];
+
+    if (!token) {
+      throw new Error(
+        `${input.tokenEnv} is required when API_SMOKE_AUTH_MODE=oidc. Provide a staging OIDC bearer token for the matching smoke role.`,
+      );
+    }
+
+    return {
+      ...headers,
+      authorization: `Bearer ${token}`,
+    };
+  }
+
+  return {
+    ...headers,
+    ...input.dev,
+  };
 }
