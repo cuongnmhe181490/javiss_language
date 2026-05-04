@@ -511,3 +511,72 @@ Remaining limitations:
 - Login/register are placeholders.
 - Speaking demo remains mock-only.
 - Production redeploy is needed to publish PR-016 changes.
+
+## PR-016 Production Deployment Retest
+
+Retest date/time: 2026-05-05 02:15:19 +07:00  
+Final deployment URL:
+`https://web-rghzpaq5x-cuongnmhe181490s-projects.vercel.app`  
+Production alias: `https://web-delta-azure-40.vercel.app`
+
+Production deployment status: PASS.
+
+Git/diff safety:
+
+- Workspace was a git repo.
+- Pre-deploy diff contained web UI, web route/PWA, SEO/security docs, and docs
+  only.
+- No backend/API/provider/secret changes were deployed.
+- Snapshot commits were created before deploy.
+
+Route retest result:
+
+- `/`: `200 OK`
+- `/login`: `200 OK`
+- `/register`: `200 OK`
+- `/demo-speaking`: `200 OK`
+- Full production web smoke: PASS.
+
+Metadata retest result:
+
+- No `http://localhost:3000` in production homepage HTML.
+- Canonical uses the production URL.
+- `og:url` uses the production URL.
+- `og:image` is present.
+- Twitter image metadata is present.
+- `/og-image.svg`: `200 OK`.
+
+Security header retest result:
+
+- `X-Content-Type-Options`: present.
+- `Referrer-Policy`: present.
+- `X-Frame-Options`: present.
+- `Permissions-Policy`: present.
+- `Content-Security-Policy-Report-Only`: present.
+
+Production UI/Lighthouse result:
+
+- Browser console errors: none.
+- Page errors: none.
+- Horizontal overflow: false.
+- Keyboard starts at `Skip to main content`.
+- Footer landmarks are present on audited routes.
+- No Lighthouse accessibility failures.
+- Lighthouse Performance: 94
+- Lighthouse Accessibility: 100
+- Lighthouse Best Practices: 100
+- Lighthouse SEO: 100
+
+Artifacts:
+
+- `.codex/audit/pr016-production/audit-result.json`
+- `.codex/audit/pr016-production/lighthouse.json`
+
+Remaining issues:
+
+- Dashboard uses demo data only.
+- Login/register are placeholders.
+- Speaking demo remains mock-only.
+- CSP remains Report-Only.
+
+PR-016 production verdict: PASS.

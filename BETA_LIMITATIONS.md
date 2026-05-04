@@ -47,6 +47,9 @@ This project is READY-BETA for local demo and staging preparation, not full prod
 - PR-016 improves accessibility, tap targets, landmarks, and beta copy only.
   It does not add production auth, real learner data, API calls, or speaking
   provider integration.
+- PR-016 is deployed to the web production alias and passed route, metadata,
+  security header, Playwright, and Lighthouse retests. This does not change the
+  backend/API/provider limitations above.
 
 ## What This Beta Can Safely Demonstrate
 

@@ -266,6 +266,38 @@ PR-013 local verification:
 - Local persistence smoke: pass.
 - Local rate-limit smoke: pass.
 
+## 18. PR-016 web beta production result
+
+PR-016 status: PRODUCTION-PASS for the web beta surface.
+
+Production alias: `https://web-delta-azure-40.vercel.app`  
+Final deployment URL:
+`https://web-rghzpaq5x-cuongnmhe181490s-projects.vercel.app`
+
+Scope:
+
+- Web accessibility polish.
+- Footer and skip-to-content support.
+- Dashboard/learning CTA label clarity.
+- Web route/PWA/SEO/security readiness already introduced by PR-011/PR-015.
+
+Production retest:
+
+- Web route smoke: pass.
+- Metadata: production-safe, no localhost.
+- Security headers: present.
+- Lighthouse: Performance 94, Accessibility 100, Best Practices 100, SEO 100.
+- Browser console errors: none.
+- Horizontal overflow: false.
+
+Remaining web beta limitations:
+
+- Dashboard data is demo-only.
+- Login/register remain placeholders.
+- Speaking remains mock-only.
+- CSP remains Report-Only.
+- Backend staging blockers from PR-013/PR-014 remain unchanged.
+
 ## 17. PR-014 OIDC staging readiness result
 
 PR-014 status: READY-FOR-OIDC-PROVISIONING.

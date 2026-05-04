@@ -246,3 +246,17 @@ Remaining issues:
 - CSP remains Report-Only until beta runtime behavior is reviewed.
 
 PR-011 production verdict: PASS.
+
+## PR-016 Regression Check
+
+Retest date/time: 2026-05-05 02:15:19 +07:00  
+Production alias: `https://web-delta-azure-40.vercel.app`
+
+PR-016 redeploy did not regress PR-011 fixes:
+
+- `/`, `/login`, `/register`, and `/demo-speaking`: `200 OK`.
+- `http://localhost:3000` remains absent from production metadata.
+- Canonical, `og:url`, `og:image`, and Twitter image metadata remain present.
+- `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`,
+  `Permissions-Policy`, and `Content-Security-Policy-Report-Only` remain
+  present.

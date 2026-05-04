@@ -43,3 +43,11 @@ Future enforcement checklist:
 - Try removing or narrowing `unsafe-inline` and `unsafe-eval`.
 - Enforce only after Lighthouse, Playwright smoke, and production route smoke
   remain clean.
+
+PR-016 production retest:
+
+- Production alias: `https://web-delta-azure-40.vercel.app`
+- `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`,
+  `Permissions-Policy`, and `Content-Security-Policy-Report-Only` are present.
+- CSP remains Report-Only intentionally.
+- No backend/API/provider security posture changed.

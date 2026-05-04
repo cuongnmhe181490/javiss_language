@@ -175,7 +175,76 @@ Full repo gates:
 - `pnpm lint`: PASS
 - `pnpm test`: PASS, including API 97 passed and 11 skipped
 - `pnpm build`: PASS
-- `pnpm format:check`: pending final rerun after docs update
+- `pnpm format:check`: PASS
+
+## Production Deployment
+
+Deployment date/time: 2026-05-05 02:15:19 +07:00  
+Final deployment URL:
+`https://web-rghzpaq5x-cuongnmhe181490s-projects.vercel.app`  
+Production alias: `https://web-delta-azure-40.vercel.app`
+
+Deployment status: PASS.
+
+Pre-deploy safety:
+
+- Git repo check: PASS.
+- Diff scope: web UI polish, web route/PWA readiness from PR-015, SEO/security
+  docs from PR-011, and docs only.
+- Risky backend/domain/provider changes: none.
+- Snapshot commits:
+  - `cb7aa46` - `Polish web beta QA accessibility and responsive demo`
+  - `5fa2bc7` - `Fix skip link focus target size`
+
+Production route retest:
+
+- `/`: `200 OK`
+- `/login`: `200 OK`
+- `/register`: `200 OK`
+- `/demo-speaking`: `200 OK`
+- Full web route smoke against production alias: PASS
+
+Production metadata retest:
+
+- `http://localhost:3000`: absent.
+- Canonical uses the production origin.
+- `og:url` uses the production origin.
+- `og:image` is present.
+- Twitter image metadata is present.
+- `/og-image.svg`: `200 OK`.
+
+Production security header retest:
+
+- `X-Content-Type-Options`: present.
+- `Referrer-Policy`: present.
+- `X-Frame-Options`: present.
+- `Permissions-Policy`: present.
+- `Content-Security-Policy-Report-Only`: present.
+
+Production UI/Lighthouse retest:
+
+- Lighthouse Performance: `94`
+- Lighthouse Accessibility: `100`
+- Lighthouse Best Practices: `100`
+- Lighthouse SEO: `100`
+- Browser console errors: none.
+- Page errors: none.
+- Horizontal overflow: false.
+- Low contrast samples: none.
+- Lighthouse accessibility failures: none.
+- Keyboard navigation starts with `Skip to main content`.
+- Footer landmarks are present on audited routes.
+
+Artifacts:
+
+- `.codex/audit/pr016-production/audit-result.json`
+- `.codex/audit/pr016-production/lighthouse.json`
+- `.codex/audit/pr016-production/*-desktop.png`
+
+Note: the custom Playwright geometry audit still records the visually hidden
+skip link as one small target per route. Lighthouse does not flag this as a tap
+target or accessibility failure, and the skip link is a keyboard-only bypass
+control that becomes visible and focus styled when tabbed.
 
 ## Remaining Limitations
 
@@ -183,11 +252,11 @@ Full repo gates:
 - Login/register remain beta placeholders.
 - Speaking remains mock-only and does not request microphone access.
 - CSP remains Report-Only.
-- PR-016 was not deployed to production.
+- No backend/API/provider integration was added.
 
 ## Retest Checklist
 
-- Redeploy preview or production when approved.
+- Re-run route smoke after any future deploy.
 - Re-run route smoke against the deployed URL.
 - Re-run Lighthouse desktop/mobile.
 - Confirm security headers still include CSP Report-Only, frame protection,

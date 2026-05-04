@@ -83,3 +83,19 @@ PR-016 local smoke result:
   `/robots.txt`, `/og-image.svg`, `/icon.svg`, `/apple-icon.svg`
 - Browser audit add-ons: no horizontal overflow, no console errors, one `h1`
   on audited pages, and keyboard focus starts with skip-to-content.
+
+PR-016 production smoke result:
+
+- Date/time: 2026-05-05 02:15:19 +07:00
+- Base URL: `https://web-delta-azure-40.vercel.app`
+- Deployment URL:
+  `https://web-rghzpaq5x-cuongnmhe181490s-projects.vercel.app`
+- Command:
+  `WEB_BASE_URL=https://web-delta-azure-40.vercel.app NEXT_PUBLIC_SITE_URL=https://web-delta-azure-40.vercel.app pnpm --filter @polyglot/web smoke:routes`
+- Result: PASS
+- Covered routes/assets: `/`, `/login`, `/register`, `/demo-speaking`,
+  `/dashboard`, `/grammar`, `/speaking`, `/listening`, `/reading`,
+  `/placement`, `/curriculum`, `/manifest.webmanifest`, `/sitemap.xml`,
+  `/robots.txt`, `/og-image.svg`, `/icon.svg`, `/apple-icon.svg`
+- Browser audit add-ons: no horizontal overflow, no console errors, no page
+  errors, footer landmarks present, and Lighthouse Accessibility `100`.
