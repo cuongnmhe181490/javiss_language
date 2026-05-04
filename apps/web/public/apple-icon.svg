@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-labelledby="title desc">
+  <title id="title">Polyglot AI Academy apple icon</title>
+  <desc id="desc">A compact Polyglot AI Academy app icon.</desc>
+  <rect width="180" height="180" rx="36" fill="#2563eb"/>
+  <circle cx="90" cy="80" r="48" fill="#f8fafc"/>
+  <path d="M48 80h84M90 32c-15 16-23 32-23 48s8 32 23 48M90 32c15 16 23 32 23 48s-8 32-23 48" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+  <path d="M111 116h24c10 0 18 8 18 18v20l-20-13h-22c-10 0-18-8-18-18s8-7 18-7z" fill="#14b8a6"/>
+</svg>

@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { SiteFooter } from "./site-footer";
 
 type BetaPageShellProps = {
   badge: string;
@@ -39,12 +40,12 @@ export function BetaPageShell({
   asideCopy,
 }: BetaPageShellProps) {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main id="main-content" className="min-h-screen bg-background text-foreground">
       <section className="relative isolate overflow-hidden border-b border-border/70">
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(115deg,color-mix(in_oklab,var(--background)_90%,transparent),color-mix(in_oklab,var(--accent)_70%,transparent),color-mix(in_oklab,var(--primary)_12%,var(--background)))]" />
         <div className="mx-auto grid min-h-[100svh] max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
           <div>
-            <Button variant="ghost" size="sm" asChild className="mb-8">
+            <Button variant="ghost" size="sm" asChild className="mb-8 h-11 px-3">
               <Link href="/">
                 <ArrowLeft aria-hidden="true" />
                 Trang chủ
@@ -113,6 +114,7 @@ export function BetaPageShell({
           </Card>
         </div>
       </section>
+      <SiteFooter />
     </main>
   );
 }

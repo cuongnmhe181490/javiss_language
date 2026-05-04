@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Polyglot AI Academy icon</title>
+  <desc id="desc">A geometric globe and speech mark for the Polyglot AI Academy app.</desc>
+  <rect width="512" height="512" rx="96" fill="#fbfaf7"/>
+  <circle cx="256" cy="238" r="142" fill="#2563eb"/>
+  <path d="M134 238h244M256 96c-42 45-64 92-64 142s22 97 64 142M256 96c42 45 64 92 64 142s-22 97-64 142" fill="none" stroke="#f8fafc" stroke-width="24" stroke-linecap="round"/>
+  <path d="M152 182c31 18 66 27 104 27s73-9 104-27M152 294c31-18 66-27 104-27s73 9 104 27" fill="none" stroke="#bfdbfe" stroke-width="20" stroke-linecap="round"/>
+  <path d="M338 334h64c24 0 43 19 43 43v54l-55-34h-52c-24 0-43-19-43-43s19-20 43-20z" fill="#14b8a6"/>
+  <path d="M363 364h43" stroke="#ecfeff" stroke-width="18" stroke-linecap="round"/>
+</svg>

@@ -10,6 +10,21 @@ Production alias: `https://web-delta-azure-40.vercel.app`
 
 Production site is reachable.
 
+PR-015 local update: the web app now has a beta learning dashboard, public
+learning topic routes, PWA manifest, sitemap, robots, and expanded smoke route
+coverage. These changes are local until an explicit production deploy is
+requested.
+
+New routes to retest after deploy:
+
+- `/dashboard`
+- `/grammar`
+- `/speaking`
+- `/listening`
+- `/reading`
+- `/placement`
+- `/curriculum`
+
 `curl -I https://web-delta-azure-40.vercel.app`:
 
 - Status: `200 OK`
@@ -392,3 +407,107 @@ Remaining issues:
 - CSP remains Report-Only for beta; enforce after reviewing runtime behavior.
 
 PR-011 production verdict: PASS.
+
+## PR-015 Production Redeploy Retest
+
+Retest date/time: 2026-05-05 01:15:16 +07:00  
+Deployment URL: `https://web-krgdxf8y6-cuongnmhe181490s-projects.vercel.app`  
+Production alias: `https://web-delta-azure-40.vercel.app`
+
+Production deployment status: PASS.
+
+Route retest result:
+
+- `/`, `/login`, `/register`, `/demo-speaking`: `200 OK`
+- `/dashboard`, `/grammar`, `/speaking`, `/listening`, `/reading`, `/placement`, `/curriculum`: `200 OK`
+- `/manifest.webmanifest`, `/sitemap.xml`, `/robots.txt`, `/og-image.svg`, `/icon.svg`, `/apple-icon.svg`: `200 OK`
+
+Metadata/PWA retest result:
+
+- No `http://localhost:3000` in fetched production HTML for `/`, `/dashboard`, `/grammar`, or `/speaking`.
+- Canonical and `og:url` use the production origin.
+- `og:image` and Twitter image metadata are present.
+- Manifest link is present.
+- Sitemap uses production URLs only.
+- Robots points to the production sitemap.
+
+Security header retest result:
+
+- `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`, and `Content-Security-Policy-Report-Only` are present.
+
+Production UI/Lighthouse result:
+
+- Browser console errors: none.
+- Page errors: none.
+- Desktop/mobile horizontal overflow: false.
+- CTA click audit passed for dashboard, register, demo speaking, placement, curriculum, grammar, speaking, listening, and reading.
+- Lighthouse Performance: 94
+- Lighthouse Accessibility: 91
+- Lighthouse Best Practices: 100
+- Lighthouse SEO: 100
+
+Artifacts:
+
+- `.codex/audit/pr015-production/desktop-full.png`
+- `.codex/audit/pr015-production/mobile-full.png`
+- `.codex/audit/pr015-production/browser-audit-result.json`
+- `.codex/audit/pr015-production/lighthouse.json`
+
+Remaining issues:
+
+- Dashboard uses demo data only.
+- Login/register are placeholders.
+- Speaking demo does not call a real provider/API.
+- CSP remains Report-Only.
+
+PR-015 production verdict: PASS.
+
+## PR-016 Local Beta QA Polish Retest
+
+Retest date/time: 2026-05-05 +07:00  
+Production baseline URL audited before fixes:
+`https://web-delta-azure-40.vercel.app`
+
+PR-016 was verified locally only. No production deployment was performed.
+
+Fixes implemented:
+
+- Added skip-to-content support.
+- Added public footer landmarks to beta surfaces.
+- Improved CTA tap target sizing.
+- Improved repeated dashboard shortcut accessible names.
+- Added accessible names to homepage progress bars.
+- Improved contrast for the homepage `Live` badge.
+
+Local route/browser audit result:
+
+- Web route smoke: PASS for `/`, `/login`, `/register`, `/demo-speaking`,
+  `/dashboard`, `/grammar`, `/speaking`, `/listening`, `/reading`,
+  `/placement`, `/curriculum`, `/manifest.webmanifest`, `/sitemap.xml`,
+  `/robots.txt`, `/og-image.svg`, `/icon.svg`, and `/apple-icon.svg`.
+- Browser console errors: none in local Playwright audit.
+- Page errors: none.
+- Horizontal overflow: false at `360`, `390`, `430`, and `768`.
+- Missing accessible names: none found on audited links/buttons.
+- Small tap targets: none found after fixes.
+
+Local Lighthouse result:
+
+- Performance: 93
+- Accessibility: 100
+- Best Practices: 100
+- SEO: 100
+
+Security status:
+
+- PR-016 did not remove security headers.
+- CSP remains `Content-Security-Policy-Report-Only`.
+- CSP should not be enforced until a deployed runtime review confirms no
+  breakage.
+
+Remaining limitations:
+
+- Dashboard uses demo data only.
+- Login/register are placeholders.
+- Speaking demo remains mock-only.
+- Production redeploy is needed to publish PR-016 changes.

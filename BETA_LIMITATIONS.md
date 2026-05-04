@@ -36,6 +36,18 @@ This project is READY-BETA for local demo and staging preparation, not full prod
 - Content QA is deterministic and useful for gating demo flows, not a full AI quality system.
 - Seed/demo data is synthetic and should not be treated as customer-ready content.
 
+## Web Learning Surface
+
+- `/dashboard` uses local demo learning data.
+- Login and register pages are beta-safe placeholders, not real auth flows.
+- Speaking demo remains mock-only and does not request microphone access.
+- Public learning pages are SEO/product surfaces, not deep course delivery.
+- The web app does not call the API until backend staging has a public URL and
+  OIDC is configured.
+- PR-016 improves accessibility, tap targets, landmarks, and beta copy only.
+  It does not add production auth, real learner data, API calls, or speaking
+  provider integration.
+
 ## What This Beta Can Safely Demonstrate
 
 - Tenant-scoped API behavior.

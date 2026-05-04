@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SkipLink } from "@/components/ui/skip-link";
 import { absoluteUrl, resolveSiteUrl } from "@/lib/site-url";
 import { AppProviders } from "./providers";
 import "./globals.css";
@@ -20,6 +21,10 @@ const description =
 const socialDescription =
   "AI tutor, speaking coach và learning OS cho người học ngôn ngữ nghiêm túc.";
 
+export const viewport: Viewport = {
+  themeColor: "#2563eb",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(resolveSiteUrl()),
   title: {
@@ -29,6 +34,16 @@ export const metadata: Metadata = {
   description,
   alternates: {
     canonical: absoluteUrl("/"),
+  },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Polyglot AI",
+    statusBarStyle: "default",
+  },
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
   },
   openGraph: {
     title: "Polyglot AI Academy",
@@ -70,6 +85,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <SkipLink />
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

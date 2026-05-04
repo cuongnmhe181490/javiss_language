@@ -21,3 +21,25 @@
 | Health endpoints do not leak secrets          | GO     | readiness summarizes status only                                                   | `app.spec.ts`, smoke                      | Do not expose full config                                 |
 
 Go/no-go result: GO for beta demo/staging preparation. No-go for production launch until remaining P2 items are handled and staging is exercised with real OIDC and platform secrets.
+
+## PR-016 CSP Report-Only Review
+
+The web deployment keeps CSP in `Content-Security-Policy-Report-Only`.
+
+Current beta stance:
+
+- Do not switch to enforced CSP in PR-016.
+- Keep `frame-ancestors 'none'`, `object-src 'none'`, and scoped
+  `connect-src` entries.
+- Avoid broad `*` wildcards.
+- Review deployed runtime behavior before enforcement because Next/Vercel may
+  still require inline/eval allowances depending on the build/runtime path.
+
+Future enforcement checklist:
+
+- Deploy preview with Report-Only enabled.
+- Review browser console and any CSP reports.
+- Confirm Next runtime, fonts, images, metadata, and route transitions work.
+- Try removing or narrowing `unsafe-inline` and `unsafe-eval`.
+- Enforce only after Lighthouse, Playwright smoke, and production route smoke
+  remain clean.

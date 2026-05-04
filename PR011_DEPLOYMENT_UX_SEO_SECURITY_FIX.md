@@ -60,6 +60,8 @@ Expected verification:
 - Speaking demo is a product explanation/mock page only.
 - CSP is report-only, not enforced, until production runtime reports are reviewed.
 - No custom production domain is configured in this change.
+- PR-015 adds more web routes locally; production must be redeployed and retested
+  before those routes are considered live.
 
 ## Deploy Checklist
 
@@ -72,6 +74,19 @@ Expected verification:
    - `curl.exe -I https://web-delta-azure-40.vercel.app/demo-speaking`
 4. Confirm response headers include security headers.
 5. Confirm generated HTML contains production `og:url`, canonical, and `og:image`.
+
+PR-015 route matrix to retest after deploy approval:
+
+- `/dashboard`
+- `/grammar`
+- `/speaking`
+- `/listening`
+- `/reading`
+- `/placement`
+- `/curriculum`
+- `/manifest.webmanifest`
+- `/sitemap.xml`
+- `/robots.txt`
 
 ## Production Deployment Result
 

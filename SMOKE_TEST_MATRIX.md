@@ -32,3 +32,54 @@ pnpm api:smoke
 | Rate limit       | Tenant route stress                                          | Opt-in         | Redis-backed when persistence env is set      | Yes            | Runs only with `API_SMOKE_RATE_LIMIT=1` to avoid slow/noisy default smoke |
 
 No additional endpoint was added to smoke for PR-010 because existing smoke already covers the release-critical paths. Deep provider fallback, schema failure, source-scope denial, and quota cases remain in the deterministic AI eval harness to keep smoke stable and external-provider-free.
+
+## Web Smoke
+
+PR-015 expands web smoke coverage to:
+
+- `/`
+- `/login`
+- `/register`
+- `/demo-speaking`
+- `/dashboard`
+- `/grammar`
+- `/speaking`
+- `/listening`
+- `/reading`
+- `/placement`
+- `/curriculum`
+- `/manifest.webmanifest`
+- `/sitemap.xml`
+- `/robots.txt`
+- `/og-image.svg`
+
+Required checks:
+
+- route returns `200`
+- route returns HTML for page routes
+- canonical metadata exists for key pages
+- `og:image` metadata exists
+- sitemap and robots do not contain localhost when `NEXT_PUBLIC_SITE_URL` is set
+- security headers remain present in production preview
+
+PR-015 production smoke result:
+
+- Date/time: 2026-05-05 01:15:16 +07:00
+- Base URL: `https://web-delta-azure-40.vercel.app`
+- Command: `WEB_BASE_URL=https://web-delta-azure-40.vercel.app NEXT_PUBLIC_SITE_URL=https://web-delta-azure-40.vercel.app pnpm --filter @polyglot/web smoke:routes`
+- Result: PASS
+- Covered routes/assets: `/`, `/login`, `/register`, `/demo-speaking`, `/dashboard`, `/grammar`, `/speaking`, `/listening`, `/reading`, `/placement`, `/curriculum`, `/manifest.webmanifest`, `/sitemap.xml`, `/robots.txt`, `/og-image.svg`
+
+PR-016 local smoke result:
+
+- Date/time: 2026-05-05 +07:00
+- Base URL: `http://127.0.0.1:3000`
+- Command:
+  `WEB_BASE_URL=http://127.0.0.1:3000 NEXT_PUBLIC_SITE_URL=https://web-delta-azure-40.vercel.app pnpm --filter @polyglot/web smoke:routes`
+- Result: PASS
+- Covered routes/assets: `/`, `/login`, `/register`, `/demo-speaking`,
+  `/dashboard`, `/grammar`, `/speaking`, `/listening`, `/reading`,
+  `/placement`, `/curriculum`, `/manifest.webmanifest`, `/sitemap.xml`,
+  `/robots.txt`, `/og-image.svg`, `/icon.svg`, `/apple-icon.svg`
+- Browser audit add-ons: no horizontal overflow, no console errors, one `h1`
+  on audited pages, and keyboard focus starts with skip-to-content.

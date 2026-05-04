@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SiteFooter } from "./site-footer";
 
 const languageTracks = [
   {
@@ -83,13 +84,14 @@ const reportScores = [
 
 export function HomePage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-background text-foreground">
+    <main id="main-content" className="min-h-screen overflow-hidden bg-background text-foreground">
       <SiteHeader />
       <HeroSection />
       <LanguageSection />
       <ProductDepthSection />
       <TrustSection />
       <FinalCta />
+      <SiteFooter />
     </main>
   );
 }
@@ -98,29 +100,43 @@ function SiteHeader() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/72 backdrop-blur-2xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3" aria-label="Polyglot AI Academy">
+        <Link
+          href="/"
+          className="flex min-h-11 items-center gap-3"
+          aria-label="Polyglot AI Academy"
+          aria-current="page"
+        >
           <span className="flex size-9 items-center justify-center rounded-lg bg-foreground text-background">
             <Globe2 className="size-5" aria-hidden="true" />
           </span>
           <span className="text-sm font-semibold tracking-wide">Polyglot AI Academy</span>
         </Link>
-        <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-          <Link className="transition hover:text-foreground" href="#languages">
+        <nav className="hidden items-center gap-2 text-sm text-muted-foreground md:flex">
+          <Link
+            className="inline-flex min-h-11 items-center rounded-md px-2 transition hover:text-foreground"
+            href="/dashboard"
+          >
             Ngôn ngữ
           </Link>
-          <Link className="transition hover:text-foreground" href="#product">
+          <Link
+            className="inline-flex min-h-11 items-center rounded-md px-2 transition hover:text-foreground"
+            href="/placement"
+          >
             Nền tảng
           </Link>
-          <Link className="transition hover:text-foreground" href="#trust">
+          <Link
+            className="inline-flex min-h-11 items-center rounded-md px-2 transition hover:text-foreground"
+            href="/curriculum"
+          >
             Enterprise trust
           </Link>
         </nav>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+          <Button variant="ghost" size="sm" asChild className="hidden h-11 px-3 sm:inline-flex">
             <Link href="/login">Đăng nhập</Link>
           </Button>
-          <Button size="sm" asChild>
-            <Link href="/register">
+          <Button size="sm" asChild className="h-11 px-3">
+            <Link href="/dashboard">
               Bắt đầu
               <ArrowRight aria-hidden="true" />
             </Link>
@@ -202,7 +218,7 @@ function ProductCanvas() {
             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Today</p>
             <h2 className="mt-1 text-xl font-semibold">Speaking room</h2>
           </div>
-          <Badge className="rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+          <Badge className="rounded-md bg-emerald-500/15 text-emerald-900 dark:text-emerald-200">
             Live
           </Badge>
         </div>
@@ -258,7 +274,7 @@ function ProductCanvas() {
                 <span className="text-muted-foreground">{score.label}</span>
                 <span className="font-medium">{score.value}</span>
               </div>
-              <Progress value={score.value} className="h-2" />
+              <Progress value={score.value} aria-label={`${score.label} score`} className="h-2" />
             </div>
           ))}
         </div>
