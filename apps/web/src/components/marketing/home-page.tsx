@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, BookOpenCheck, CheckCircle2, Globe2, Headphones, Mic } from "lucide-react";
+import { ArrowRight, BookOpenCheck, CheckCircle2, Globe2, Headphones, Mic, Volume2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -32,7 +32,7 @@ const trustItems = [
 
 export function HomePage() {
   return (
-    <main id="main-content" className="min-h-screen overflow-hidden bg-[#fbfaf7] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
+    <main id="main-content" className="min-h-screen overflow-hidden bg-slate-950 text-slate-50">
       <SiteHeader />
       <HeroSection />
       <LanguageSection />
@@ -46,20 +46,20 @@ export function HomePage() {
 
 function SiteHeader() {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/70 bg-[#fbfaf7]/82 backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-950/82">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-2xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex min-h-11 items-center gap-3" aria-label="Học ngoại ngữ cùng AI" aria-current="page">
-          <span className="flex size-9 items-center justify-center rounded-2xl bg-slate-950 text-white dark:bg-white dark:text-slate-950">
+          <span className="flex size-9 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-400">
             <Globe2 className="size-5" aria-hidden="true" />
           </span>
-          <span className="text-sm font-semibold tracking-wide">Học ngoại ngữ cùng AI</span>
+          <span className="text-sm font-semibold tracking-wide text-slate-100">Học ngoại ngữ cùng AI</span>
         </Link>
-        <nav className="hidden items-center gap-1 text-sm text-slate-600 dark:text-slate-300 md:flex">
-          <Link className="inline-flex min-h-11 items-center rounded-xl px-3 transition hover:bg-white hover:text-slate-950 dark:hover:bg-slate-900 dark:hover:text-white" href="/dashboard">Góc học</Link>
-          <Link className="inline-flex min-h-11 items-center rounded-xl px-3 transition hover:bg-white hover:text-slate-950 dark:hover:bg-slate-900 dark:hover:text-white" href="/#flow">Cách học</Link>
-          <Link className="inline-flex min-h-11 items-center rounded-xl px-3 transition hover:bg-white hover:text-slate-950 dark:hover:bg-slate-900 dark:hover:text-white" href="/#trust">Nguồn học</Link>
+        <nav className="hidden items-center gap-1 text-sm text-slate-400 md:flex">
+          <Link className="inline-flex min-h-11 items-center rounded-xl px-3 transition hover:bg-white/5 hover:text-slate-100" href="/dashboard">Góc học</Link>
+          <Link className="inline-flex min-h-11 items-center rounded-xl px-3 transition hover:bg-white/5 hover:text-slate-100" href="/#flow">Cách học</Link>
+          <Link className="inline-flex min-h-11 items-center rounded-xl px-3 transition hover:bg-white/5 hover:text-slate-100" href="/#trust">Nguồn học</Link>
         </nav>
-        <Button size="sm" asChild className="h-11 rounded-2xl px-4">
+        <Button size="sm" asChild className="h-11 rounded-2xl bg-emerald-500 px-4 text-slate-950 hover:bg-emerald-400">
           <Link href="/dashboard">Bắt đầu</Link>
         </Button>
       </div>
@@ -70,102 +70,122 @@ function SiteHeader() {
 function HeroSection() {
   return (
     <section className="relative isolate pt-16">
+      {/* Glow orbs */}
       <motion.div
         aria-hidden="true"
-        animate={{ scale: [1, 1.04, 1], opacity: [0.55, 0.75, 0.55] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute left-1/2 top-24 -z-10 size-[520px] -translate-x-1/2 rounded-full bg-emerald-200 blur-3xl dark:bg-emerald-950"
+        animate={{ scale: [1, 1.08, 1], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute left-1/2 top-32 -z-10 size-[500px] -translate-x-1/2 rounded-full bg-emerald-500/20 blur-[120px]"
       />
-      <div className="mx-auto grid min-h-[calc(100svh-4rem)] max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8">
-        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, ease: "easeOut" }}>
-          <Badge variant="secondary" className="mb-5 rounded-full px-3 py-1 text-xs">Bản beta · học 10 phút mỗi ngày</Badge>
-          <h1 className="max-w-3xl text-5xl font-semibold tracking-[-0.04em] text-balance sm:text-6xl lg:text-7xl">
-            Học ngoại ngữ nhẹ hơn mỗi ngày.
+      <motion.div
+        aria-hidden="true"
+        animate={{ scale: [1, 1.05, 1], opacity: [0.2, 0.35, 0.2] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        className="absolute right-1/4 top-64 -z-10 size-[300px] rounded-full bg-teal-500/15 blur-[100px]"
+      />
+
+      <div className="mx-auto grid min-h-[calc(100svh-4rem)] max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_1fr] lg:px-8">
+        {/* Left: text */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: "easeOut" }}>
+          <Badge className="mb-4 border-emerald-500/30 bg-emerald-500/10 text-emerald-400">Beta mở</Badge>
+          <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+            Học ngoại ngữ<br />
+            <span className="text-emerald-400">nhẹ hơn mỗi ngày.</span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+          <p className="mt-5 max-w-lg text-lg leading-relaxed text-slate-400">
             Bài học ngắn, giao diện yên, AI sửa lỗi vừa đủ. Mở web lên là biết hôm nay nên học gì.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" asChild className="h-12 rounded-2xl px-5">
-              <Link href="/dashboard">Vào học thử <ArrowRight aria-hidden="true" /></Link>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Button asChild size="lg" className="h-12 rounded-2xl bg-emerald-500 px-6 text-base font-medium text-slate-950 hover:bg-emerald-400">
+              <Link href="/dashboard">Vào học thử <ArrowRight className="ml-2 size-4" /></Link>
             </Button>
-            <Button size="lg" variant="outline" asChild className="h-12 rounded-2xl bg-white/60 px-5 dark:bg-slate-900/60">
-              <Link href="/demo-speaking">Xem luyện nói <Headphones aria-hidden="true" /></Link>
+            <Button asChild size="lg" variant="outline" className="h-12 rounded-2xl border-white/10 px-6 text-base text-slate-300 hover:bg-white/5 hover:text-white">
+              <Link href="/demo-speaking">Xem luyện nói</Link>
             </Button>
           </div>
-          <div className="mt-9 grid max-w-lg grid-cols-3 gap-3 text-sm">
-            <MiniStat value="8-12p" label="mỗi bài" />
-            <MiniStat value="4 kỹ năng" label="nghe nói đọc ngữ pháp" />
-            <MiniStat value="ít nhiễu" label="tập trung học" />
+          <div className="mt-8 flex gap-6 text-sm text-slate-500">
+            <span>8-12p mỗi bài</span>
+            <span>4 kỹ năng</span>
+            <span>ít nhiễu</span>
           </div>
         </motion.div>
-        <LearningPreview />
+
+        {/* Right: preview card */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+          className="flex flex-col gap-4"
+        >
+          {/* Lesson preview card */}
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">A1</Badge>
+              <span className="text-sm text-slate-400">Bài 1</span>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-100 mb-2">Chào hỏi người mới gặp</h3>
+            <p className="text-sm text-slate-400 mb-4">Nói được một lời chào, giới thiệu ngắn và hỏi thêm một câu lịch sự.</p>
+            <Progress value={45} className="h-1.5 mb-4" />
+            <div className="space-y-2">
+              {["Nghe mẫu", "Tập câu", "Nói thử"].map((step, i) => (
+                <div key={step} className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2">
+                  <span className="flex size-6 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-medium text-emerald-400">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="text-sm text-slate-300">{step}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Audio waveform card */}
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex size-8 items-center justify-center rounded-full bg-emerald-500/20">
+                <Mic className="size-4 text-emerald-400" />
+              </div>
+              <span className="text-sm text-slate-300">AI feedback</span>
+            </div>
+            {/* Waveform visualization */}
+            <div className="flex items-end gap-[3px] h-10 mb-3">
+              {[3, 5, 8, 12, 7, 10, 14, 9, 6, 11, 15, 8, 5, 9, 12, 7, 4, 8, 11, 6, 9, 13, 7, 5, 8].map((h, i) => (
+                <motion.div
+                  key={i}
+                  className="w-1 rounded-full bg-emerald-400/60"
+                  animate={{ height: [h * 2.5, h * 1.5, h * 2.5] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.05, ease: "easeInOut" }}
+                />
+              ))}
+            </div>
+            <p className="text-sm text-slate-400 italic">&ldquo;Chậm hơn một nhịp ở câu thứ hai — nghe tự nhiên hơn đó.&rdquo;</p>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
 }
 
-function LearningPreview() {
-  return (
-    <motion.div initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }} className="relative min-h-[560px]">
-      <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} className="absolute inset-x-0 top-4 rounded-[2rem] border border-white/80 bg-white/82 p-5 shadow-[0_30px_90px_-55px_rgb(15_23_42/0.55)] backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-900/82">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Bài hôm nay</p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight">Chào hỏi người mới gặp</h2>
-          </div>
-          <Badge className="rounded-full bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-200">A1</Badge>
-        </div>
-        <div className="mt-6 rounded-3xl bg-slate-50 p-4 dark:bg-slate-950/60">
-          <p className="text-sm font-medium">Mục tiêu</p>
-          <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Nói được một lời chào, giới thiệu ngắn và hỏi thêm một câu lịch sự.</p>
-          <Progress value={64} className="mt-5 h-2" aria-label="Tiến độ bài học" />
-        </div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          {['Nghe mẫu', 'Tập câu', 'Nói thử'].map((item, index) => (
-            <motion.div key={item} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 + index * 0.08 }} className="rounded-2xl border border-slate-200 bg-white p-3 text-sm dark:border-slate-800 dark:bg-slate-900">
-              <span className="text-slate-400">0{index + 1}</span>
-              <p className="mt-1 font-medium">{item}</p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} className="absolute bottom-8 right-0 w-[86%] rounded-[2rem] border border-white/80 bg-white/88 p-5 shadow-[0_28px_80px_-55px_rgb(15_23_42/0.55)] backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-900/88">
-        <div className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-2xl bg-slate-950 text-white dark:bg-white dark:text-slate-950"><Mic className="size-5" aria-hidden="true" /></span>
-          <div>
-            <p className="font-semibold">Gợi ý sau khi nói</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Chậm hơn một nhịp ở câu thứ hai.</p>
-          </div>
-        </div>
-        <div className="mt-5 flex h-14 items-end gap-1.5 rounded-3xl bg-emerald-50 p-3 dark:bg-emerald-950/40">
-          {Array.from({ length: 24 }).map((_, index) => (
-            <motion.span key={index} animate={{ height: [`${20 + (index % 5) * 8}%`, `${52 + (index % 6) * 6}%`, `${20 + (index % 5) * 8}%`] }} transition={{ duration: 1.1 + (index % 4) * 0.1, repeat: Infinity, ease: "easeInOut" }} className="w-full rounded-full bg-emerald-500/70" />
-          ))}
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
 function LanguageSection() {
   return (
-    <section className="border-y border-slate-200/70 bg-white/58 py-16 dark:border-slate-800 dark:bg-slate-900/25">
+    <section id="languages" className="py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <SectionIntro eyebrow="Lộ trình" title="Chọn ngôn ngữ, học từ mức dễ trước." copy="Không cần mở quá nhiều thứ. Chọn một mục tiêu, học một bài ngắn, rồi quay lại ngày mai." />
-        <div className="mt-8 grid gap-3 md:grid-cols-2">
-          {languages.map((language, index) => (
-            <motion.div key={language.name} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ delay: index * 0.06 }}>
-              <Card className="rounded-3xl border-slate-200 bg-[#fbfaf7] dark:border-slate-800 dark:bg-slate-950/70">
-                <CardContent className="flex items-start gap-4 p-5">
-                  <span className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"><BookOpenCheck className="size-5" aria-hidden="true" /></span>
-                  <div>
-                    <h3 className="font-semibold">{language.name}</h3>
-                    <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{language.detail}</p>
-                  </div>
-                </CardContent>
-              </Card>
+        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="text-2xl font-bold text-slate-100 sm:text-3xl">Lộ trình có sẵn</h2>
+          <p className="mt-2 text-slate-400">Chọn ngôn ngữ, bắt đầu từ trình độ phù hợp.</p>
+        </motion.div>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          {languages.map((lang, i) => (
+            <motion.div
+              key={lang.name}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+            >
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl transition hover:border-emerald-500/30 hover:bg-white/[0.07]">
+                <h3 className="font-semibold text-slate-100">{lang.name}</h3>
+                <p className="mt-1 text-sm text-slate-400">{lang.detail}</p>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -176,19 +196,28 @@ function LanguageSection() {
 
 function FlowSection() {
   return (
-    <section id="flow" className="py-18 sm:py-24">
+    <section id="flow" className="py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <SectionIntro eyebrow="Cách học" title="Mỗi màn chỉ giữ việc cần làm." copy="Ít card hơn, ít số liệu hơn, ưu tiên cảm giác mở ra là học được ngay." />
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {dailyFlow.map((item, index) => (
-            <motion.div key={item.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ delay: index * 0.08 }}>
-              <Card className="h-full rounded-3xl bg-white/75 dark:bg-slate-900/70">
-                <CardContent className="p-6">
-                  <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">0{index + 1}</span>
-                  <h3 className="mt-3 text-xl font-semibold">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{item.copy}</p>
-                </CardContent>
-              </Card>
+        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="text-2xl font-bold text-slate-100 sm:text-3xl">Cách học mỗi ngày</h2>
+          <p className="mt-2 text-slate-400">Không cần kế hoạch phức tạp. Mở lên, học, xong.</p>
+        </motion.div>
+        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          {dailyFlow.map((item, i) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.12 }}
+            >
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl h-full">
+                <span className="flex size-8 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-medium text-emerald-400 mb-3">
+                  {i + 1}
+                </span>
+                <h3 className="font-semibold text-slate-100">{item.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.copy}</p>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -199,20 +228,21 @@ function FlowSection() {
 
 function TrustSection() {
   return (
-    <section id="trust" className="py-16 sm:py-24">
-      <div className="mx-auto grid max-w-6xl gap-8 rounded-[2rem] bg-slate-950 p-6 text-white sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
-        <div>
-          <Badge className="rounded-full bg-white/12 text-white hover:bg-white/12">Nguồn học</Badge>
-          <h2 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">Nội dung học phải rõ nguồn, không mơ hồ.</h2>
-          <p className="mt-4 text-sm leading-7 text-slate-300">Bản hiện tại dùng dữ liệu demo để kiểm UI. Bản học thật cần nội dung đã được duyệt trước khi xuất bản.</p>
-        </div>
-        <div className="grid gap-3">
-          {trustItems.map((item) => (
-            <div key={item} className="flex gap-3 rounded-2xl border border-white/10 bg-white/6 p-4">
-              <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-300" aria-hidden="true" />
-              <p className="text-sm leading-6 text-slate-200">{item}</p>
-            </div>
-          ))}
+    <section id="trust" className="py-24">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="text-2xl font-bold text-slate-100 sm:text-3xl">Nguồn học minh bạch</h2>
+          <p className="mt-2 text-slate-400">Nội dung có kiểm chứng, không AI tự phát.</p>
+        </motion.div>
+        <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+          <ul className="space-y-3">
+            {trustItems.map((item) => (
+              <li key={item} className="flex items-start gap-3">
+                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-400" aria-hidden="true" />
+                <span className="text-sm text-slate-300">{item}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>
@@ -221,35 +251,27 @@ function TrustSection() {
 
 function FinalCta() {
   return (
-    <section className="pb-20">
-      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-5 px-4 sm:px-6 md:flex-row md:items-center lg:px-8">
-        <div>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Bản beta</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight">Xem thử flow học, chưa giả đăng nhập hay API production.</h2>
-        </div>
-        <Button size="lg" asChild className="h-12 rounded-2xl px-5">
-          <Link href="/dashboard">Vào góc học <ArrowRight aria-hidden="true" /></Link>
-        </Button>
+    <section className="py-24">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 p-10 text-center backdrop-blur-xl sm:p-14"
+        >
+          <h2 className="text-2xl font-bold text-slate-100 sm:text-3xl">Sẵn sàng thử?</h2>
+          <p className="mt-3 text-slate-400">Không cần đăng ký. Mở dashboard, chọn bài, bắt đầu.</p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Button asChild size="lg" className="h-12 rounded-2xl bg-emerald-500 px-6 text-base font-medium text-slate-950 hover:bg-emerald-400">
+              <Link href="/dashboard">Vào học thử <ArrowRight className="ml-2 size-4" /></Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-12 rounded-2xl border-white/10 px-6 text-base text-slate-300 hover:bg-white/5 hover:text-white">
+              <Link href="/demo-speaking">Xem luyện nói</Link>
+            </Button>
+          </div>
+        </motion.div>
       </div>
     </section>
-  );
-}
-
-function SectionIntro({ eyebrow, title, copy }: { eyebrow: string; title: string; copy: string }) {
-  return (
-    <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.55 }} className="max-w-2xl">
-      <p className="text-sm font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{eyebrow}</p>
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
-      <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">{copy}</p>
-    </motion.div>
-  );
-}
-
-function MiniStat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white/60 p-3 dark:border-slate-800 dark:bg-slate-900/60">
-      <p className="font-semibold">{value}</p>
-      <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{label}</p>
-    </div>
   );
 }

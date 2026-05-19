@@ -36,8 +36,8 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
   return (
-    <main id="main-content" className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border/70 bg-background">
+    <main id="main-content" className="min-h-screen bg-slate-950 text-slate-50">
+      <header className="border-b border-slate-800/50 bg-slate-950/82 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <Button variant="ghost" size="sm" asChild className="h-11 px-3">
             <Link href="/">
@@ -45,7 +45,7 @@ export default function DashboardPage() {
               Home
             </Link>
           </Button>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-slate-400">
             Demo data only. No production auth or API calls.
           </p>
         </div>

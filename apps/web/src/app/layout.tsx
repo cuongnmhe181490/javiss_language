@@ -22,14 +22,14 @@ const socialDescription =
   "AI tutor, speaking coach và learning OS cho người học ngôn ngữ nghiêm túc.";
 
 export const viewport: Viewport = {
-  themeColor: "#2563eb",
+  themeColor: "#0f172a",
 };
 
 export const metadata: Metadata = {
   metadataBase: new URL(resolveSiteUrl()),
   title: {
-    default: "Polyglot AI Academy",
-    template: "%s | Polyglot AI Academy",
+    default: "Học ngoại ngữ cùng AI",
+    template: "%s | Học ngoại ngữ cùng AI",
   },
   description,
   alternates: {
@@ -46,16 +46,16 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
   },
   openGraph: {
-    title: "Polyglot AI Academy",
+    title: "Học ngoại ngữ cùng AI",
     description: socialDescription,
     url: absoluteUrl("/"),
-    siteName: "Polyglot AI Academy",
+    siteName: "Học ngoại ngữ cùng AI",
     images: [
       {
         url: "/og-image.svg",
         width: 1200,
         height: 630,
-        alt: "Polyglot AI Academy",
+        alt: "Học ngoại ngữ cùng AI",
       },
     ],
     locale: "vi_VN",
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Polyglot AI Academy",
+    title: "Học ngoại ngữ cùng AI",
     description: socialDescription,
     images: ["/og-image.svg"],
   },

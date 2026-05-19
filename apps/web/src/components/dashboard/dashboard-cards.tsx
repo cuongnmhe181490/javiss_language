@@ -19,22 +19,22 @@ import {
 
 export function DashboardHero() {
   return (
-    <section className="rounded-lg border border-border/70 bg-card p-5 shadow-[0_24px_80px_-65px_rgb(15_23_42/0.55)] sm:p-6">
+    <section className="rounded-lg border border-slate-800/50 bg-slate-900/80 backdrop-blur-sm p-5 shadow-[0_0_80px_-20px_rgb(16_185_129/0.15)] sm:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl">
-          <Badge variant="secondary" className="rounded-md">
+          <Badge variant="secondary" className="rounded-md bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
             Góc học bản demo
           </Badge>
           <h1 className="mt-4 text-4xl font-semibold tracking-normal sm:text-5xl">
             Góc học hôm nay
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
             Dữ liệu ở đây là mẫu để xem giao diện học. Bản production sẽ nối API thật, đăng nhập thật và nội dung đã kiểm duyệt.
           </p>
         </div>
-        <div className="grid min-w-[260px] gap-3 rounded-lg border border-border/70 bg-background/70 p-4">
+        <div className="grid min-w-[260px] gap-3 rounded-lg border border-slate-800/50 bg-slate-950/60 p-4">
           <div className="flex items-center justify-between gap-4">
-            <span className="text-sm text-muted-foreground">Phút tuần này</span>
+            <span className="text-sm text-slate-400">Phút tuần này</span>
             <span className="font-semibold">
               {demoLearner.weeklyMinutes}/{demoLearner.weeklyGoalMinutes}
             </span>
@@ -73,7 +73,7 @@ export function ProgressOverview() {
         value={`${demoLearner.streakDays} days`}
         detail="Nhịp học demo"
       />
-      <Card className="rounded-lg">
+      <Card className="rounded-lg border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
         <CardHeader>
           <CardTitle id="progress-overview-title">XP và trình độ</CardTitle>
           <CardDescription>
@@ -82,7 +82,7 @@ export function ProgressOverview() {
         </CardHeader>
         <CardContent>
           <Progress value={xpProgress} aria-label="XP progress" className="h-2" />
-          <p className="mt-3 text-sm text-muted-foreground">{xpProgress}% tới mốc tiếp theo.</p>
+          <p className="mt-3 text-sm text-slate-400">{xpProgress}% tới mốc tiếp theo.</p>
         </CardContent>
       </Card>
     </section>
@@ -91,19 +91,19 @@ export function ProgressOverview() {
 
 export function ContinueLearningCard() {
   return (
-    <Card className="rounded-lg">
+    <Card className="rounded-lg border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle>Học tiếp</CardTitle>
         <CardDescription>{continueLearning.track}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="rounded-lg border border-border/70 bg-muted/35 p-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-slate-800/50 bg-slate-950/60 p-4">
+          <div className="flex items-center gap-2 text-sm text-slate-400">
             <Clock3 className="size-4" aria-hidden="true" />
             {continueLearning.estimatedMinutes} phút
           </div>
           <h2 className="mt-3 text-2xl font-semibold">{continueLearning.title}</h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          <p className="mt-2 text-sm leading-6 text-slate-300">
             {continueLearning.objective}
           </p>
           <Button asChild className="mt-5 h-11">
@@ -126,28 +126,28 @@ export function SkillProgressGrid() {
           <h2 id="skill-progress-title" className="text-2xl font-semibold">
             Tiến độ kỹ năng
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-slate-400">
             Theo dõi gọn để biết nên học gì tiếp.
           </p>
         </div>
-        <Button variant="outline" asChild className="hidden h-11 sm:inline-flex">
+        <Button variant="outline" asChild className="hidden h-11 sm:inline-flex border-slate-800/50 bg-slate-900/60">
           <Link href="/curriculum">Xem lộ trình</Link>
         </Button>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {demoSkills.map((skill) => (
-          <Card key={skill.name} className="rounded-lg">
+          <Card key={skill.name} className="rounded-lg border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
             <CardContent className="pt-1">
               <div className="flex items-center justify-between gap-3">
-                <span className="flex size-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+                <span className="flex size-10 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   <skill.icon className="size-5" aria-hidden="true" />
                 </span>
-                <Badge variant="outline" className="rounded-md">
+                <Badge variant="outline" className="rounded-md border-slate-700">
                   {skill.level}
                 </Badge>
               </div>
               <h3 className="mt-4 font-semibold">{skill.name}</h3>
-              <p className="mt-1 min-h-10 text-sm leading-5 text-muted-foreground">
+              <p className="mt-1 min-h-10 text-sm leading-5 text-slate-400">
                 {skill.status}
               </p>
               <Progress
@@ -158,7 +158,7 @@ export function SkillProgressGrid() {
               <Link
                 href={skill.href}
                 aria-label={`Mở ${skill.name} track`}
-                className="mt-3 inline-flex min-h-11 items-center rounded-md text-sm font-medium text-primary hover:underline"
+                className="mt-3 inline-flex min-h-11 items-center rounded-md text-sm font-medium text-emerald-400 hover:text-emerald-300 hover:underline"
               >
                 Mở {skill.name}
               </Link>
@@ -172,7 +172,7 @@ export function SkillProgressGrid() {
 
 export function DailyGoalCard() {
   return (
-    <Card className="rounded-lg">
+    <Card className="rounded-lg border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle>Mục tiêu hôm nay</CardTitle>
         <CardDescription>{demoLearner.goal}</CardDescription>
@@ -183,7 +183,7 @@ export function DailyGoalCard() {
           <CompactRow label="Điểm cần nhớ" value={nextLesson.checkpoint} />
           <CompactRow label="Hạn" value={nextLesson.due} />
         </div>
-        <Button asChild variant="outline" className="mt-5 h-11 w-full">
+        <Button asChild variant="outline" className="mt-5 h-11 w-full border-slate-800/50 bg-slate-950/60">
           <Link href={nextLesson.href}>Xem bài ngắn</Link>
         </Button>
       </CardContent>
@@ -193,7 +193,7 @@ export function DailyGoalCard() {
 
 export function AssignmentPreview() {
   return (
-    <Card className="rounded-lg">
+    <Card className="rounded-lg border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle>Bài cần làm</CardTitle>
         <CardDescription>Bài mẫu cho bản xem trước.</CardDescription>
@@ -202,11 +202,11 @@ export function AssignmentPreview() {
         {demoAssignments.map((assignment) => (
           <div
             key={assignment.title}
-            className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-background/65 p-3"
+            className="flex items-center justify-between gap-4 rounded-lg border border-slate-800/50 bg-slate-950/60 p-3"
           >
             <div>
               <h3 className="font-medium">{assignment.title}</h3>
-              <p className="text-sm text-muted-foreground">Hạn {assignment.due}</p>
+              <p className="text-sm text-slate-400">Hạn {assignment.due}</p>
             </div>
             <Badge variant={assignment.status === "Ready" ? "default" : "secondary"}>
               {assignmentStatusLabel[assignment.status]}
@@ -228,17 +228,17 @@ export function SpeakingShortcut() {
 
 export function AchievementStrip() {
   return (
-    <section aria-labelledby="achievements-title" className="rounded-lg border bg-card p-4">
+    <section aria-labelledby="achievements-title" className="rounded-lg border border-slate-800/50 bg-slate-900/80 backdrop-blur-sm p-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 id="achievements-title" className="font-semibold">
             Dấu mốc nhỏ
           </h2>
-          <p className="text-sm text-muted-foreground">Tạo động lực nhẹ, không gây áp lực.</p>
+          <p className="text-sm text-slate-400">Tạo động lực nhẹ, không gây áp lực.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {achievements.map((achievement) => (
-            <Badge key={achievement.label} variant="secondary" className="h-8 rounded-md px-3">
+            <Badge key={achievement.label} variant="secondary" className="h-8 rounded-md px-3 bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
               <achievement.icon className="size-4" aria-hidden="true" />
               {achievement.label}
             </Badge>
@@ -251,7 +251,7 @@ export function AchievementStrip() {
 
 export function WeeklyPlanCard() {
   return (
-    <Card id="weekly-plan" className="rounded-lg">
+    <Card id="weekly-plan" className="rounded-lg border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle>Kế hoạch tuần</CardTitle>
         <CardDescription>Chia đều nghe, nói, đọc và ngữ pháp.</CardDescription>
@@ -268,7 +268,7 @@ export function WeeklyPlanCard() {
                 className="mt-2"
               />
             </div>
-            <span className="text-sm text-muted-foreground">{item.minutes}m</span>
+            <span className="text-sm text-slate-400">{item.minutes}m</span>
           </div>
         ))}
       </CardContent>
@@ -278,7 +278,7 @@ export function WeeklyPlanCard() {
 
 export function RecentActivityCard() {
   return (
-    <Card className="rounded-lg">
+    <Card className="rounded-lg border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle>Vừa học xong</CardTitle>
         <CardDescription>Hoạt động mẫu của bản beta.</CardDescription>
@@ -286,10 +286,10 @@ export function RecentActivityCard() {
       <CardContent className="grid gap-3">
         {recentActivity.map((activity) => (
           <div key={activity.title} className="flex items-start gap-3">
-            <span className="mt-1 flex size-2.5 rounded-full bg-primary" aria-hidden="true" />
+            <span className="mt-1 flex size-2.5 rounded-full bg-emerald-500" aria-hidden="true" />
             <div>
               <h3 className="font-medium">{activity.title}</h3>
-              <p className="text-sm text-muted-foreground">{activity.meta}</p>
+              <p className="text-sm text-slate-400">{activity.meta}</p>
             </div>
           </div>
         ))}
@@ -316,15 +316,15 @@ function MetricCard({
   detail: string;
 }) {
   return (
-    <Card className="rounded-lg">
+    <Card className="rounded-lg border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
       <CardContent className="flex items-center gap-4 pt-1">
-        <span className="flex size-11 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <span className="flex size-11 items-center justify-center rounded-lg bg-emerald-500 text-slate-950">
           <Icon className="size-5" aria-hidden="true" />
         </span>
         <div>
-          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="text-sm text-slate-400">{label}</p>
           <p className="text-2xl font-semibold">{value}</p>
-          <p className="text-sm text-muted-foreground">{detail}</p>
+          <p className="text-sm text-slate-400">{detail}</p>
         </div>
       </CardContent>
     </Card>
@@ -344,14 +344,14 @@ function ShortcutCard({
   id?: string;
 }) {
   return (
-    <Card id={id} className="rounded-lg">
+    <Card id={id} className="rounded-lg border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
       <CardContent className="pt-1">
-        <span className="flex size-11 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+        <span className="flex size-11 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
           <shortcut.icon className="size-5" aria-hidden="true" />
         </span>
         <h2 className="mt-4 text-xl font-semibold">{shortcut.title}</h2>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">{shortcut.copy}</p>
-        <Button asChild variant="outline" className="mt-5 h-11">
+        <p className="mt-2 text-sm leading-6 text-slate-400">{shortcut.copy}</p>
+        <Button asChild variant="outline" className="mt-5 h-11 border-slate-800/50 bg-slate-950/60">
           <Link href={shortcut.href}>
             Mở {shortcut.title}
             <ArrowRight aria-hidden="true" />
@@ -364,8 +364,8 @@ function ShortcutCard({
 
 function CompactRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-border/70 pb-3 last:border-b-0 last:pb-0">
-      <span className="text-sm text-muted-foreground">{label}</span>
+    <div className="flex items-start justify-between gap-4 border-b border-slate-800/50 pb-3 last:border-b-0 last:pb-0">
+      <span className="text-sm text-slate-400">{label}</span>
       <span className="max-w-[68%] text-right text-sm font-medium">{value}</span>
     </div>
   );
