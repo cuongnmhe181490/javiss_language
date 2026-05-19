@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { SiteFooter } from "./site-footer";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const languages = [
   { name: "Tiếng Anh", detail: "CEFR A1-C2 · giao tiếp, công việc, IELTS/TOEIC" },
@@ -59,9 +60,12 @@ function SiteHeader() {
           <Link className="inline-flex min-h-11 items-center rounded-xl px-3 transition hover:bg-white/5 hover:text-slate-100" href="/#flow">Cách học</Link>
           <Link className="inline-flex min-h-11 items-center rounded-xl px-3 transition hover:bg-white/5 hover:text-slate-100" href="/#trust">Nguồn học</Link>
         </nav>
-        <Button size="sm" asChild className="h-11 rounded-2xl bg-emerald-500 px-4 text-slate-950 hover:bg-emerald-400">
-          <Link href="/dashboard">Bắt đầu</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ThemeSwitcher />
+          <Button size="sm" asChild className="h-11 rounded-2xl bg-emerald-500 px-4 text-slate-950 hover:bg-emerald-400">
+            <Link href="/dashboard">Bắt đầu</Link>
+          </Button>
+        </div>
       </div>
     </header>
   );
