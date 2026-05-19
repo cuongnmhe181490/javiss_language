@@ -27,12 +27,12 @@ export function LearningTopicPage({ topic }: { topic: LearningTopic }) {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-11">
                 <Link href="/dashboard">
-                  Start dashboard
+                  Vào góc học
                   <ArrowRight aria-hidden="true" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-11">
-                <Link href="/register">Join beta pilot</Link>
+                <Link href="/register">Tham gia bản thử nghiệm</Link>
               </Button>
             </div>
           </div>
@@ -44,9 +44,9 @@ export function LearningTopicPage({ topic }: { topic: LearningTopic }) {
                 </span>
                 <div>
                   <p className="text-sm uppercase tracking-[0.16em] text-muted-foreground">
-                    Beta learning path
+                    Lộ trình beta
                   </p>
-                  <h2 className="text-2xl font-semibold">How the page connects</h2>
+                  <h2 className="text-2xl font-semibold">Bài này học thế nào</h2>
                 </div>
               </div>
               <ol className="mt-7 grid gap-4">
@@ -65,20 +65,19 @@ export function LearningTopicPage({ topic }: { topic: LearningTopic }) {
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-4 px-4 py-12 sm:px-6 lg:grid-cols-3 lg:px-8">
-        <InfoCard title="What you practice" items={topic.practice} />
-        <InfoCard title="How Polyglot AI helps" items={topic.helps} />
+        <InfoCard title="Bạn sẽ luyện" items={topic.practice} />
+        <InfoCard title="AI hỗ trợ thế nào" items={topic.helps} />
         <Card className="rounded-lg">
           <CardContent className="p-6">
             <span className="flex size-11 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
               <Route className="size-5" aria-hidden="true" />
             </span>
-            <h2 className="mt-4 text-xl font-semibold">Next beta step</h2>
+            <h2 className="mt-4 text-xl font-semibold">Bước tiếp theo</h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Use this page as a public route today. Connect it to real course data later through
-              `NEXT_PUBLIC_API_BASE_URL` after backend staging is public.
+              Trang này đang dùng nội dung mẫu. Khi API staging sẵn sàng, bài học thật sẽ được nối qua `NEXT_PUBLIC_API_BASE_URL`.
             </p>
             <Button asChild variant="outline" className="mt-5 h-11">
-              <Link href="/curriculum">View curriculum</Link>
+              <Link href="/curriculum">Xem lộ trình</Link>
             </Button>
           </CardContent>
         </Card>

@@ -23,20 +23,18 @@ export function DashboardHero() {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl">
           <Badge variant="secondary" className="rounded-md">
-            Beta demo dashboard
+            Góc học bản demo
           </Badge>
           <h1 className="mt-4 text-4xl font-semibold tracking-normal sm:text-5xl">
-            Your learning operating room
+            Góc học hôm nay
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
-            This dashboard uses local demo data while backend staging waits for Railway, managed
-            Postgres, Redis, and OIDC. It shows the intended learner surface without pretending auth
-            or API integration is live.
+            Dữ liệu ở đây là mẫu để xem giao diện học. Bản production sẽ nối API thật, đăng nhập thật và nội dung đã kiểm duyệt.
           </p>
         </div>
         <div className="grid min-w-[260px] gap-3 rounded-lg border border-border/70 bg-background/70 p-4">
           <div className="flex items-center justify-between gap-4">
-            <span className="text-sm text-muted-foreground">Weekly minutes</span>
+            <span className="text-sm text-muted-foreground">Phút tuần này</span>
             <span className="font-semibold">
               {demoLearner.weeklyMinutes}/{demoLearner.weeklyGoalMinutes}
             </span>
@@ -48,7 +46,7 @@ export function DashboardHero() {
           />
           <Button asChild className="mt-1 h-11">
             <Link href="/placement">
-              Tune placement
+              Chọn lại mục tiêu
               <ArrowRight aria-hidden="true" />
             </Link>
           </Button>
@@ -65,26 +63,26 @@ export function ProgressOverview() {
     <section aria-labelledby="progress-overview-title" className="grid gap-4 md:grid-cols-3">
       <MetricCard
         icon={BarChart3}
-        label="Course completion"
+        label="Tiến độ khóa học"
         value={`${demoLearner.completion}%`}
         detail={demoLearner.level}
       />
       <MetricCard
         icon={Flame}
-        label="Daily streak"
+        label="Chuỗi ngày học"
         value={`${demoLearner.streakDays} days`}
-        detail="Practice streak demo"
+        detail="Nhịp học demo"
       />
       <Card className="rounded-lg">
         <CardHeader>
-          <CardTitle id="progress-overview-title">XP and level</CardTitle>
+          <CardTitle id="progress-overview-title">XP và trình độ</CardTitle>
           <CardDescription>
-            {demoLearner.xp} of {demoLearner.nextLevelXp} XP
+            {demoLearner.xp} /  {demoLearner.nextLevelXp} XP
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Progress value={xpProgress} aria-label="XP progress" className="h-2" />
-          <p className="mt-3 text-sm text-muted-foreground">{xpProgress}% toward the next level.</p>
+          <p className="mt-3 text-sm text-muted-foreground">{xpProgress}% tới mốc tiếp theo.</p>
         </CardContent>
       </Card>
     </section>
@@ -95,14 +93,14 @@ export function ContinueLearningCard() {
   return (
     <Card className="rounded-lg">
       <CardHeader>
-        <CardTitle>Continue learning</CardTitle>
+        <CardTitle>Học tiếp</CardTitle>
         <CardDescription>{continueLearning.track}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="rounded-lg border border-border/70 bg-muted/35 p-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock3 className="size-4" aria-hidden="true" />
-            {continueLearning.estimatedMinutes} min lesson
+            {continueLearning.estimatedMinutes} phút
           </div>
           <h2 className="mt-3 text-2xl font-semibold">{continueLearning.title}</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -110,7 +108,7 @@ export function ContinueLearningCard() {
           </p>
           <Button asChild className="mt-5 h-11">
             <Link href={continueLearning.href}>
-              Resume lesson
+              Vào bài học
               <ArrowRight aria-hidden="true" />
             </Link>
           </Button>
@@ -126,14 +124,14 @@ export function SkillProgressGrid() {
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
           <h2 id="skill-progress-title" className="text-2xl font-semibold">
-            Skill progress
+            Tiến độ kỹ năng
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Demo skill coverage for the beta learning surface.
+            Theo dõi gọn để biết nên học gì tiếp.
           </p>
         </div>
         <Button variant="outline" asChild className="hidden h-11 sm:inline-flex">
-          <Link href="/curriculum">View curriculum</Link>
+          <Link href="/curriculum">Xem lộ trình</Link>
         </Button>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -159,10 +157,10 @@ export function SkillProgressGrid() {
               />
               <Link
                 href={skill.href}
-                aria-label={`Open ${skill.name} track`}
+                aria-label={`Mở ${skill.name} track`}
                 className="mt-3 inline-flex min-h-11 items-center rounded-md text-sm font-medium text-primary hover:underline"
               >
-                Open {skill.name}
+                Mở {skill.name}
               </Link>
             </CardContent>
           </Card>
@@ -176,17 +174,17 @@ export function DailyGoalCard() {
   return (
     <Card className="rounded-lg">
       <CardHeader>
-        <CardTitle>Daily goal</CardTitle>
+        <CardTitle>Mục tiêu hôm nay</CardTitle>
         <CardDescription>{demoLearner.goal}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-3">
-          <CompactRow label="Next lesson" value={nextLesson.title} />
-          <CompactRow label="Checkpoint" value={nextLesson.checkpoint} />
-          <CompactRow label="Due" value={nextLesson.due} />
+          <CompactRow label="Bài tiếp theo" value={nextLesson.title} />
+          <CompactRow label="Điểm cần nhớ" value={nextLesson.checkpoint} />
+          <CompactRow label="Hạn" value={nextLesson.due} />
         </div>
         <Button asChild variant="outline" className="mt-5 h-11 w-full">
-          <Link href={nextLesson.href}>Preview checkpoint</Link>
+          <Link href={nextLesson.href}>Xem bài ngắn</Link>
         </Button>
       </CardContent>
     </Card>
@@ -197,8 +195,8 @@ export function AssignmentPreview() {
   return (
     <Card className="rounded-lg">
       <CardHeader>
-        <CardTitle>Assignments</CardTitle>
-        <CardDescription>Demo tenant assignments for the learner preview.</CardDescription>
+        <CardTitle>Bài cần làm</CardTitle>
+        <CardDescription>Bài mẫu cho bản xem trước.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
         {demoAssignments.map((assignment) => (
@@ -208,10 +206,10 @@ export function AssignmentPreview() {
           >
             <div>
               <h3 className="font-medium">{assignment.title}</h3>
-              <p className="text-sm text-muted-foreground">Due {assignment.due}</p>
+              <p className="text-sm text-muted-foreground">Hạn {assignment.due}</p>
             </div>
             <Badge variant={assignment.status === "Ready" ? "default" : "secondary"}>
-              {assignment.status}
+              {assignmentStatusLabel[assignment.status]}
             </Badge>
           </div>
         ))}
@@ -234,9 +232,9 @@ export function AchievementStrip() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 id="achievements-title" className="font-semibold">
-            Achievement badges
+            Dấu mốc nhỏ
           </h2>
-          <p className="text-sm text-muted-foreground">Lightweight demo signals only.</p>
+          <p className="text-sm text-muted-foreground">Tạo động lực nhẹ, không gây áp lực.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {achievements.map((achievement) => (
@@ -255,8 +253,8 @@ export function WeeklyPlanCard() {
   return (
     <Card id="weekly-plan" className="rounded-lg">
       <CardHeader>
-        <CardTitle>Weekly learning plan</CardTitle>
-        <CardDescription>Balanced practice across core skills.</CardDescription>
+        <CardTitle>Kế hoạch tuần</CardTitle>
+        <CardDescription>Chia đều nghe, nói, đọc và ngữ pháp.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
         {weeklyPlan.map((item) => (
@@ -282,8 +280,8 @@ export function RecentActivityCard() {
   return (
     <Card className="rounded-lg">
       <CardHeader>
-        <CardTitle>Recent activity</CardTitle>
-        <CardDescription>Static beta activity, not production learner data.</CardDescription>
+        <CardTitle>Vừa học xong</CardTitle>
+        <CardDescription>Hoạt động mẫu của bản beta.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
         {recentActivity.map((activity) => (
@@ -299,6 +297,12 @@ export function RecentActivityCard() {
     </Card>
   );
 }
+
+const assignmentStatusLabel = {
+  Ready: "Sẵn sàng",
+  "In review": "Đang xem lại",
+  Optional: "Tùy chọn",
+} as const;
 
 function MetricCard({
   icon: Icon,
@@ -349,7 +353,7 @@ function ShortcutCard({
         <p className="mt-2 text-sm leading-6 text-muted-foreground">{shortcut.copy}</p>
         <Button asChild variant="outline" className="mt-5 h-11">
           <Link href={shortcut.href}>
-            Open {shortcut.title}
+            Mở {shortcut.title}
             <ArrowRight aria-hidden="true" />
           </Link>
         </Button>

@@ -1,20 +1,6 @@
 "use client";
 
-import {
-  ArrowRight,
-  Bot,
-  Building2,
-  CheckCircle2,
-  Database,
-  Globe2,
-  Headphones,
-  Lock,
-  Mic,
-  ShieldCheck,
-  Sparkles,
-  Users,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, BookOpenCheck, CheckCircle2, Globe2, Headphones, Mic } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -22,73 +8,35 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
 import { SiteFooter } from "./site-footer";
 
-const languageTracks = [
-  {
-    name: "English",
-    path: "CEFR A1-C2",
-    focus: "IELTS, TOEIC, TOEFL, công việc",
-    accent: "bg-sky-500",
-  },
-  {
-    name: "Chinese",
-    path: "HSK 1-6/9",
-    focus: "Pinyin, tone, character writing",
-    accent: "bg-rose-500",
-  },
-  {
-    name: "Japanese",
-    path: "JLPT N5-N1",
-    focus: "Kana, kanji, pitch accent cơ bản",
-    accent: "bg-violet-500",
-  },
-  {
-    name: "Korean",
-    path: "TOPIK I-II",
-    focus: "Hangul, particles, honorifics",
-    accent: "bg-emerald-500",
-  },
+const languages = [
+  { name: "Tiếng Anh", detail: "CEFR A1-C2 · giao tiếp, công việc, IELTS/TOEIC" },
+  { name: "Tiếng Trung", detail: "HSK · pinyin, thanh điệu, câu dùng hằng ngày" },
+  { name: "Tiếng Nhật", detail: "JLPT · kana, kanji cơ bản, mẫu câu ngắn" },
+  { name: "Tiếng Hàn", detail: "TOPIK · Hangul, trợ từ, hội thoại nhập môn" },
 ];
 
-const operatingPillars = [
-  {
-    icon: Mic,
-    title: "Speaking realtime",
-    copy: "Roleplay, transcript, turn-taking và báo cáo phát âm sau mỗi phiên luyện nói.",
-  },
-  {
-    icon: Users,
-    title: "L&D dashboard",
-    copy: "Theo dõi adoption, assignment completion và speaking outcomes theo tenant/cohort.",
-  },
-  {
-    icon: Database,
-    title: "Content Studio sạch",
-    copy: "Nguồn học liệu, license, lineage, validation và quality score được kiểm soát trước publish.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "AI có guardrails",
-    copy: "Tenant agents dùng prompt versioning, policy versioning, allow-list tools và schema validation.",
-  },
+const dailyFlow = [
+  { title: "Học 1 bài ngắn", copy: "8-12 phút. Mỗi bài chỉ có một mục tiêu rõ." },
+  { title: "Luyện nói nhẹ nhàng", copy: "Roleplay theo tình huống, có transcript và gợi ý sửa lỗi." },
+  { title: "Ôn đúng lỗi hay gặp", copy: "Dashboard nhắc bài cần học tiếp, không nhồi quá nhiều số liệu." },
 ];
 
-const reportScores = [
-  { label: "Pronunciation", value: 84 },
-  { label: "Fluency", value: 78 },
-  { label: "Grammar", value: 91 },
-  { label: "Relevance", value: 88 },
+const trustItems = [
+  "Bám khung CEFR, JLPT, HSK, TOPIK.",
+  "AI chỉ hỗ trợ gợi ý, không tự xuất bản bài học.",
+  "Bài publish cần nguồn, license và kiểm duyệt.",
+  "Không copy giáo trình lậu hoặc nội dung không rõ quyền dùng.",
 ];
 
 export function HomePage() {
   return (
-    <main id="main-content" className="min-h-screen overflow-hidden bg-background text-foreground">
+    <main id="main-content" className="min-h-screen overflow-hidden bg-[#fbfaf7] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
       <SiteHeader />
       <HeroSection />
       <LanguageSection />
-      <ProductDepthSection />
+      <FlowSection />
       <TrustSection />
       <FinalCta />
       <SiteFooter />
@@ -98,50 +46,22 @@ export function HomePage() {
 
 function SiteHeader() {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/72 backdrop-blur-2xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="flex min-h-11 items-center gap-3"
-          aria-label="Polyglot AI Academy"
-          aria-current="page"
-        >
-          <span className="flex size-9 items-center justify-center rounded-lg bg-foreground text-background">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/70 bg-[#fbfaf7]/82 backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-950/82">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="flex min-h-11 items-center gap-3" aria-label="Học ngoại ngữ cùng AI" aria-current="page">
+          <span className="flex size-9 items-center justify-center rounded-2xl bg-slate-950 text-white dark:bg-white dark:text-slate-950">
             <Globe2 className="size-5" aria-hidden="true" />
           </span>
-          <span className="text-sm font-semibold tracking-wide">Polyglot AI Academy</span>
+          <span className="text-sm font-semibold tracking-wide">Học ngoại ngữ cùng AI</span>
         </Link>
-        <nav className="hidden items-center gap-2 text-sm text-muted-foreground md:flex">
-          <Link
-            className="inline-flex min-h-11 items-center rounded-md px-2 transition hover:text-foreground"
-            href="/dashboard"
-          >
-            Ngôn ngữ
-          </Link>
-          <Link
-            className="inline-flex min-h-11 items-center rounded-md px-2 transition hover:text-foreground"
-            href="/placement"
-          >
-            Nền tảng
-          </Link>
-          <Link
-            className="inline-flex min-h-11 items-center rounded-md px-2 transition hover:text-foreground"
-            href="/curriculum"
-          >
-            Enterprise trust
-          </Link>
+        <nav className="hidden items-center gap-1 text-sm text-slate-600 dark:text-slate-300 md:flex">
+          <Link className="inline-flex min-h-11 items-center rounded-xl px-3 transition hover:bg-white hover:text-slate-950 dark:hover:bg-slate-900 dark:hover:text-white" href="/dashboard">Góc học</Link>
+          <Link className="inline-flex min-h-11 items-center rounded-xl px-3 transition hover:bg-white hover:text-slate-950 dark:hover:bg-slate-900 dark:hover:text-white" href="/#flow">Cách học</Link>
+          <Link className="inline-flex min-h-11 items-center rounded-xl px-3 transition hover:bg-white hover:text-slate-950 dark:hover:bg-slate-900 dark:hover:text-white" href="/#trust">Nguồn học</Link>
         </nav>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild className="hidden h-11 px-3 sm:inline-flex">
-            <Link href="/login">Đăng nhập</Link>
-          </Button>
-          <Button size="sm" asChild className="h-11 px-3">
-            <Link href="/dashboard">
-              Bắt đầu
-              <ArrowRight aria-hidden="true" />
-            </Link>
-          </Button>
-        </div>
+        <Button size="sm" asChild className="h-11 rounded-2xl px-4">
+          <Link href="/dashboard">Bắt đầu</Link>
+        </Button>
       </div>
     </header>
   );
@@ -149,181 +69,104 @@ function SiteHeader() {
 
 function HeroSection() {
   return (
-    <section className="relative isolate min-h-[100svh] pt-16">
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(115deg,color-mix(in_oklab,var(--background)_88%,transparent)_0%,color-mix(in_oklab,var(--accent)_76%,transparent)_46%,color-mix(in_oklab,var(--primary)_14%,var(--background))_100%)]" />
-      <div className="absolute inset-0 -z-10 opacity-[0.08] [background-image:linear-gradient(var(--foreground)_1px,transparent_1px),linear-gradient(90deg,var(--foreground)_1px,transparent_1px)] [background-size:48px_48px]" />
-
-      <div className="mx-auto grid min-h-[calc(100svh-4rem)] max-w-7xl items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className="max-w-3xl"
-        >
-          <Badge variant="secondary" className="mb-6 rounded-md px-3 py-1 text-xs">
-            Enterprise AI language learning cho đội ngũ và trường học
-          </Badge>
-          <h1 className="max-w-4xl text-5xl font-semibold tracking-normal text-balance sm:text-6xl lg:text-7xl">
-            Polyglot AI Academy
+    <section className="relative isolate pt-16">
+      <motion.div
+        aria-hidden="true"
+        animate={{ scale: [1, 1.04, 1], opacity: [0.55, 0.75, 0.55] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute left-1/2 top-24 -z-10 size-[520px] -translate-x-1/2 rounded-full bg-emerald-200 blur-3xl dark:bg-emerald-950"
+      />
+      <div className="mx-auto grid min-h-[calc(100svh-4rem)] max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8">
+        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, ease: "easeOut" }}>
+          <Badge variant="secondary" className="mb-5 rounded-full px-3 py-1 text-xs">Bản beta · học 10 phút mỗi ngày</Badge>
+          <h1 className="max-w-3xl text-5xl font-semibold tracking-[-0.04em] text-balance sm:text-6xl lg:text-7xl">
+            Học ngoại ngữ nhẹ hơn mỗi ngày.
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
-            Học tiếng Anh, Trung, Nhật, Hàn bằng speaking realtime, AI coach theo tenant và
-            analytics đủ tin cậy cho L&D.
+          <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+            Bài học ngắn, giao diện yên, AI sửa lỗi vừa đủ. Mở web lên là biết hôm nay nên học gì.
           </p>
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" asChild className="h-11 px-5">
-              <Link href="/register">
-                Tạo tenant pilot
-                <Sparkles aria-hidden="true" />
-              </Link>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Button size="lg" asChild className="h-12 rounded-2xl px-5">
+              <Link href="/dashboard">Vào học thử <ArrowRight aria-hidden="true" /></Link>
             </Button>
-            <Button size="lg" variant="outline" asChild className="h-11 px-5">
-              <Link href="/demo-speaking">
-                Xem speaking loop
-                <Headphones aria-hidden="true" />
-              </Link>
+            <Button size="lg" variant="outline" asChild className="h-12 rounded-2xl bg-white/60 px-5 dark:bg-slate-900/60">
+              <Link href="/demo-speaking">Xem luyện nói <Headphones aria-hidden="true" /></Link>
             </Button>
           </div>
-          <div className="mt-10 grid max-w-xl grid-cols-3 gap-4 text-sm">
-            <Metric value="<1.5s" label="target phản hồi giọng nói" />
-            <Metric value="SSO" label="OIDC, SCIM và RBAC" />
-            <Metric value="AA" label="accessibility target" />
+          <div className="mt-9 grid max-w-lg grid-cols-3 gap-3 text-sm">
+            <MiniStat value="8-12p" label="mỗi bài" />
+            <MiniStat value="4 kỹ năng" label="nghe nói đọc ngữ pháp" />
+            <MiniStat value="ít nhiễu" label="tập trung học" />
           </div>
         </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97, y: 24 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.12, ease: "easeOut" }}
-          className="relative min-h-[580px] lg:min-h-[680px]"
-          aria-label="Minh họa giao diện học tập AI cho doanh nghiệp"
-        >
-          <ProductCanvas />
-        </motion.div>
+        <LearningPreview />
       </div>
     </section>
   );
 }
 
-function ProductCanvas() {
+function LearningPreview() {
   return (
-    <div className="absolute inset-0">
-      <motion.div
-        animate={{ y: [0, -10, 0] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute left-0 top-8 w-[88%] rounded-lg border border-border/70 bg-background/70 p-4 shadow-[0_24px_90px_-55px_rgb(15_23_42/0.55)] backdrop-blur-2xl sm:p-5"
-      >
-        <div className="mb-5 flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Today</p>
-            <h2 className="mt-1 text-xl font-semibold">Speaking room</h2>
-          </div>
-          <Badge className="rounded-md bg-emerald-500/15 text-emerald-900 dark:text-emerald-200">
-            Live
-          </Badge>
-        </div>
-        <div className="space-y-4">
-          <TranscriptLine
-            speaker="AI Coach"
-            text="Let's roleplay a hotel check-in. Start naturally."
-          />
-          <TranscriptLine speaker="Learner" text="Hi, I have a reservation under Nguyen." active />
-        </div>
-        <div className="mt-6 flex h-16 items-end gap-1.5 rounded-lg border border-border/60 bg-muted/35 p-3">
-          {Array.from({ length: 28 }).map((_, index) => (
-            <motion.span
-              key={index}
-              animate={{
-                height: [
-                  `${22 + (index % 6) * 7}%`,
-                  `${48 + (index % 5) * 8}%`,
-                  `${22 + (index % 6) * 7}%`,
-                ],
-              }}
-              transition={{
-                duration: 1.2 + (index % 5) * 0.08,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="w-full rounded-full bg-primary/70"
-            />
-          ))}
-        </div>
-      </motion.div>
-
-      <motion.div
-        animate={{ y: [0, 12, 0] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-4 right-0 w-[84%] rounded-lg border border-border/70 bg-card/82 p-5 shadow-[0_24px_80px_-50px_rgb(15_23_42/0.5)] backdrop-blur-2xl"
-      >
+    <motion.div initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }} className="relative min-h-[560px]">
+      <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} className="absolute inset-x-0 top-4 rounded-[2rem] border border-white/80 bg-white/82 p-5 shadow-[0_30px_90px_-55px_rgb(15_23_42/0.55)] backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-900/82">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-              Pronunciation report
-            </p>
-            <h3 className="mt-1 text-lg font-semibold">/reservation/ cần nhấn âm thứ ba</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Bài hôm nay</p>
+            <h2 className="mt-1 text-2xl font-semibold tracking-tight">Chào hỏi người mới gặp</h2>
           </div>
-          <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Mic className="size-5" aria-hidden="true" />
-          </div>
+          <Badge className="rounded-full bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-200">A1</Badge>
         </div>
-        <div className="mt-5 space-y-4">
-          {reportScores.map((score) => (
-            <div key={score.label}>
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{score.label}</span>
-                <span className="font-medium">{score.value}</span>
-              </div>
-              <Progress value={score.value} aria-label={`${score.label} score`} className="h-2" />
-            </div>
+        <div className="mt-6 rounded-3xl bg-slate-50 p-4 dark:bg-slate-950/60">
+          <p className="text-sm font-medium">Mục tiêu</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Nói được một lời chào, giới thiệu ngắn và hỏi thêm một câu lịch sự.</p>
+          <Progress value={64} className="mt-5 h-2" aria-label="Tiến độ bài học" />
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          {['Nghe mẫu', 'Tập câu', 'Nói thử'].map((item, index) => (
+            <motion.div key={item} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 + index * 0.08 }} className="rounded-2xl border border-slate-200 bg-white p-3 text-sm dark:border-slate-800 dark:bg-slate-900">
+              <span className="text-slate-400">0{index + 1}</span>
+              <p className="mt-1 font-medium">{item}</p>
+            </motion.div>
           ))}
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, x: 16 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.45, duration: 0.7 }}
-        className="absolute right-6 top-[46%] hidden w-56 rounded-lg border border-border/60 bg-background/78 p-4 backdrop-blur-xl md:block"
-      >
-        <div className="mb-4 flex items-center gap-2">
-          <Bot className="size-4 text-primary" aria-hidden="true" />
-          <span className="text-sm font-medium">Tenant agent</span>
+      <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} className="absolute bottom-8 right-0 w-[86%] rounded-[2rem] border border-white/80 bg-white/88 p-5 shadow-[0_28px_80px_-55px_rgb(15_23_42/0.55)] backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-900/88">
+        <div className="flex items-center gap-3">
+          <span className="flex size-11 items-center justify-center rounded-2xl bg-slate-950 text-white dark:bg-white dark:text-slate-950"><Mic className="size-5" aria-hidden="true" /></span>
+          <div>
+            <p className="font-semibold">Gợi ý sau khi nói</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Chậm hơn một nhịp ở câu thứ hai.</p>
+          </div>
         </div>
-        <div className="space-y-2">
-          <Skeleton className="h-2 w-5/6" />
-          <Skeleton className="h-2 w-3/4" />
-          <Skeleton className="h-2 w-4/6" />
+        <div className="mt-5 flex h-14 items-end gap-1.5 rounded-3xl bg-emerald-50 p-3 dark:bg-emerald-950/40">
+          {Array.from({ length: 24 }).map((_, index) => (
+            <motion.span key={index} animate={{ height: [`${20 + (index % 5) * 8}%`, `${52 + (index % 6) * 6}%`, `${20 + (index % 5) * 8}%`] }} transition={{ duration: 1.1 + (index % 4) * 0.1, repeat: Infinity, ease: "easeInOut" }} className="w-full rounded-full bg-emerald-500/70" />
+          ))}
         </div>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
 
 function LanguageSection() {
   return (
-    <section id="languages" className="border-y border-border/70 bg-muted/25 py-20 sm:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl">
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Learning paths
-          </p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-normal sm:text-4xl">
-            Một hệ thống, bốn hướng học khác nhau.
-          </h2>
-        </div>
-        <div className="mt-10 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {languageTracks.map((track) => (
-            <Card key={track.name} className="rounded-lg bg-background/70">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-3">
-                  <span className={`size-2.5 rounded-full ${track.accent}`} />
-                  <h3 className="font-semibold">{track.name}</h3>
-                </div>
-                <p className="mt-4 text-sm font-medium">{track.path}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{track.focus}</p>
-              </CardContent>
-            </Card>
+    <section className="border-y border-slate-200/70 bg-white/58 py-16 dark:border-slate-800 dark:bg-slate-900/25">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <SectionIntro eyebrow="Lộ trình" title="Chọn ngôn ngữ, học từ mức dễ trước." copy="Không cần mở quá nhiều thứ. Chọn một mục tiêu, học một bài ngắn, rồi quay lại ngày mai." />
+        <div className="mt-8 grid gap-3 md:grid-cols-2">
+          {languages.map((language, index) => (
+            <motion.div key={language.name} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ delay: index * 0.06 }}>
+              <Card className="rounded-3xl border-slate-200 bg-[#fbfaf7] dark:border-slate-800 dark:bg-slate-950/70">
+                <CardContent className="flex items-start gap-4 p-5">
+                  <span className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"><BookOpenCheck className="size-5" aria-hidden="true" /></span>
+                  <div>
+                    <h3 className="font-semibold">{language.name}</h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{language.detail}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -331,31 +174,22 @@ function LanguageSection() {
   );
 }
 
-function ProductDepthSection() {
+function FlowSection() {
   return (
-    <section id="product" className="py-20 sm:py-28">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Enterprise foundation
-          </p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-normal sm:text-4xl">
-            Không chỉ là chatbot. Đây là nền tảng speaking cho tổ chức.
-          </h2>
-          <p className="mt-5 text-base leading-7 text-muted-foreground">
-            Learner dashboard, speaking room, tenant agents, assignments, analytics và Content
-            Studio cùng chia sẻ tenant model sạch để scale được.
-          </p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {operatingPillars.map((pillar) => (
-            <Card key={pillar.title} className="rounded-lg">
-              <CardContent className="p-5">
-                <pillar.icon className="size-5 text-primary" aria-hidden="true" />
-                <h3 className="mt-4 font-semibold">{pillar.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{pillar.copy}</p>
-              </CardContent>
-            </Card>
+    <section id="flow" className="py-18 sm:py-24">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <SectionIntro eyebrow="Cách học" title="Mỗi màn chỉ giữ việc cần làm." copy="Ít card hơn, ít số liệu hơn, ưu tiên cảm giác mở ra là học được ngay." />
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {dailyFlow.map((item, index) => (
+            <motion.div key={item.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ delay: index * 0.08 }}>
+              <Card className="h-full rounded-3xl bg-white/75 dark:bg-slate-900/70">
+                <CardContent className="p-6">
+                  <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">0{index + 1}</span>
+                  <h3 className="mt-3 text-xl font-semibold">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{item.copy}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -365,43 +199,20 @@ function ProductDepthSection() {
 
 function TrustSection() {
   return (
-    <section id="trust" className="bg-foreground py-20 text-background sm:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-[1fr_0.9fr]">
-          <div>
-            <Badge className="rounded-md bg-background/12 text-background hover:bg-background/12">
-              Enterprise trust
-            </Badge>
-            <h2 className="mt-5 text-3xl font-semibold tracking-normal sm:text-4xl">
-              Kiến trúc bảo vệ dữ liệu học tập từ ngày đầu.
-            </h2>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-background/70">
-              Tenant isolation, SSO, RBAC/ABAC, audit log, license registry, prompt versioning và
-              output validation được thiết kế như một phần sản phẩm.
-            </p>
-          </div>
-          <div className="space-y-4">
-            <TrustRow
-              icon={Lock}
-              title="Không hard-code secret"
-              detail="Secret qua env/secret manager, log có redaction."
-            />
-            <TrustRow
-              icon={Building2}
-              title="Multi-tenant từ lõi"
-              detail="Tenant routing, feature flags, glossary, agents và analytics theo tenant."
-            />
-            <TrustRow
-              icon={CheckCircle2}
-              title="Không publish content chưa duyệt"
-              detail="Source, license, validation và quality score là publish gate."
-            />
-            <TrustRow
-              icon={Zap}
-              title="Realtime có fallback"
-              detail="WebRTC/SFU trước, text fallback khi mic hoặc network lỗi."
-            />
-          </div>
+    <section id="trust" className="py-16 sm:py-24">
+      <div className="mx-auto grid max-w-6xl gap-8 rounded-[2rem] bg-slate-950 p-6 text-white sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
+        <div>
+          <Badge className="rounded-full bg-white/12 text-white hover:bg-white/12">Nguồn học</Badge>
+          <h2 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">Nội dung học phải rõ nguồn, không mơ hồ.</h2>
+          <p className="mt-4 text-sm leading-7 text-slate-300">Bản hiện tại dùng dữ liệu demo để kiểm UI. Bản học thật cần nội dung đã được duyệt trước khi xuất bản.</p>
+        </div>
+        <div className="grid gap-3">
+          {trustItems.map((item) => (
+            <div key={item} className="flex gap-3 rounded-2xl border border-white/10 bg-white/6 p-4">
+              <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-300" aria-hidden="true" />
+              <p className="text-sm leading-6 text-slate-200">{item}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -410,74 +221,35 @@ function TrustSection() {
 
 function FinalCta() {
   return (
-    <section className="py-16 sm:py-20">
-      <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-4 sm:px-6 md:flex-row md:items-center lg:px-8">
+    <section className="pb-20">
+      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-5 px-4 sm:px-6 md:flex-row md:items-center lg:px-8">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Enterprise pilot
-          </p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-normal">
-            Sẵn sàng nối tenant core, SSO, assignments và speaking loop.
-          </h2>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Bản beta</p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight">Xem thử flow học, chưa giả đăng nhập hay API production.</h2>
         </div>
-        <Button size="lg" asChild className="h-11 px-5">
-          <Link href="/register">
-            Lên pilot cho tổ chức
-            <ArrowRight aria-hidden="true" />
-          </Link>
+        <Button size="lg" asChild className="h-12 rounded-2xl px-5">
+          <Link href="/dashboard">Vào góc học <ArrowRight aria-hidden="true" /></Link>
         </Button>
       </div>
     </section>
   );
 }
 
-function Metric({ value, label }: { value: string; label: string }) {
+function SectionIntro({ eyebrow, title, copy }: { eyebrow: string; title: string; copy: string }) {
   return (
-    <div>
-      <p className="text-2xl font-semibold">{value}</p>
-      <p className="mt-1 text-xs leading-5 text-muted-foreground">{label}</p>
-    </div>
+    <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.55 }} className="max-w-2xl">
+      <p className="text-sm font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{eyebrow}</p>
+      <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
+      <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">{copy}</p>
+    </motion.div>
   );
 }
 
-function TranscriptLine({
-  speaker,
-  text,
-  active,
-}: {
-  speaker: string;
-  text: string;
-  active?: boolean;
-}) {
+function MiniStat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-background/65 p-3">
-      <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
-        <span className={active ? "text-primary" : ""}>{speaker}</span>
-        {active ? <span className="size-1.5 rounded-full bg-emerald-500" /> : null}
-      </div>
-      <p className="text-sm leading-6">{text}</p>
-    </div>
-  );
-}
-
-function TrustRow({
-  icon: Icon,
-  title,
-  detail,
-}: {
-  icon: typeof Lock;
-  title: string;
-  detail: string;
-}) {
-  return (
-    <div className="rounded-lg border border-background/12 bg-background/8 p-4">
-      <div className="flex gap-3">
-        <Icon className="mt-0.5 size-5 text-background" aria-hidden="true" />
-        <div>
-          <h3 className="font-medium">{title}</h3>
-          <p className="mt-1 text-sm leading-6 text-background/68">{detail}</p>
-        </div>
-      </div>
+    <div className="rounded-2xl border border-slate-200 bg-white/60 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+      <p className="font-semibold">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{label}</p>
     </div>
   );
 }

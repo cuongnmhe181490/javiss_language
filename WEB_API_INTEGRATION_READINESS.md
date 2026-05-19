@@ -10,11 +10,13 @@ The current web app is a marketing/beta placeholder surface. Login, registration
 
 ## API URL Configuration
 
-No `NEXT_PUBLIC_API_BASE_URL` or equivalent API base URL is currently wired in `apps/web`.
+`apps/web` now has a small API URL helper at:
 
-PR-013 status: no backend staging API URL exists yet. Do not wire the production
-web app to an API origin until the API has a managed Postgres URL, managed Redis
-URL, OIDC configuration, and passing remote smoke results.
+- `apps/web/src/lib/api-base-url.ts`
+
+The helper reads `NEXT_PUBLIC_API_BASE_URL`, trims trailing slashes, and falls back to `http://localhost:4000` for local development only. It is intentionally not used by production UI routes yet because no backend staging API URL exists.
+
+PR-013 status: no backend staging API URL exists yet. Do not wire the production web app to an API origin until the API has a managed Postgres URL, managed Redis URL, OIDC configuration, and passing remote smoke results.
 
 When API staging is available, add a public web env such as:
 
@@ -22,7 +24,7 @@ When API staging is available, add a public web env such as:
 NEXT_PUBLIC_API_BASE_URL=https://api-staging.example.com
 ```
 
-Do not hard-code the API URL in React components.
+Do not hard-code the API URL in React components. Use `apiUrl()` from `apps/web/src/lib/api-base-url.ts` when adding future client/server API consumers.
 
 ## CORS Requirement
 

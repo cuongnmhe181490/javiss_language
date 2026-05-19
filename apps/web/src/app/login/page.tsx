@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Lock } from "lucide-react";
-import { absoluteUrl } from "@/lib/site-url";
 import { BetaPageShell } from "@/components/marketing/beta-page-shell";
+import { hasConfiguredApiBaseUrl } from "@/lib/api-base-url";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "Đăng nhập beta",
@@ -18,12 +19,21 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
+  const isApiConfigured = hasConfiguredApiBaseUrl();
+
   return (
     <BetaPageShell
       badge="Beta access"
       title="Đăng nhập đang mở theo tenant pilot."
       description="Cổng đăng nhập sản phẩm thật chưa mở công khai. Nhóm pilot sẽ nhận đường dẫn SSO hoặc tài khoản thử nghiệm sau khi tenant được cấu hình."
       icon={Lock}
+      eyebrow={isApiConfigured ? "API CONFIGURED" : "AUTH PLACEHOLDER"}
+      statusCallout={{
+        title: isApiConfigured ? "Backend URL detected" : "OIDC chưa bật",
+        copy: isApiConfigured
+          ? "NEXT_PUBLIC_API_BASE_URL đã có, nhưng login vẫn không redirect cho tới khi OIDC, tenant và smoke test hoàn tất."
+          : "Trang này cố ý không có form mật khẩu hoặc token vì public beta chưa có OIDC staging.",
+      }}
       primaryCta={{ label: "Xem demo speaking", href: "/demo-speaking" }}
       secondaryCta={{ label: "Quay về trang chủ", href: "/" }}
       asideTitle="Không giả lập auth production"

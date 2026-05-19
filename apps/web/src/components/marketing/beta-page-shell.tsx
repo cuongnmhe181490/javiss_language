@@ -20,6 +20,11 @@ type BetaPageShellProps = {
     label: string;
     href: string;
   };
+  eyebrow?: string;
+  statusCallout?: {
+    title: string;
+    copy: string;
+  };
   points: Array<{
     title: string;
     copy: string;
@@ -35,6 +40,8 @@ export function BetaPageShell({
   icon: Icon,
   primaryCta,
   secondaryCta,
+  eyebrow = "READY-BETA",
+  statusCallout,
   points,
   asideTitle,
   asideCopy,
@@ -82,7 +89,7 @@ export function BetaPageShell({
               <div className="flex items-start justify-between gap-6">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                    READY-BETA
+                    {eyebrow}
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold">{asideTitle}</h2>
                 </div>
@@ -91,6 +98,12 @@ export function BetaPageShell({
                 </span>
               </div>
               <p className="mt-5 text-sm leading-6 text-muted-foreground">{asideCopy}</p>
+              {statusCallout ? (
+                <div className="mt-6 rounded-lg border border-dashed border-border bg-muted/45 p-4">
+                  <p className="text-sm font-medium">{statusCallout.title}</p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">{statusCallout.copy}</p>
+                </div>
+              ) : null}
               <div className="mt-8 grid gap-3">
                 {points.map((point) => (
                   <div

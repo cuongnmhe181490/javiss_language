@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Building2 } from "lucide-react";
-import { absoluteUrl } from "@/lib/site-url";
 import { BetaPageShell } from "@/components/marketing/beta-page-shell";
+import { hasConfiguredApiBaseUrl } from "@/lib/api-base-url";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "Đăng ký tenant pilot",
@@ -18,12 +19,21 @@ export const metadata: Metadata = {
 };
 
 export default function RegisterPage() {
+  const isApiConfigured = hasConfiguredApiBaseUrl();
+
   return (
     <BetaPageShell
       badge="Tenant pilot"
       title="Đăng ký pilot đang được xử lý thủ công."
       description="Bản public beta chưa mở self-serve signup. Tổ chức muốn thử nghiệm sẽ được onboarding qua checklist tenant, dữ liệu học tập mẫu và cấu hình quyền truy cập."
       icon={Building2}
+      eyebrow={isApiConfigured ? "API CONFIGURED" : "MANUAL PILOT"}
+      statusCallout={{
+        title: isApiConfigured ? "Backend URL detected" : "Self-serve signup chưa bật",
+        copy: isApiConfigured
+          ? "NEXT_PUBLIC_API_BASE_URL đã có, nhưng signup vẫn giữ manual gate cho tới khi tenant provisioning và abuse controls sẵn sàng."
+          : "Chưa nối API staging nên trang này không thu form public hoặc dữ liệu cá nhân.",
+      }}
       primaryCta={{ label: "Xem demo speaking", href: "/demo-speaking" }}
       secondaryCta={{ label: "Quay về trang chủ", href: "/" }}
       asideTitle="Pilot readiness"

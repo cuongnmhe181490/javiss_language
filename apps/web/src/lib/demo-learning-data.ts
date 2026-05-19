@@ -41,9 +41,9 @@ export type DemoPlanItem = {
 };
 
 export const demoLearner = {
-  name: "Pilot learner",
-  goal: "Reach confident workplace English for guest conversations.",
-  level: "A1 Workplace Starter",
+  name: "Bạn học thử",
+  goal: "Tự tin hơn khi chào hỏi và hỏi thông tin cơ bản bằng tiếng Anh.",
+  level: "A1 - bắt đầu giao tiếp",
   xp: 2840,
   nextLevelXp: 3200,
   streakDays: 6,
@@ -53,112 +53,112 @@ export const demoLearner = {
 };
 
 export const continueLearning = {
-  title: "Greeting a guest",
-  track: "English A1 Workplace Starter",
+  title: "Chào hỏi người mới gặp",
+  track: "English A1 - bắt đầu giao tiếp",
   estimatedMinutes: 8,
   href: "/reading",
-  objective: "Practice a short welcome, a role introduction, and one polite follow-up question.",
+  objective: "Tập một lời chào ngắn, giới thiệu vai trò và hỏi thêm một câu lịch sự.",
 };
 
 export const nextLesson = {
-  title: "Asking for basic information",
+  title: "Hỏi thông tin cơ bản",
   href: "/grammar",
-  due: "Today",
-  checkpoint: "Use can I and may I in service questions.",
+  due: "Hôm nay",
+  checkpoint: "Dùng “Can I...” và “May I...” trong câu hỏi lịch sự.",
 };
 
 export const demoSkills: DemoSkill[] = [
   {
-    name: "Listening",
+    name: "Nghe",
     href: "/listening",
     level: "A1",
     progress: 58,
-    status: "Service phrases",
+    status: "Cụm câu giao tiếp",
     icon: Headphones,
   },
   {
-    name: "Speaking",
+    name: "Nói",
     href: "/speaking",
     level: "A1",
     progress: 46,
-    status: "Roleplay loop",
+    status: "Roleplay ngắn",
     icon: Mic,
   },
   {
-    name: "Reading",
+    name: "Đọc",
     href: "/reading",
     level: "A1",
     progress: 71,
-    status: "Short workplace notes",
+    status: "Ghi chú ngắn",
     icon: BookOpen,
   },
   {
-    name: "Grammar",
+    name: "Ngữ pháp",
     href: "/grammar",
     level: "A1",
     progress: 63,
-    status: "Polite questions",
+    status: "Câu hỏi lịch sự",
     icon: PenLine,
   },
   {
-    name: "Vocabulary",
+    name: "Từ vựng",
     href: "/curriculum",
     level: "A1",
     progress: 69,
-    status: "Hospitality core",
+    status: "Từ vựng cơ bản",
     icon: NotebookText,
   },
 ];
 
 export const demoAssignments: DemoAssignment[] = [
-  { title: "Finish greeting checkpoint", due: "Today", status: "Ready" },
-  { title: "Record speaking reflection", due: "Tomorrow", status: "Optional" },
-  { title: "Manager feedback review", due: "Fri", status: "In review" },
+  { title: "Hoàn thành bài chào hỏi", due: "Hôm nay", status: "Ready" },
+  { title: "Ghi lại phần luyện nói", due: "Ngày mai", status: "Optional" },
+  { title: "Xem góp ý sau bài học", due: "T6", status: "In review" },
 ];
 
 export const recentActivity: DemoActivity[] = [
-  { title: "Completed pronunciation warm-up", meta: "8 minutes" },
-  { title: "Reviewed 12 workplace phrases", meta: "+120 XP" },
-  { title: "Passed lesson safety check", meta: "No answer key exposed" },
+  { title: "Hoàn thành khởi động phát âm", meta: "8 phút" },
+  { title: "Ôn 12 cụm câu giao tiếp", meta: "+120 XP" },
+  { title: "Bài học đang ở chế độ demo an toàn", meta: "Không lộ đáp án mẫu" },
 ];
 
 export const weeklyPlan: DemoPlanItem[] = [
-  { day: "Mon", focus: "Listening", minutes: 20 },
-  { day: "Tue", focus: "Speaking", minutes: 25 },
-  { day: "Wed", focus: "Grammar", minutes: 20 },
-  { day: "Thu", focus: "Reading", minutes: 15 },
-  { day: "Fri", focus: "Review", minutes: 30 },
+  { day: "T2", focus: "Nghe", minutes: 20 },
+  { day: "T3", focus: "Nói", minutes: 25 },
+  { day: "T4", focus: "Ngữ pháp", minutes: 20 },
+  { day: "T5", focus: "Đọc", minutes: 15 },
+  { day: "T6", focus: "Ôn tập", minutes: 30 },
 ];
 
 export const achievements = [
-  { label: "6 day streak", icon: Trophy },
-  { label: "Speaking ready", icon: Mic },
-  { label: "Policy safe", icon: ShieldCheck },
-  { label: "Coach active", icon: Sparkles },
+  { label: "6 ngày liên tiếp", icon: Trophy },
+  { label: "Nói ready", icon: Mic },
+  { label: "Demo an toàn", icon: ShieldCheck },
+  { label: "AI đang hỗ trợ", icon: Sparkles },
 ];
 
 export const dashboardShortcuts = {
   aiTutor: {
-    title: "AI tutor shortcut",
-    copy: "Ask for a hint grounded in the current lesson. Demo mode uses static copy until API staging is public.",
+    title: "Hỏi AI gia sư",
+    copy: "Xin gợi ý ngắn theo bài đang học. Bản demo dùng nội dung mẫu tới khi API staging sẵn sàng.",
     href: "/dashboard#ai-tutor",
     icon: Brain,
   },
   speaking: {
-    title: "Speaking practice",
-    copy: "Open the beta speaking loop and review how realtime feedback will feel.",
+    title: "Luyện nói",
+    copy: "Mở vòng luyện nói beta để xem cảm giác feedback sau khi nói.",
     href: "/demo-speaking",
     icon: MessageCircle,
   },
   placement: {
-    title: "Placement path",
-    copy: "Preview the placement route before a real assessment is connected.",
+    title: "Gợi ý trình độ",
+    copy: "Xem luồng chọn mục tiêu trước khi có bài kiểm tra thật.",
     href: "/placement",
     icon: GraduationCap,
   },
   plan: {
-    title: "Weekly plan",
-    copy: "Keep a balanced practice mix across listening, speaking, reading, and grammar.",
+    title: "Kế hoạch tuần",
+    copy: "Giữ nhịp học nhẹ giữa nghe, nói, đọc và ngữ pháp.",
     href: "/dashboard#weekly-plan",
     icon: CalendarDays,
   },
@@ -166,81 +166,81 @@ export const dashboardShortcuts = {
 
 export const publicLearningTopics = {
   grammar: {
-    title: "Grammar Coaching",
+    title: "Ngữ pháp dễ hiểu",
     description:
-      "Build practical grammar through workplace patterns, short checks, and tutor-ready explanations.",
-    eyebrow: "Grammar",
-    practice: ["Polite questions", "Simple tense control", "Service-ready sentence patterns"],
+      "Học ngữ pháp qua mẫu câu ngắn, ví dụ dễ hiểu và bài kiểm tra nhỏ.",
+    eyebrow: "Ngữ pháp",
+    practice: ["Câu hỏi lịch sự", "Thì cơ bản", "Mẫu câu dùng ngay"],
     helps: [
-      "Explains the rule in plain language",
-      "Connects grammar to lesson context",
-      "Keeps answer keys out of learner views",
+      "Giải thích bằng tiếng Việt dễ hiểu",
+      "Gắn ngữ pháp với tình huống thật",
+      "Không lộ đáp án mẫu khi luyện tập",
     ],
-    path: ["Warm-up pattern", "Guided example", "Short checkpoint", "Speaking transfer"],
+    path: ["Khởi động mẫu câu", "Ví dụ có hướng dẫn", "Kiểm tra ngắn", "Nói transfer"],
   },
   speaking: {
-    title: "Speaking Practice",
+    title: "Luyện nói",
     description:
-      "Practice roleplay scenarios with a beta-safe preview of transcript, feedback, and fluency goals.",
-    eyebrow: "Speaking",
-    practice: ["Roleplay turns", "Pronunciation targets", "Conversation recovery phrases"],
+      "Tập roleplay theo tình huống, xem transcript và gợi ý sửa lỗi ở bản beta.",
+    eyebrow: "Nói",
+    practice: ["Lượt hội thoại", "Mục tiêu phát âm", "Câu chữa cháy khi bí từ"],
     helps: [
-      "Frames each speaking goal",
-      "Shows feedback categories",
-      "Keeps microphone access disabled in public beta",
+      "Nêu rõ mục tiêu nói",
+      "Hiện nhóm feedback dễ hiểu",
+      "Chưa bật micro ở public beta",
     ],
-    path: ["Scenario setup", "Phrase rehearsal", "Mock conversation", "Feedback review"],
+    path: ["Chọn tình huống", "Tập cụm câu", "Hội thoại mẫu", "Xem góp ý"],
   },
   listening: {
-    title: "Listening Studio",
-    description: "Train recognition of workplace phrases, intent, and short service conversations.",
-    eyebrow: "Listening",
-    practice: ["Keyword recognition", "Intent detection", "Short dialogue comprehension"],
+    title: "Luyện nghe",
+    description: "Luyện nhận ra cụm câu, ý chính và hội thoại ngắn.",
+    eyebrow: "Nghe",
+    practice: ["Nhận diện từ khóa", "Hiểu ý người nói", "Hiểu hội thoại ngắn"],
     helps: [
-      "Previews listening goals",
-      "Pairs audio concepts with vocabulary",
-      "Links listening to speaking follow-up",
+      "Nêu mục tiêu nghe trước",
+      "Gắn âm thanh với từ vựng",
+      "Nối bài nghe với luyện nói",
     ],
-    path: ["Phrase preview", "Dialogue scan", "Comprehension check", "Repeat and respond"],
+    path: ["Xem cụm câu", "Nghe lướt hội thoại", "Kiểm tra hiểu ý", "Lặp lại và trả lời"],
   },
   reading: {
-    title: "Reading Practice",
+    title: "Luyện đọc",
     description:
-      "Read short workplace notes, service instructions, and learner-friendly lesson text.",
-    eyebrow: "Reading",
-    practice: ["Short notes", "Instruction scanning", "Context clues"],
+      "Đọc ghi chú ngắn, hướng dẫn đơn giản và đoạn văn thân thiện với người mới học.",
+    eyebrow: "Đọc",
+    practice: ["Ghi chú ngắn", "Đọc tìm ý chính", "Đoán nghĩa theo ngữ cảnh"],
     helps: [
-      "Breaks text into tasks",
-      "Highlights useful phrases",
-      "Connects reading to assignments",
+      "Chia đoạn đọc thành bước nhỏ",
+      "Gợi ý cụm câu hữu ích",
+      "Nối bài đọc với bài luyện tập",
     ],
-    path: ["Preview vocabulary", "Read for meaning", "Check details", "Apply in a reply"],
+    path: ["Xem từ vựng trước", "Đọc lấy ý chính", "Kiểm tra chi tiết", "Dùng trong câu trả lời"],
   },
   placement: {
-    title: "Placement Preview",
+    title: "Gợi ý trình độ",
     description:
-      "Understand how learners will be placed into a level before a real assessment is enabled.",
+      "Xem cách hệ thống gợi ý điểm bắt đầu trước khi có bài kiểm tra thật.",
     eyebrow: "Placement",
-    practice: ["Goal intake", "Level estimate", "Skill confidence check"],
+    practice: ["Mục tiêu học", "Ước lượng trình độ", "Tự đánh giá kỹ năng"],
     helps: [
-      "Keeps placement transparent",
-      "Avoids unsupported score claims",
-      "Prepares tenant pilot setup",
+      "Gợi ý rõ lý do",
+      "Không tự nhận điểm khi chưa đủ dữ liệu",
+      "Chuẩn bị bản học thử",
     ],
-    path: ["Profile goal", "Skill scan", "Recommended level", "Pilot review"],
+    path: ["Chọn mục tiêu", "Quét kỹ năng", "Gợi ý trình độ", "Xem lại kế hoạch"],
   },
   curriculum: {
-    title: "Curriculum Map",
+    title: "Bản đồ bài học",
     description:
-      "Explore the beta curriculum shape across lessons, assignments, speaking loops, and review moments.",
+      "Xem cấu trúc bài học beta: bài ngắn, luyện nói và ôn tập.",
     eyebrow: "Curriculum",
-    practice: ["Course sequence", "Lesson objectives", "Assignment cadence"],
+    practice: ["Thứ tự bài học", "Mục tiêu bài", "Nhịp luyện tập"],
     helps: [
-      "Shows how learning pieces connect",
-      "Separates published and draft concepts",
-      "Supports tenant-specific pilot planning",
+      "Cho thấy các phần học nối với nhau",
+      "Tách rõ demo và nội dung đã duyệt",
+      "Hỗ trợ lên lộ trình học thử",
     ],
-    path: ["Starter track", "Core lessons", "Practice loop", "Manager review"],
+    path: ["Lộ trình nhập môn", "Bài chính", "Vòng luyện tập", "Ôn lại tiến độ"],
   },
 } as const;
 
