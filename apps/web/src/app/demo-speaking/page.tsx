@@ -1,202 +1,121 @@
-"use client";
-
-import { Headphones, Mic, Volume2, Pause, Play } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { ArrowLeft, Mic, Volume2, RotateCcw } from "lucide-react";
+import { absoluteUrl } from "@/lib/site-url";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { SiteFooter } from "@/components/marketing/site-footer";
+export const metadata: Metadata = {
+  title: "Luyện nói",
+  description: "Demo luyện nói realtime với AI feedback.",
+  alternates: { canonical: absoluteUrl("/demo-speaking") },
+};
 
 export default function DemoSpeakingPage() {
-  const [isRecording, setIsRecording] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-50">
-      <header className="border-b border-slate-800/50 bg-slate-950/82 backdrop-blur-2xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="text-sm font-semibold">
-            ← Về trang chủ
+    <main id="main-content" className="min-h-screen bg-slate-950 text-slate-50">
+      {/* Header */}
+      <header className="border-b border-white/5 bg-slate-950/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
+          <Link href="/" className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition">
+            <ArrowLeft className="size-4" />
+            Trang chủ
           </Link>
-          <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">Demo Mode</Badge>
+          <span className="text-sm font-medium text-slate-300">Luyện nói · Demo</span>
         </div>
       </header>
 
-      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="space-y-6"
-        >
-          {/* Header */}
-          <div className="text-center space-y-3">
-            <div className="flex items-center justify-center mb-4">
-              <div className="flex size-16 items-center justify-center rounded-2xl bg-emerald-500/20 border border-emerald-500/30">
-                <Headphones className="size-8 text-emerald-300" />
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        {/* Scenario card */}
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="rounded-lg bg-emerald-500/20 px-2 py-0.5 text-xs font-medium text-emerald-400">A1</span>
+            <span className="text-sm text-slate-400">Tình huống</span>
+          </div>
+          <h1 className="text-xl font-bold text-slate-100 mb-2">Check-in khách sạn</h1>
+          <p className="text-sm text-slate-400">Bạn vừa đến khách sạn và cần check-in. Nhân viên lễ tân sẽ hỏi thông tin đặt phòng.</p>
+        </div>
+
+        {/* Conversation area */}
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl mb-6">
+          <h2 className="text-sm font-medium text-slate-400 mb-4">Hội thoại</h2>
+          <div className="space-y-4">
+            {/* AI message */}
+            <div className="flex gap-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
+                <Volume2 className="size-4 text-emerald-400" />
+              </div>
+              <div className="rounded-2xl rounded-tl-sm border border-white/10 bg-white/5 px-4 py-3 max-w-[80%]">
+                <p className="text-sm text-slate-200">&ldquo;Good afternoon! Welcome to Grand Hotel. Do you have a reservation?&rdquo;</p>
+                <span className="mt-1 block text-xs text-slate-500">Lễ tân</span>
               </div>
             </div>
-            <h1 className="text-4xl font-semibold tracking-tight">Luyện nói realtime</h1>
-            <p className="text-lg text-slate-400">Roleplay theo tình huống, nhận feedback tức thì</p>
+            {/* User message */}
+            <div className="flex gap-3 justify-end">
+              <div className="rounded-2xl rounded-tr-sm bg-emerald-500/20 border border-emerald-500/30 px-4 py-3 max-w-[80%]">
+                <p className="text-sm text-slate-200">&ldquo;Yes, I have a reservation under the name Nguyen.&rdquo;</p>
+                <span className="mt-1 block text-xs text-emerald-400/70">Bạn</span>
+              </div>
+            </div>
+            {/* AI response */}
+            <div className="flex gap-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
+                <Volume2 className="size-4 text-emerald-400" />
+              </div>
+              <div className="rounded-2xl rounded-tl-sm border border-white/10 bg-white/5 px-4 py-3 max-w-[80%]">
+                <p className="text-sm text-slate-200">&ldquo;Let me check... Yes, I found it. A double room for two nights. Could I see your ID, please?&rdquo;</p>
+                <span className="mt-1 block text-xs text-slate-500">Lễ tân</span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Scenario Card */}
-          <Card className="border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle>Tình huống: Check-in khách sạn</CardTitle>
-                  <CardDescription className="text-slate-400 mt-2">
-                    Bạn vừa đến khách sạn và cần làm thủ tục nhận phòng
-                  </CardDescription>
-                </div>
-                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">A2</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-xl bg-slate-950/60 border border-slate-800/30 p-4">
-                <p className="text-sm font-medium text-slate-300 mb-2">Mục tiêu:</p>
-                <ul className="text-sm text-slate-400 space-y-1 list-disc list-inside">
-                  <li>Chào hỏi lễ tân</li>
-                  <li>Cung cấp thông tin đặt phòng</li>
-                  <li>Hỏi về giờ ăn sáng và wifi</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recording Interface */}
-          <Card className="border-slate-800/50 bg-slate-900/80 backdrop-blur-sm shadow-[0_0_80px_-20px_rgb(16_185_129/0.15)]">
-            <CardContent className="p-6 space-y-6">
-              {/* AI Response */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="size-8 rounded-full bg-slate-800 flex items-center justify-center">
-                    <Volume2 className="size-4 text-slate-400" />
-                  </div>
-                  <span className="text-sm font-medium text-slate-400">AI Receptionist</span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 px-2"
-                    onClick={() => setIsPlaying(!isPlaying)}
-                  >
-                    {isPlaying ? <Pause className="size-3" /> : <Play className="size-3" />}
-                  </Button>
-                </div>
-                <div className="rounded-xl bg-slate-950/60 border border-slate-800/30 p-4">
-                  <p className="text-slate-300">
-                    "Good evening! Welcome to Grand Hotel. How may I help you today?"
-                  </p>
-                </div>
-              </div>
-
-              {/* Waveform Visualization */}
-              <div className="rounded-2xl bg-slate-950/60 border border-emerald-500/20 p-6">
-                <div className="flex items-center justify-center gap-1.5 h-24">
-                  {Array.from({ length: 32 }).map((_, index) => (
-                    <motion.span
-                      key={index}
-                      animate={
-                        isRecording
-                          ? {
-                              height: [`${20 + (index % 5) * 8}%`, `${52 + (index % 6) * 6}%`, `${20 + (index % 5) * 8}%`],
-                            }
-                          : { height: "20%" }
-                      }
-                      transition={{ duration: 1.1 + (index % 4) * 0.1, repeat: Infinity, ease: "easeInOut" }}
-                      className={`w-full rounded-full ${isRecording ? "bg-emerald-500/70" : "bg-slate-700"}`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Mic Button */}
-              <div className="flex justify-center">
-                <Button
-                  size="lg"
-                  className={`size-20 rounded-full ${
-                    isRecording
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-emerald-500 hover:bg-emerald-600"
-                  } text-slate-950`}
-                  onClick={() => setIsRecording(!isRecording)}
-                >
-                  <Mic className="size-8" />
-                </Button>
-              </div>
-
-              <p className="text-center text-sm text-slate-400">
-                {isRecording ? "Đang ghi âm... Nhấn để dừng" : "Nhấn để bắt đầu nói"}
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Transcript & Feedback */}
-          <Card className="border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-lg">Transcript & Feedback</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-xl bg-slate-950/60 border border-slate-800/30 p-4">
-                <p className="text-sm font-medium text-slate-300 mb-2">Bạn đã nói:</p>
-                <p className="text-slate-400 italic">
-                  "Good evening. I have a reservation under the name Nguyen."
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">Phát âm</span>
-                  <span className="text-sm font-semibold text-emerald-400">8.5/10</span>
-                </div>
-                <Progress value={85} className="h-2" />
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">Độ trưng</span>
-                  <span className="text-sm font-semibold text-emerald-400">7.8/10</span>
-                </div>
-                <Progress value={78} className="h-2" />
-              </div>
-
-              <div className="rounded-xl bg-emerald-950/40 border border-emerald-500/20 p-4">
-                <p className="text-sm font-medium text-emerald-300 mb-2">💡 Gợi ý:</p>
-                <p className="text-sm text-slate-300">
-                  Tốt! Thử thêm "I'd like to check in" để câu hoàn chỉnh hơn.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Beta Notice */}
-          <Card className="border-slate-800/50 bg-slate-900/80 backdrop-blur-sm">
-            <CardContent className="p-4">
-              <p className="text-sm text-slate-400">
-                <span className="font-medium text-slate-300">⚠️ Chế độ Demo:</span> Giao diện này
-                chưa kết nối microphone hoặc AI thật. Bản production sẽ dùng WebRTC + realtime
-                speech API.
-              </p>
-            </CardContent>
-          </Card>
-
-          <div className="flex justify-center gap-3">
-            <Button variant="outline" asChild className="border-slate-800/50 bg-slate-900/60">
-              <Link href="/dashboard">Về Dashboard</Link>
-            </Button>
-            <Button asChild className="bg-emerald-500 hover:bg-emerald-600 text-slate-950">
-              <Link href="/register">Đăng ký để dùng thật</Link>
-            </Button>
+        {/* Mic + waveform area */}
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl mb-6">
+          {/* Waveform */}
+          <div className="flex items-end justify-center gap-[3px] h-12 mb-5">
+            {Array.from({ length: 30 }, (_, i) => (
+              <div
+                key={i}
+                className="w-1 rounded-full bg-emerald-400/40"
+                style={{ height: `${Math.random() * 35 + 10}px` }}
+              />
+            ))}
           </div>
-        </motion.div>
+          {/* Controls */}
+          <div className="flex items-center justify-center gap-4">
+            <button className="flex size-10 items-center justify-center rounded-full border border-white/10 text-slate-400 hover:bg-white/5 transition" aria-label="Nghe lại">
+              <RotateCcw className="size-4" />
+            </button>
+            <button className="flex size-14 items-center justify-center rounded-full bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/25 hover:bg-emerald-400 transition" aria-label="Bắt đầu nói">
+              <Mic className="size-6" />
+            </button>
+            <button className="flex size-10 items-center justify-center rounded-full border border-white/10 text-slate-400 hover:bg-white/5 transition" aria-label="Nghe mẫu">
+              <Volume2 className="size-4" />
+            </button>
+          </div>
+          <p className="mt-4 text-center text-xs text-slate-500">Nhấn mic để bắt đầu nói · Demo mode</p>
+        </div>
+
+        {/* AI Feedback */}
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+          <h2 className="text-sm font-medium text-slate-400 mb-3">AI Feedback</h2>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex size-5 items-center justify-center rounded-full bg-emerald-500/20 text-xs text-emerald-400">✓</span>
+              <div>
+                <p className="text-sm text-slate-200">Phát âm &ldquo;reservation&rdquo; rõ ràng</p>
+                <p className="text-xs text-slate-500">Trọng âm đúng ở âm tiết thứ 3</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex size-5 items-center justify-center rounded-full bg-amber-500/20 text-xs text-amber-400">!</span>
+              <div>
+                <p className="text-sm text-slate-200">Thử nói chậm hơn ở &ldquo;under the name&rdquo;</p>
+                <p className="text-xs text-slate-500">Nghe tự nhiên hơn khi có nhịp nghỉ nhẹ</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <SiteFooter />
     </main>
   );
 }
