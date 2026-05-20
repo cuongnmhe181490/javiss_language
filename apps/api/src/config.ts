@@ -21,6 +21,10 @@ export type ApiConfig = {
   oidcRolesClaim: string;
   oidcSubClaim: string;
   oidcTenantClaim: string;
+  aiApiKey?: string;
+  aiBaseUrl?: string;
+  aiModel: string;
+  openaiApiKey?: string;
   otelExporterOtlpEndpoint?: string;
   otelServiceName: string;
   redisUrl?: string;
@@ -38,6 +42,10 @@ const rawApiEnvSchema = z.object({
   RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().min(1).max(3600).default(60),
   RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(100000).optional(),
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().min(1).max(100000).optional(),
+  OPENAI_API_KEY: z.preprocess(emptyStringToUndefined, z.string().min(1).optional()),
+  AI_API_KEY: z.preprocess(emptyStringToUndefined, z.string().min(1).optional()),
+  AI_BASE_URL: z.preprocess(emptyStringToUndefined, z.string().url().optional()),
+  AI_MODEL: z.string().min(1).default("gpt-4o-mini"),
   API_MAX_BODY_BYTES: z.coerce
     .number()
     .int()
@@ -119,6 +127,10 @@ export function createApiConfig(env: Record<string, string | undefined>): ApiCon
     oidcRolesClaim: parsed.OIDC_ROLES_CLAIM,
     oidcSubClaim: parsed.OIDC_SUB_CLAIM,
     oidcTenantClaim: parsed.OIDC_TENANT_CLAIM,
+    aiApiKey: parsed.AI_API_KEY ?? parsed.OPENAI_API_KEY,
+    aiBaseUrl: parsed.AI_BASE_URL,
+    aiModel: parsed.AI_MODEL,
+    openaiApiKey: parsed.OPENAI_API_KEY,
     otelExporterOtlpEndpoint: parsed.OTEL_EXPORTER_OTLP_ENDPOINT,
     otelServiceName: parsed.OTEL_SERVICE_NAME,
     redisUrl: parsed.REDIS_URL,
@@ -137,6 +149,7 @@ export function createTestApiConfig(overrides: Partial<ApiConfig> = {}): ApiConf
     rateLimitWindowSeconds: 60,
     rateLimitMax: 1000,
     maxBodyBytes: 1048576,
+    aiModel: "gpt-4o-mini",
     oidcEmailClaim: "email",
     oidcJwksTimeoutMs: 2000,
     oidcRolesClaim: "roles",

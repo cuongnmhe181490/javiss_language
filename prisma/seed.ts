@@ -1,5 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
+import { seedRealContent } from "./content/seed-real-content";
 
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -148,6 +149,9 @@ async function main() {
   await seedAiTutorCore();
   await seedSpeakingRealtimeCore();
   await seedContentStudioCore();
+
+  // Seed real learning content (Module 1 - A1)
+  await seedRealContent();
 }
 
 async function upsertUserWithMembership(input: {

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
 import { SkipLink } from "@/components/ui/skip-link";
 import { absoluteUrl, resolveSiteUrl } from "@/lib/site-url";
 import { AppProviders } from "./providers";
@@ -92,8 +94,20 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-full flex-col">
-        <SkipLink />
-        <AppProviders>{children}</AppProviders>
+        <ClerkProvider
+          appearance={{
+            baseTheme: dark,
+            elements: {
+              card: "rounded-3xl border border-border/50 bg-card/50 backdrop-blur-xl",
+              formButtonPrimary: "rounded-xl bg-primary hover:opacity-90",
+              formFieldInput: "h-11 rounded-xl bg-accent/50 border-border/50",
+              footerActionLink: "text-primary hover:underline",
+            },
+          }}
+        >
+          <SkipLink />
+          <AppProviders>{children}</AppProviders>
+        </ClerkProvider>
       </body>
     </html>
   );

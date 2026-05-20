@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, BookOpen, Headphones, Mic, PenLine, TrendingUp, Flame, Target, Clock } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
 import { absoluteUrl } from "@/lib/site-url";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
@@ -20,7 +21,16 @@ export default function DashboardPage() {
             Trang chủ
           </Link>
           <span className="text-sm font-medium text-foreground">Góc học</span>
-          <ThemeSwitcher />
+          <div className="flex items-center gap-3">
+            <ThemeSwitcher />
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "size-8",
+                },
+              }}
+            />
+          </div>
         </div>
       </header>
 

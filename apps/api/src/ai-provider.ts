@@ -10,6 +10,7 @@ import type {
   AiUsage,
 } from "./ai-orchestration-domain.js";
 import type { LessonDetail } from "./learning-domain.js";
+import { OpenAiProvider } from "./openai-provider.js";
 
 export type AiProviderMetadata = {
   dataResidency?: string[];
@@ -243,7 +244,25 @@ export class MockAiProvider implements AiProvider {
   }
 }
 
-export function createDefaultAiProvider(): AiProvider {
+export type CreateAiProviderOptions = {
+  aiApiKey?: string;
+  aiBaseUrl?: string;
+  aiModel?: string;
+  /** @deprecated Use aiApiKey instead */
+  openaiApiKey?: string;
+};
+
+export function createDefaultAiProvider(options?: CreateAiProviderOptions): AiProvider {
+  const apiKey = options?.aiApiKey ?? options?.openaiApiKey ?? process.env.AI_API_KEY ?? process.env.OPENAI_API_KEY;
+
+  if (apiKey) {
+    return new OpenAiProvider({
+      apiKey,
+      baseUrl: options?.aiBaseUrl ?? process.env.AI_BASE_URL,
+      model: options?.aiModel ?? process.env.AI_MODEL,
+    });
+  }
+
   return new MockAiProvider();
 }
 
