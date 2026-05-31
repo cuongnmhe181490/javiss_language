@@ -20,9 +20,7 @@ describe("API base URL helpers", () => {
     delete process.env.NEXT_PUBLIC_API_BASE_URL;
 
     expect(resolveApiBaseUrl()).toBe("http://localhost:4000");
-    expect(apiUrl("v1/tenants/demo/courses")).toBe(
-      "http://localhost:4000/v1/tenants/demo/courses",
-    );
+    expect(apiUrl("v1/tenants/demo/courses")).toBe("http://localhost:4000/v1/tenants/demo/courses");
     expect(hasConfiguredApiBaseUrl()).toBe(false);
   });
 });

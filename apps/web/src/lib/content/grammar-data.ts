@@ -102,7 +102,10 @@ export const grammarLessons: GrammarLesson[] = [
     examples: [
       { english: "I can swim.", vietnamese: "Tôi biết bơi." },
       { english: "Can you help me?", vietnamese: "Bạn có thể giúp tôi không?" },
-      { english: "Could I use your phone?", vietnamese: "Tôi có thể dùng điện thoại của bạn không? (lịch sự)" },
+      {
+        english: "Could I use your phone?",
+        vietnamese: "Tôi có thể dùng điện thoại của bạn không? (lịch sự)",
+      },
       { english: "She couldn't come yesterday.", vietnamese: "Hôm qua cô ấy không thể đến." },
     ],
     exercises: [
@@ -275,10 +278,22 @@ export const grammarLessons: GrammarLesson[] = [
     explanation:
       "Dùng 'will' cho quyết định tại chỗ, lời hứa, dự đoán không có bằng chứng. Dùng 'be going to' cho kế hoạch đã quyết định trước hoặc dự đoán có bằng chứng rõ ràng.",
     examples: [
-      { english: "I'll help you with that.", vietnamese: "Tôi sẽ giúp bạn việc đó. (quyết định ngay)" },
-      { english: "I'm going to study abroad next year.", vietnamese: "Năm sau tôi sẽ đi du học. (kế hoạch)" },
-      { english: "Look at those clouds! It's going to rain.", vietnamese: "Nhìn mây kìa! Trời sắp mưa. (có bằng chứng)" },
-      { english: "I think she will pass the exam.", vietnamese: "Tôi nghĩ cô ấy sẽ đậu. (dự đoán)" },
+      {
+        english: "I'll help you with that.",
+        vietnamese: "Tôi sẽ giúp bạn việc đó. (quyết định ngay)",
+      },
+      {
+        english: "I'm going to study abroad next year.",
+        vietnamese: "Năm sau tôi sẽ đi du học. (kế hoạch)",
+      },
+      {
+        english: "Look at those clouds! It's going to rain.",
+        vietnamese: "Nhìn mây kìa! Trời sắp mưa. (có bằng chứng)",
+      },
+      {
+        english: "I think she will pass the exam.",
+        vietnamese: "Tôi nghĩ cô ấy sẽ đậu. (dự đoán)",
+      },
     ],
     exercises: [
       {
@@ -311,9 +326,15 @@ export const grammarLessons: GrammarLesson[] = [
     explanation:
       "So sánh hơn: tính từ ngắn + -er + than (taller than), more + tính từ dài + than (more expensive than). So sánh nhất: the + tính từ ngắn + -est (the tallest), the most + tính từ dài (the most expensive).",
     examples: [
-      { english: "This book is cheaper than that one.", vietnamese: "Quyển sách này rẻ hơn quyển kia." },
+      {
+        english: "This book is cheaper than that one.",
+        vietnamese: "Quyển sách này rẻ hơn quyển kia.",
+      },
       { english: "She is the tallest in the class.", vietnamese: "Cô ấy cao nhất lớp." },
-      { english: "English is more difficult than I thought.", vietnamese: "Tiếng Anh khó hơn tôi nghĩ." },
+      {
+        english: "English is more difficult than I thought.",
+        vietnamese: "Tiếng Anh khó hơn tôi nghĩ.",
+      },
     ],
     exercises: [
       {

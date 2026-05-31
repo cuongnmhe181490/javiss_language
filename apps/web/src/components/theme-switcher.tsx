@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { Palette } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -20,9 +20,11 @@ const themes = [
 
 export type ThemeId = (typeof themes)[number]["id"];
 
-function getStoredTheme(): ThemeId {
+const STORAGE_KEY = "app-theme";
+
+function readStoredTheme(): ThemeId {
   if (typeof window === "undefined") return "default";
-  return (localStorage.getItem("app-theme") as ThemeId) || "default";
+  return (localStorage.getItem(STORAGE_KEY) as ThemeId) || "default";
 }
 
 function applyTheme(theme: ThemeId) {
@@ -32,22 +34,36 @@ function applyTheme(theme: ThemeId) {
   } else {
     root.setAttribute("data-theme", theme);
   }
-  localStorage.setItem("app-theme", theme);
+  localStorage.setItem(STORAGE_KEY, theme);
+}
+
+/**
+ * Subscribe to theme changes via the `storage` event (cross-tab) and a custom
+ * `app-theme-change` event (same-tab). localStorage is an external store, so we
+ * read it through useSyncExternalStore to avoid setState-in-effect and stay
+ * consistent across tabs.
+ */
+function subscribe(onChange: () => void): () => void {
+  window.addEventListener("storage", onChange);
+  window.addEventListener("app-theme-change", onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener("app-theme-change", onChange);
+  };
 }
 
 export function ThemeSwitcher() {
-  const [current, setCurrent] = useState<ThemeId>("default");
+  const current = useSyncExternalStore<ThemeId>(subscribe, readStoredTheme, () => "default");
 
+  // Keep the DOM attribute in sync with the stored theme on mount and updates.
   useEffect(() => {
-    const stored = getStoredTheme();
-    setCurrent(stored);
-    applyTheme(stored);
-  }, []);
+    applyTheme(current);
+  }, [current]);
 
-  function handleSelect(theme: ThemeId) {
-    setCurrent(theme);
+  const handleSelect = useCallback((theme: ThemeId) => {
     applyTheme(theme);
-  }
+    window.dispatchEvent(new Event("app-theme-change"));
+  }, []);
 
   const currentTheme = themes.find((t) => t.id === current) || themes[0];
 
@@ -60,7 +76,9 @@ export function ThemeSwitcher() {
           className="h-9 gap-2 rounded-xl px-3 text-muted-foreground hover:text-foreground"
           aria-label="Chọn theme"
         >
-          <span className="text-base" aria-hidden="true">{currentTheme.icon}</span>
+          <span className="text-base" aria-hidden="true">
+            {currentTheme.icon}
+          </span>
           <Palette className="size-4" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
@@ -73,9 +91,7 @@ export function ThemeSwitcher() {
           >
             <span className="mr-2 text-base">{theme.icon}</span>
             <span>{theme.label}</span>
-            {current === theme.id && (
-              <span className="ml-auto text-xs text-primary">✓</span>
-            )}
+            {current === theme.id && <span className="ml-auto text-xs text-primary">✓</span>}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

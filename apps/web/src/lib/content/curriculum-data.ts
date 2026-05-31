@@ -44,8 +44,7 @@ export const curriculumModules: Module[] = [
       {
         id: "m1-l3",
         title: "Số đếm 1–100",
-        description:
-          "Học số đếm từ 1 đến 100, cách đọc số điện thoại và giá tiền đơn giản.",
+        description: "Học số đếm từ 1 đến 100, cách đọc số điện thoại và giá tiền đơn giản.",
         duration: "15 phút",
         type: "vocabulary",
       },
@@ -60,8 +59,7 @@ export const curriculumModules: Module[] = [
       {
         id: "m1-l5",
         title: "Ôn tập Module 1",
-        description:
-          "Ôn lại toàn bộ kiến thức Module 1 qua bài tập tổng hợp và hội thoại ngắn.",
+        description: "Ôn lại toàn bộ kiến thức Module 1 qua bài tập tổng hợp và hội thoại ngắn.",
         duration: "15 phút",
         type: "review",
       },
@@ -110,8 +108,7 @@ export const curriculumModules: Module[] = [
       {
         id: "m2-l5",
         title: "Ôn tập Module 2",
-        description:
-          "Ôn lại toàn bộ kiến thức Module 2 qua roleplay mua sắm và hỏi đường.",
+        description: "Ôn lại toàn bộ kiến thức Module 2 qua roleplay mua sắm và hỏi đường.",
         duration: "15 phút",
         type: "review",
       },
@@ -160,8 +157,7 @@ export const curriculumModules: Module[] = [
       {
         id: "m3-l5",
         title: "Ôn tập Module 3",
-        description:
-          "Ôn lại toàn bộ kiến thức Module 3 qua tình huống công sở tổng hợp.",
+        description: "Ôn lại toàn bộ kiến thức Module 3 qua tình huống công sở tổng hợp.",
         duration: "15 phút",
         type: "review",
       },
@@ -210,8 +206,7 @@ export const curriculumModules: Module[] = [
       {
         id: "m4-l5",
         title: "Ôn tập Module 4",
-        description:
-          "Ôn lại toàn bộ kiến thức Module 4 qua roleplay tình huống du lịch.",
+        description: "Ôn lại toàn bộ kiến thức Module 4 qua roleplay tình huống du lịch.",
         duration: "15 phút",
         type: "review",
       },
@@ -252,16 +247,14 @@ export const curriculumModules: Module[] = [
       {
         id: "m5-l4",
         title: "Đọc tin tức tiếng Anh",
-        description:
-          "Học cách đọc hiểu bài báo ngắn, nhận biết ý chính và chi tiết quan trọng.",
+        description: "Học cách đọc hiểu bài báo ngắn, nhận biết ý chính và chi tiết quan trọng.",
         duration: "15 phút",
         type: "reading",
       },
       {
         id: "m5-l5",
         title: "Ôn tập Module 5",
-        description:
-          "Ôn lại kiến thức Module 5 qua thảo luận nhóm và phân tích tình huống.",
+        description: "Ôn lại kiến thức Module 5 qua thảo luận nhóm và phân tích tình huống.",
         duration: "15 phút",
         type: "review",
       },
@@ -310,8 +303,7 @@ export const curriculumModules: Module[] = [
       {
         id: "m6-l5",
         title: "Ôn tập Module 6",
-        description:
-          "Ôn lại kiến thức Module 6 qua mô phỏng cuộc họp kinh doanh.",
+        description: "Ôn lại kiến thức Module 6 qua mô phỏng cuộc họp kinh doanh.",
         duration: "15 phút",
         type: "review",
       },
@@ -360,8 +352,7 @@ export const curriculumModules: Module[] = [
       {
         id: "m7-l5",
         title: "Ôn tập Module 7",
-        description:
-          "Ôn lại kiến thức Module 7 qua debate và viết đoạn văn ngắn.",
+        description: "Ôn lại kiến thức Module 7 qua debate và viết đoạn văn ngắn.",
         duration: "15 phút",
         type: "review",
       },
@@ -410,8 +401,7 @@ export const curriculumModules: Module[] = [
       {
         id: "m8-l5",
         title: "Ôn tập Module 8",
-        description:
-          "Ôn lại kiến thức Module 8 qua viết tóm tắt nghiên cứu và thảo luận.",
+        description: "Ôn lại kiến thức Module 8 qua viết tóm tắt nghiên cứu và thảo luận.",
         duration: "20 phút",
         type: "review",
       },
@@ -460,8 +450,7 @@ export const curriculumModules: Module[] = [
       {
         id: "m9-l5",
         title: "Ôn tập Module 9",
-        description:
-          "Ôn lại kiến thức Module 9 qua case study và roleplay tình huống quản lý.",
+        description: "Ôn lại kiến thức Module 9 qua case study và roleplay tình huống quản lý.",
         duration: "20 phút",
         type: "review",
       },
@@ -494,8 +483,7 @@ export const curriculumModules: Module[] = [
       {
         id: "m10-l3",
         title: "Luyện Speaking",
-        description:
-          "Fluency, coherence, pronunciation. Cách trả lời câu hỏi dài và tự nhiên.",
+        description: "Fluency, coherence, pronunciation. Cách trả lời câu hỏi dài và tự nhiên.",
         duration: "15 phút",
         type: "conversation",
       },

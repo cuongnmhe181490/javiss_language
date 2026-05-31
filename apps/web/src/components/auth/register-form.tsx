@@ -2,7 +2,14 @@
 
 import { SignUp } from "@clerk/nextjs";
 
+import { isClerkConfigured } from "@/lib/auth";
+import { AuthDemoNotice } from "./auth-demo-notice";
+
 export function RegisterForm() {
+  if (!isClerkConfigured()) {
+    return <AuthDemoNotice mode="sign-up" />;
+  }
+
   return (
     <div className="w-full max-w-sm flex items-center justify-center">
       <SignUp
@@ -14,11 +21,9 @@ export function RegisterForm() {
             headerSubtitle: "text-sm text-muted-foreground",
             formButtonPrimary:
               "w-full h-11 rounded-xl bg-primary text-primary-foreground hover:opacity-90",
-            formFieldInput:
-              "h-11 rounded-xl bg-accent/50 border-border/50 text-foreground",
+            formFieldInput: "h-11 rounded-xl bg-accent/50 border-border/50 text-foreground",
             formFieldLabel: "text-sm text-foreground",
-            socialButtonsBlockButton:
-              "h-11 rounded-xl border-border/50 text-foreground",
+            socialButtonsBlockButton: "h-11 rounded-xl border-border/50 text-foreground",
             footerActionLink: "text-primary hover:underline",
             dividerLine: "bg-border/50",
             dividerText: "text-muted-foreground",

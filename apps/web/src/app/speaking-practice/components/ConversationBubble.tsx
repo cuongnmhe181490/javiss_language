@@ -9,7 +9,12 @@ interface ConversationBubbleProps {
   isPlaying?: boolean;
 }
 
-export function ConversationBubble({ role, content, onPlayAudio, isPlaying = false }: ConversationBubbleProps) {
+export function ConversationBubble({
+  role,
+  content,
+  onPlayAudio,
+  isPlaying = false,
+}: ConversationBubbleProps) {
   if (role === "assistant") {
     return (
       <div className="flex gap-3">

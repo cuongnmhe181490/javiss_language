@@ -1,10 +1,11 @@
 import Link from "next/link";
 
 const footerLinks = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Placement", href: "/placement" },
-  { label: "Speaking demo", href: "/demo-speaking" },
-  { label: "Join beta", href: "/register" },
+  { label: "Góc học", href: "/dashboard" },
+  { label: "Lộ trình", href: "/curriculum" },
+  { label: "Xếp lớp", href: "/placement" },
+  { label: "Luyện nói", href: "/speaking" },
+  { label: "Tham gia beta", href: "/register" },
 ];
 
 export function SiteFooter() {

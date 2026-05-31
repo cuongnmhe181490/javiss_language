@@ -28,6 +28,17 @@ interface Capabilities {
 }
 
 /**
+ * Pick a natural English voice for browser SpeechSynthesis.
+ */
+function pickEnglishVoice(): SpeechSynthesisVoice | undefined {
+  const voices = window.speechSynthesis.getVoices();
+  return (
+    voices.find((v) => v.lang.startsWith("en") && v.name.toLowerCase().includes("female")) ??
+    voices.find((v) => v.lang.startsWith("en"))
+  );
+}
+
+/**
  * Client-side TTS using browser SpeechSynthesis API
  */
 function speakText(text: string): void {
@@ -38,11 +49,7 @@ function speakText(text: string): void {
   utterance.lang = "en-US";
   utterance.rate = 0.9;
 
-  // Try to pick a good English voice
-  const voices = window.speechSynthesis.getVoices();
-  const englishVoice = voices.find(
-    (v) => v.lang.startsWith("en") && v.name.toLowerCase().includes("female"),
-  ) ?? voices.find((v) => v.lang.startsWith("en"));
+  const englishVoice = pickEnglishVoice();
   if (englishVoice) utterance.voice = englishVoice;
 
   window.speechSynthesis.speak(utterance);
@@ -55,7 +62,10 @@ export default function SpeakingPracticePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
-  const [capabilities, setCapabilities] = useState<Capabilities>({ serverSTT: false, serverTTS: false });
+  const [capabilities, setCapabilities] = useState<Capabilities>({
+    serverSTT: false,
+    serverTTS: false,
+  });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -103,73 +113,114 @@ export default function SpeakingPracticePage() {
     }
   }, []);
 
-  const playAudio = useCallback((messageId: string, audioBase64?: string, text?: string) => {
-    // Stop current audio
-    window.speechSynthesis?.cancel();
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-
-    if (playingId === messageId) {
-      setPlayingId(null);
-      return;
-    }
-
-    if (audioBase64) {
-      // Server-side TTS audio available
-      const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
-      audio.onended = () => {
-        setPlayingId(null);
+  const playAudio = useCallback(
+    (messageId: string, audioBase64?: string, text?: string) => {
+      // Stop current audio
+      window.speechSynthesis?.cancel();
+      if (audioRef.current) {
+        audioRef.current.pause();
         audioRef.current = null;
-      };
-      audio.play().catch(console.error);
-      audioRef.current = audio;
-      setPlayingId(messageId);
-    } else if (text) {
-      // Fallback to browser TTS
-      setPlayingId(messageId);
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "en-US";
-      utterance.rate = 0.9;
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find(
-        (v) => v.lang.startsWith("en") && v.name.toLowerCase().includes("female"),
-      ) ?? voices.find((v) => v.lang.startsWith("en"));
-      if (englishVoice) utterance.voice = englishVoice;
-      utterance.onend = () => setPlayingId(null);
-      window.speechSynthesis.speak(utterance);
-    }
-  }, [playingId]);
+      }
+
+      if (playingId === messageId) {
+        setPlayingId(null);
+        return;
+      }
+
+      if (audioBase64) {
+        // Server-side TTS audio available
+        const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
+        audio.onended = () => {
+          setPlayingId(null);
+          audioRef.current = null;
+        };
+        audio.play().catch(console.error);
+        audioRef.current = audio;
+        setPlayingId(messageId);
+      } else if (text) {
+        // Fallback to browser TTS
+        setPlayingId(messageId);
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        utterance.rate = 0.9;
+        const englishVoice = pickEnglishVoice();
+        if (englishVoice) utterance.voice = englishVoice;
+        utterance.onend = () => setPlayingId(null);
+        window.speechSynthesis.speak(utterance);
+      }
+    },
+    [playingId],
+  );
+
+  /**
+   * Append the user transcript + AI response to the conversation and play back
+   * the AI audio (server TTS when available, otherwise browser SpeechSynthesis).
+   */
+  const appendExchange = useCallback(
+    (data: {
+      transcript: string;
+      aiResponse: string;
+      audioBase64: string | null;
+      feedback: Feedback;
+    }) => {
+      const userMessageId = `user-${Date.now()}`;
+      const aiMessageId = `ai-${Date.now()}`;
+
+      setMessages((prev) => [
+        ...prev,
+        { id: userMessageId, role: "user", content: data.transcript },
+        {
+          id: aiMessageId,
+          role: "assistant",
+          content: data.aiResponse,
+          audioBase64: data.audioBase64 ?? undefined,
+        },
+      ]);
+
+      setFeedback(data.feedback);
+
+      if (data.audioBase64) {
+        const audio = new Audio(`data:audio/mp3;base64,${data.audioBase64}`);
+        audio.onended = () => {
+          setPlayingId(null);
+          audioRef.current = null;
+        };
+        audio.play().catch(console.error);
+        audioRef.current = audio;
+        setPlayingId(aiMessageId);
+      } else {
+        speakText(data.aiResponse);
+        setPlayingId(aiMessageId);
+        setTimeout(() => setPlayingId(null), data.aiResponse.length * 60);
+      }
+    },
+    [],
+  );
 
   /**
    * Client-side speech recognition using Web Speech API
    */
   const transcribeClientSide = useCallback((): Promise<string> => {
     return new Promise((resolve, reject) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const SpeechRecognition =
-        (window as any).SpeechRecognition ??
-        (window as any).webkitSpeechRecognition;
+      const SpeechRecognitionCtor = window.SpeechRecognition ?? window.webkitSpeechRecognition;
 
-      if (!SpeechRecognition) {
+      if (!SpeechRecognitionCtor) {
         reject(new Error("Trình duyệt không hỗ trợ nhận dạng giọng nói. Hãy dùng Chrome."));
         return;
       }
 
-      const recognition = new SpeechRecognition();
+      const recognition = new SpeechRecognitionCtor();
       recognition.lang = "en-US";
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
         const result = event.results[0]?.[0]?.transcript;
         if (result) resolve(result);
         else reject(new Error("Không nhận được giọng nói"));
       };
 
-      recognition.onerror = (event: Event & { error?: string }) => {
+      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
         reject(new Error(`Lỗi nhận dạng: ${event.error}`));
       };
 
@@ -177,118 +228,9 @@ export default function SpeakingPracticePage() {
     });
   }, []);
 
-  const handleRecordingComplete = useCallback(
-    async (blob: Blob) => {
-      if (!selectedScenario) return;
-
-      setIsProcessing(true);
-      setError(null);
-
-      try {
-        const formData = new FormData();
-        formData.append("scenarioId", selectedScenario.id);
-
-        // Build history
-        const history = messages.map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        }));
-        formData.append("history", JSON.stringify(history));
-
-        if (capabilities.serverSTT) {
-          // Server has Whisper — send audio
-          formData.append("audio", blob, "recording.webm");
-        } else {
-          // Use client-side Web Speech API for transcription
-          // Note: AudioRecorder already recorded, but we need text
-          // We'll use a hybrid approach: try sending audio first,
-          // if server rejects (422), fall back to asking user
-          formData.append("audio", blob, "recording.webm");
-        }
-
-        let response = await fetch("/api/speaking", {
-          method: "POST",
-          body: formData,
-        });
-
-        // If server says STT unavailable, retry with client-side transcription
-        if (response.status === 422) {
-          // For this attempt, we can't retroactively transcribe the blob
-          // Show a message to user that we need live speech recognition
-          setError("Đang chuyển sang nhận dạng giọng nói trên trình duyệt. Hãy thử nói lại.");
-          setCapabilities((prev) => ({ ...prev, serverSTT: false }));
-          setIsProcessing(false);
-          return;
-        }
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(
-            (errorData as { error?: string }).error ?? `Request failed with status ${response.status}`,
-          );
-        }
-
-        const data = (await response.json()) as {
-          transcript: string;
-          aiResponse: string;
-          audioBase64: string | null;
-          feedback: Feedback;
-          capabilities?: Capabilities;
-        };
-
-        // Update capabilities if server reports them
-        if (data.capabilities) {
-          setCapabilities(data.capabilities);
-        }
-
-        const userMessageId = `user-${Date.now()}`;
-        const aiMessageId = `ai-${Date.now()}`;
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: userMessageId,
-            role: "user",
-            content: data.transcript,
-          },
-          {
-            id: aiMessageId,
-            role: "assistant",
-            content: data.aiResponse,
-            audioBase64: data.audioBase64 ?? undefined,
-          },
-        ]);
-
-        setFeedback(data.feedback);
-
-        // Auto-play AI response
-        if (data.audioBase64) {
-          const audio = new Audio(`data:audio/mp3;base64,${data.audioBase64}`);
-          audio.onended = () => {
-            setPlayingId(null);
-            audioRef.current = null;
-          };
-          audio.play().catch(console.error);
-          audioRef.current = audio;
-          setPlayingId(aiMessageId);
-        } else {
-          // Use browser TTS
-          speakText(data.aiResponse);
-          setPlayingId(aiMessageId);
-          // Clear playing state after estimated duration
-          setTimeout(() => setPlayingId(null), data.aiResponse.length * 60);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Đã xảy ra lỗi. Vui lòng thử lại.");
-      } finally {
-        setIsProcessing(false);
-      }
-    },
-    [selectedScenario, messages, capabilities],
-  );
-
   /**
-   * Handle text-based submission (when client-side STT is used)
+   * Send an already-transcribed turn (text) to the API. Used for the browser
+   * speech-recognition path and as a shared helper.
    */
   const handleTextSubmit = useCallback(
     async (text: string) => {
@@ -316,7 +258,8 @@ export default function SpeakingPracticePage() {
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            (errorData as { error?: string }).error ?? `Request failed with status ${response.status}`,
+            (errorData as { error?: string }).error ??
+              `Request failed with status ${response.status}`,
           );
         }
 
@@ -325,50 +268,105 @@ export default function SpeakingPracticePage() {
           aiResponse: string;
           audioBase64: string | null;
           feedback: Feedback;
+          capabilities?: Capabilities;
         };
 
-        const userMessageId = `user-${Date.now()}`;
-        const aiMessageId = `ai-${Date.now()}`;
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: userMessageId,
-            role: "user",
-            content: data.transcript,
-          },
-          {
-            id: aiMessageId,
-            role: "assistant",
-            content: data.aiResponse,
-            audioBase64: data.audioBase64 ?? undefined,
-          },
-        ]);
-
-        setFeedback(data.feedback);
-
-        // Auto-play
-        if (data.audioBase64) {
-          const audio = new Audio(`data:audio/mp3;base64,${data.audioBase64}`);
-          audio.onended = () => {
-            setPlayingId(null);
-            audioRef.current = null;
-          };
-          audio.play().catch(console.error);
-          audioRef.current = audio;
-          setPlayingId(aiMessageId);
-        } else {
-          speakText(data.aiResponse);
-          setPlayingId(aiMessageId);
-          setTimeout(() => setPlayingId(null), data.aiResponse.length * 60);
-        }
+        if (data.capabilities) setCapabilities(data.capabilities);
+        appendExchange(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Đã xảy ra lỗi. Vui lòng thử lại.");
       } finally {
         setIsProcessing(false);
       }
     },
-    [selectedScenario, messages],
+    [selectedScenario, messages, appendExchange],
+  );
+
+  const handleRecordingComplete = useCallback(
+    async (blob: Blob) => {
+      if (!selectedScenario) return;
+
+      // When the server has no Whisper STT, transcribe in the browser via the
+      // Web Speech API. The recorded blob still drives the waveform UX, but the
+      // transcription itself happens through a fresh live recognition pass.
+      if (!capabilities.serverSTT) {
+        setIsProcessing(true);
+        setError(null);
+        try {
+          const transcript = await transcribeClientSide();
+          await handleTextSubmit(transcript);
+        } catch (err) {
+          setError(
+            err instanceof Error ? err.message : "Không nhận dạng được giọng nói. Hãy thử lại.",
+          );
+          setIsProcessing(false);
+        }
+        return;
+      }
+
+      setIsProcessing(true);
+      setError(null);
+
+      try {
+        const formData = new FormData();
+        formData.append("scenarioId", selectedScenario.id);
+
+        const history = messages.map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        }));
+        formData.append("history", JSON.stringify(history));
+
+        // Server has Whisper — send audio for transcription
+        formData.append("audio", blob, "recording.webm");
+
+        const response = await fetch("/api/speaking", {
+          method: "POST",
+          body: formData,
+        });
+
+        // If server reports STT unavailable, switch to browser recognition.
+        if (response.status === 422) {
+          setCapabilities((prev) => ({ ...prev, serverSTT: false }));
+          setError(
+            "Máy chủ chưa bật nhận dạng giọng nói. Hãy nhấn mic và nói lại để dùng nhận dạng trên trình duyệt.",
+          );
+          setIsProcessing(false);
+          return;
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            (errorData as { error?: string }).error ??
+              `Request failed with status ${response.status}`,
+          );
+        }
+
+        const data = (await response.json()) as {
+          transcript: string;
+          aiResponse: string;
+          audioBase64: string | null;
+          feedback: Feedback;
+          capabilities?: Capabilities;
+        };
+
+        if (data.capabilities) setCapabilities(data.capabilities);
+        appendExchange(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Đã xảy ra lỗi. Vui lòng thử lại.");
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [
+      selectedScenario,
+      messages,
+      capabilities,
+      transcribeClientSide,
+      handleTextSubmit,
+      appendExchange,
+    ],
   );
 
   return (
@@ -402,8 +400,8 @@ export default function SpeakingPracticePage() {
         <div className="mb-4 flex items-center gap-2 text-xs text-slate-500">
           <span className="size-1.5 rounded-full bg-emerald-500" />
           <span>
-            AI: {capabilities.serverSTT ? "Server STT + TTS" : "Browser Speech API"} ·
-            Chat: 9router/OpenAI
+            AI: {capabilities.serverSTT ? "Server STT + TTS" : "Browser Speech API"} · Chat:
+            9router/OpenAI
           </span>
         </div>
 

@@ -167,8 +167,7 @@ export const dashboardShortcuts = {
 export const publicLearningTopics = {
   grammar: {
     title: "Ngữ pháp dễ hiểu",
-    description:
-      "Học ngữ pháp qua mẫu câu ngắn, ví dụ dễ hiểu và bài kiểm tra nhỏ.",
+    description: "Học ngữ pháp qua mẫu câu ngắn, ví dụ dễ hiểu và bài kiểm tra nhỏ.",
     eyebrow: "Ngữ pháp",
     practice: ["Câu hỏi lịch sự", "Thì cơ bản", "Mẫu câu dùng ngay"],
     helps: [
@@ -180,15 +179,10 @@ export const publicLearningTopics = {
   },
   speaking: {
     title: "Luyện nói",
-    description:
-      "Tập roleplay theo tình huống, xem transcript và gợi ý sửa lỗi ở bản beta.",
+    description: "Tập roleplay theo tình huống, xem transcript và gợi ý sửa lỗi ở bản beta.",
     eyebrow: "Nói",
     practice: ["Lượt hội thoại", "Mục tiêu phát âm", "Câu chữa cháy khi bí từ"],
-    helps: [
-      "Nêu rõ mục tiêu nói",
-      "Hiện nhóm feedback dễ hiểu",
-      "Chưa bật micro ở public beta",
-    ],
+    helps: ["Nêu rõ mục tiêu nói", "Hiện nhóm feedback dễ hiểu", "Chưa bật micro ở public beta"],
     path: ["Chọn tình huống", "Tập cụm câu", "Hội thoại mẫu", "Xem góp ý"],
   },
   listening: {
@@ -196,17 +190,12 @@ export const publicLearningTopics = {
     description: "Luyện nhận ra cụm câu, ý chính và hội thoại ngắn.",
     eyebrow: "Nghe",
     practice: ["Nhận diện từ khóa", "Hiểu ý người nói", "Hiểu hội thoại ngắn"],
-    helps: [
-      "Nêu mục tiêu nghe trước",
-      "Gắn âm thanh với từ vựng",
-      "Nối bài nghe với luyện nói",
-    ],
+    helps: ["Nêu mục tiêu nghe trước", "Gắn âm thanh với từ vựng", "Nối bài nghe với luyện nói"],
     path: ["Xem cụm câu", "Nghe lướt hội thoại", "Kiểm tra hiểu ý", "Lặp lại và trả lời"],
   },
   reading: {
     title: "Luyện đọc",
-    description:
-      "Đọc ghi chú ngắn, hướng dẫn đơn giản và đoạn văn thân thiện với người mới học.",
+    description: "Đọc ghi chú ngắn, hướng dẫn đơn giản và đoạn văn thân thiện với người mới học.",
     eyebrow: "Đọc",
     practice: ["Ghi chú ngắn", "Đọc tìm ý chính", "Đoán nghĩa theo ngữ cảnh"],
     helps: [
@@ -218,21 +207,15 @@ export const publicLearningTopics = {
   },
   placement: {
     title: "Gợi ý trình độ",
-    description:
-      "Xem cách hệ thống gợi ý điểm bắt đầu trước khi có bài kiểm tra thật.",
+    description: "Xem cách hệ thống gợi ý điểm bắt đầu trước khi có bài kiểm tra thật.",
     eyebrow: "Placement",
     practice: ["Mục tiêu học", "Ước lượng trình độ", "Tự đánh giá kỹ năng"],
-    helps: [
-      "Gợi ý rõ lý do",
-      "Không tự nhận điểm khi chưa đủ dữ liệu",
-      "Chuẩn bị bản học thử",
-    ],
+    helps: ["Gợi ý rõ lý do", "Không tự nhận điểm khi chưa đủ dữ liệu", "Chuẩn bị bản học thử"],
     path: ["Chọn mục tiêu", "Quét kỹ năng", "Gợi ý trình độ", "Xem lại kế hoạch"],
   },
   curriculum: {
     title: "Bản đồ bài học",
-    description:
-      "Xem cấu trúc bài học beta: bài ngắn, luyện nói và ôn tập.",
+    description: "Xem cấu trúc bài học beta: bài ngắn, luyện nói và ôn tập.",
     eyebrow: "Curriculum",
     practice: ["Thứ tự bài học", "Mục tiêu bài", "Nhịp luyện tập"],
     helps: [

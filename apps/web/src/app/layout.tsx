@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { SkipLink } from "@/components/ui/skip-link";
 import { absoluteUrl, resolveSiteUrl } from "@/lib/site-url";
+import { isClerkConfigured } from "@/lib/auth";
 import { AppProviders } from "./providers";
 import "./globals.css";
 
@@ -94,21 +96,38 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-full flex-col">
-        <ClerkProvider
-          appearance={{
-            baseTheme: dark,
-            elements: {
-              card: "rounded-3xl border border-border/50 bg-card/50 backdrop-blur-xl",
-              formButtonPrimary: "rounded-xl bg-primary hover:opacity-90",
-              formFieldInput: "h-11 rounded-xl bg-accent/50 border-border/50",
-              footerActionLink: "text-primary hover:underline",
-            },
-          }}
-        >
+        <AuthBoundary>
           <SkipLink />
           <AppProviders>{children}</AppProviders>
-        </ClerkProvider>
+        </AuthBoundary>
       </body>
     </html>
+  );
+}
+
+/**
+ * Wraps the app in Clerk's provider only when Clerk is configured with a real
+ * publishable key. Without it the app runs in keyless demo mode so it can build
+ * and start without third-party credentials.
+ */
+function AuthBoundary({ children }: { children: ReactNode }) {
+  if (!isClerkConfigured()) {
+    return <>{children}</>;
+  }
+
+  return (
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark,
+        elements: {
+          card: "rounded-3xl border border-border/50 bg-card/50 backdrop-blur-xl",
+          formButtonPrimary: "rounded-xl bg-primary hover:opacity-90",
+          formFieldInput: "h-11 rounded-xl bg-accent/50 border-border/50",
+          footerActionLink: "text-primary hover:underline",
+        },
+      }}
+    >
+      {children}
+    </ClerkProvider>
   );
 }

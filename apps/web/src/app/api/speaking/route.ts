@@ -30,18 +30,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const historyRaw = formData.get("history") as string | null;
 
     if (!scenarioId) {
-      return NextResponse.json(
-        { error: "No scenarioId provided" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "No scenarioId provided" }, { status: 400 });
     }
 
     const scenario = scenarios.find((s) => s.id === scenarioId);
     if (!scenario) {
-      return NextResponse.json(
-        { error: "Invalid scenarioId" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid scenarioId" }, { status: 400 });
     }
 
     // Determine transcript: either from server-side Whisper or client-side Web Speech API
@@ -59,20 +53,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         language: "en",
         response_format: "text",
       });
-      transcript = typeof transcription === "string"
-        ? transcription.trim()
-        : (transcription as unknown as { text: string }).text.trim();
+      transcript =
+        typeof transcription === "string"
+          ? transcription.trim()
+          : (transcription as unknown as { text: string }).text.trim();
     } else if (audioFile) {
       // No OpenAI key — client should use Web Speech API and send text instead
       return NextResponse.json(
-        { error: "Server STT unavailable. Use client-side speech recognition and send text field." },
+        {
+          error: "Server STT unavailable. Use client-side speech recognition and send text field.",
+        },
         { status: 422 },
       );
     } else {
-      return NextResponse.json(
-        { error: "No audio or text input provided" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "No audio or text input provided" }, { status: 400 });
     }
 
     // Build conversation history
@@ -127,7 +121,6 @@ Rules for feedback:
     const fullResponse = chatCompletion.choices[0]?.message?.content ?? "";
 
     // Parse AI response and feedback
-    let aiResponse: string;
     let feedback: SpeakingResponse["feedback"] = {
       pronunciation: [],
       grammar: [],
@@ -135,7 +128,7 @@ Rules for feedback:
     };
 
     const feedbackSplit = fullResponse.split("FEEDBACK_JSON:");
-    aiResponse = feedbackSplit[0]?.trim() ?? fullResponse;
+    const aiResponse = feedbackSplit[0]?.trim() ?? fullResponse;
 
     if (feedbackSplit[1]) {
       try {
@@ -186,10 +179,7 @@ Rules for feedback:
       );
     }
 
-    return NextResponse.json(
-      { error: "Failed to process speaking request" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to process speaking request" }, { status: 500 });
   }
 }
 

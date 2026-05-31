@@ -1,6 +1,6 @@
-import { createClient, type RedisClientType } from "redis";
-
 import type { ApiConfig } from "./config.js";
+
+type RedisClientType = import("redis").RedisClientType;
 
 export type RateLimitDecision =
   | { allowed: true; remaining: number; resetAt: Date; retryAfterSeconds?: number }
@@ -136,9 +136,10 @@ export class RedisRateLimiterStore implements RateLimiterStore {
 
   private async getClient(): Promise<RedisClientType> {
     if (!this.client) {
+      const { createClient } = await import("redis");
       this.client = createClient({
         url: this.redisUrl,
-      });
+      }) as RedisClientType;
       await this.client.connect();
     }
 

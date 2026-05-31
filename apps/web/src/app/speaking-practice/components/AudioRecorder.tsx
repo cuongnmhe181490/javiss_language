@@ -20,43 +20,47 @@ export function AudioRecorder({ onRecordingComplete, disabled = false }: AudioRe
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const drawWaveform = useCallback(() => {
-    const canvas = canvasRef.current;
-    const analyser = analyserRef.current;
-    if (!canvas || !analyser) return;
+    const renderFrame = () => {
+      const canvas = canvasRef.current;
+      const analyser = analyserRef.current;
+      if (!canvas || !analyser) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    analyser.getByteTimeDomainData(dataArray);
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      analyser.getByteTimeDomainData(dataArray);
 
-    ctx.fillStyle = "rgba(2, 6, 23, 0.3)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "rgba(2, 6, 23, 0.3)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#34d399";
-    ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#34d399";
+      ctx.beginPath();
 
-    const sliceWidth = canvas.width / bufferLength;
-    let x = 0;
+      const sliceWidth = canvas.width / bufferLength;
+      let x = 0;
 
-    for (let i = 0; i < bufferLength; i++) {
-      const v = (dataArray[i] ?? 128) / 128.0;
-      const y = (v * canvas.height) / 2;
+      for (let i = 0; i < bufferLength; i++) {
+        const v = (dataArray[i] ?? 128) / 128.0;
+        const y = (v * canvas.height) / 2;
 
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+        x += sliceWidth;
       }
-      x += sliceWidth;
-    }
 
-    ctx.lineTo(canvas.width, canvas.height / 2);
-    ctx.stroke();
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
 
-    animationRef.current = requestAnimationFrame(drawWaveform);
+      animationRef.current = requestAnimationFrame(renderFrame);
+    };
+
+    renderFrame();
   }, []);
 
   const startRecording = useCallback(async () => {
