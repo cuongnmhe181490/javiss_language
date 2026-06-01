@@ -248,4 +248,101 @@ export const listeningExercises: ListeningExercise[] = [
       },
     ],
   },
+  {
+    id: "lis-8",
+    title: "Cuộc họp ngắn ở văn phòng",
+    level: "A2",
+    context: "Một quản lý nói chuyện với nhân viên về công việc trong ngày. Nghe đoạn hội thoại.",
+    transcript: [
+      "Manager: Good morning, Anna. Did you finish the report?",
+      "Anna: Almost. I need one more hour.",
+      "Manager: No problem. Can you send it before lunch?",
+      "Anna: Sure. I'll email it to you by noon.",
+      "Manager: Great. We have a meeting with the client at 2 p.m.",
+      "Anna: OK. Should I prepare the slides?",
+      "Manager: Yes, please. Thank you, Anna.",
+    ],
+    questions: [
+      {
+        question: "Anna cần thêm bao lâu để xong báo cáo?",
+        options: ["30 phút", "1 tiếng", "2 tiếng"],
+        answer: "1 tiếng",
+      },
+      {
+        question: "Cuộc họp với khách hàng lúc mấy giờ?",
+        options: ["12 giờ", "1 giờ", "2 giờ"],
+        answer: "2 giờ",
+      },
+      {
+        question: "Anna sẽ chuẩn bị gì cho cuộc họp?",
+        options: ["Báo cáo", "Slide thuyết trình", "Hợp đồng"],
+        answer: "Slide thuyết trình",
+      },
+    ],
+  },
+  {
+    id: "lis-9",
+    title: "Khám bệnh ở phòng khám",
+    level: "A2",
+    context: "Một bệnh nhân nói chuyện với bác sĩ. Nghe và trả lời câu hỏi.",
+    transcript: [
+      "Doctor: Hello. What seems to be the problem?",
+      "Patient: I have a headache and a sore throat.",
+      "Doctor: How long have you had these symptoms?",
+      "Patient: Since yesterday morning.",
+      "Doctor: Do you have a fever?",
+      "Patient: Yes, a little. About 38 degrees.",
+      "Doctor: OK. You have a cold. Drink lots of water and rest.",
+      "Patient: Should I take any medicine?",
+      "Doctor: Take this twice a day after meals.",
+    ],
+    questions: [
+      {
+        question: "Bệnh nhân bị gì?",
+        options: ["Đau bụng", "Đau đầu và đau họng", "Đau lưng"],
+        answer: "Đau đầu và đau họng",
+      },
+      {
+        question: "Các triệu chứng kéo dài bao lâu?",
+        options: ["Từ sáng qua", "Một tuần", "Vài giờ"],
+        answer: "Từ sáng qua",
+      },
+      {
+        question: "Bác sĩ dặn uống thuốc thế nào?",
+        options: ["Một lần một ngày", "Hai lần một ngày sau ăn", "Khi nào đau thì uống"],
+        answer: "Hai lần một ngày sau ăn",
+      },
+    ],
+  },
+  {
+    id: "lis-10",
+    title: "Thông báo ở sân bay",
+    level: "A2",
+    context: "Nghe thông báo lên máy bay tại sân bay và trả lời câu hỏi.",
+    transcript: [
+      "Announcement: Good afternoon, passengers.",
+      "This is the boarding call for flight VN310 to Singapore.",
+      "Please proceed to gate 12 with your boarding pass and passport.",
+      "Boarding will begin in ten minutes.",
+      "Passengers with small children may board first.",
+      "Thank you for flying with us.",
+    ],
+    questions: [
+      {
+        question: "Chuyến bay đi đâu?",
+        options: ["Bangkok", "Singapore", "Tokyo"],
+        answer: "Singapore",
+      },
+      {
+        question: "Hành khách ra cổng số mấy?",
+        options: ["Cổng 2", "Cổng 12", "Cổng 20"],
+        answer: "Cổng 12",
+      },
+      {
+        question: "Ai được lên máy bay trước?",
+        options: ["Khách hạng thương gia", "Khách có trẻ nhỏ", "Khách lớn tuổi"],
+        answer: "Khách có trẻ nhỏ",
+      },
+    ],
+  },
 ];

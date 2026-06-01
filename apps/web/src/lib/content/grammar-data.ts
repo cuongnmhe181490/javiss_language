@@ -15,7 +15,7 @@ export type GrammarLesson = {
   id: string;
   title: string;
   englishTitle: string;
-  level: "A1" | "A2";
+  level: "A1" | "A2" | "B1" | "B2";
   explanation: string;
   examples: GrammarExample[];
   exercises: GrammarExercise[];
@@ -391,6 +391,167 @@ export const grammarLessons: GrammarLesson[] = [
         options: ["mustn't", "don't have to", "shouldn't"],
         answer: "don't have to",
         explanation: "Không bắt buộc (không cần thiết) dùng 'don't have to'.",
+      },
+    ],
+  },
+  {
+    id: "gr-11",
+    title: "Thì quá khứ tiếp diễn",
+    englishTitle: "Past Continuous",
+    level: "B1",
+    explanation:
+      "Thì quá khứ tiếp diễn (was/were + V-ing) diễn tả hành động đang xảy ra tại một thời điểm trong quá khứ, hoặc hành động đang diễn ra thì bị một hành động khác (quá khứ đơn) xen vào.",
+    examples: [
+      { english: "I was cooking when she called.", vietnamese: "Tôi đang nấu ăn thì cô ấy gọi." },
+      {
+        english: "They were playing football at 5 p.m.",
+        vietnamese: "Họ đang chơi bóng lúc 5 giờ chiều.",
+      },
+      {
+        english: "What were you doing last night?",
+        vietnamese: "Tối qua bạn đang làm gì?",
+      },
+    ],
+    exercises: [
+      {
+        type: "fill-in-blank",
+        question: "While I ___ (walk) home, it started to rain.",
+        answer: "was walking",
+        explanation: "Hành động đang diễn ra trong quá khứ dùng was/were + V-ing.",
+      },
+      {
+        type: "multiple-choice",
+        question: "When the teacher came in, the students ___.",
+        options: ["talked", "were talking", "are talking"],
+        answer: "were talking",
+        explanation: "Hành động đang diễn ra thì bị xen vào dùng quá khứ tiếp diễn.",
+      },
+      {
+        type: "fill-in-blank",
+        question: "We ___ (watch) TV when the power went out.",
+        answer: "were watching",
+        explanation: "'We' đi với 'were' + V-ing.",
+      },
+    ],
+  },
+  {
+    id: "gr-12",
+    title: "Thì hiện tại hoàn thành",
+    englishTitle: "Present Perfect",
+    level: "B1",
+    explanation:
+      "Thì hiện tại hoàn thành (have/has + V3/ed) diễn tả trải nghiệm, hành động vừa xảy ra, hoặc hành động bắt đầu trong quá khứ và còn liên quan đến hiện tại. Thường đi với for, since, already, yet, ever, never.",
+    examples: [
+      { english: "I have visited Japan twice.", vietnamese: "Tôi đã đến Nhật hai lần." },
+      { english: "She has just finished her work.", vietnamese: "Cô ấy vừa làm xong việc." },
+      {
+        english: "We have lived here since 2020.",
+        vietnamese: "Chúng tôi sống ở đây từ năm 2020.",
+      },
+    ],
+    exercises: [
+      {
+        type: "fill-in-blank",
+        question: "I ___ (never/be) to Korea.",
+        answer: "have never been",
+        explanation: "Trải nghiệm với 'never' dùng hiện tại hoàn thành: have + never + been.",
+      },
+      {
+        type: "multiple-choice",
+        question: "___ you ever eaten sushi?",
+        options: ["Did", "Have", "Do"],
+        answer: "Have",
+        explanation: "Câu hỏi về trải nghiệm với 'ever' dùng 'Have you ever + V3'.",
+      },
+      {
+        type: "fill-in-blank",
+        question: "He has worked here ___ five years.",
+        answer: "for",
+        explanation: "'For' + khoảng thời gian (five years). 'Since' + mốc thời gian.",
+      },
+    ],
+  },
+  {
+    id: "gr-13",
+    title: "Câu điều kiện loại 1 và 2",
+    englishTitle: "First & Second Conditional",
+    level: "B1",
+    explanation:
+      "Điều kiện loại 1 (có thật ở tương lai): If + hiện tại đơn, will + V. Điều kiện loại 2 (giả định, không có thật ở hiện tại): If + quá khứ đơn, would + V.",
+    examples: [
+      {
+        english: "If it rains, we will stay home.",
+        vietnamese: "Nếu trời mưa, chúng tôi sẽ ở nhà.",
+      },
+      {
+        english: "If I were rich, I would travel the world.",
+        vietnamese: "Nếu tôi giàu, tôi sẽ đi khắp thế giới.",
+      },
+      {
+        english: "She would help if she had time.",
+        vietnamese: "Cô ấy sẽ giúp nếu có thời gian.",
+      },
+    ],
+    exercises: [
+      {
+        type: "multiple-choice",
+        question: "If you heat ice, it ___.",
+        options: ["will melt", "would melt", "melts"],
+        answer: "melts",
+        explanation: "Sự thật hiển nhiên dùng điều kiện loại 0 (hiện tại đơn cả hai vế).",
+      },
+      {
+        type: "fill-in-blank",
+        question: "If I ___ (be) you, I would apologize.",
+        answer: "were",
+        explanation: "Điều kiện loại 2 dùng 'were' cho mọi chủ ngữ (If I were...).",
+      },
+      {
+        type: "multiple-choice",
+        question: "If she studies hard, she ___ the exam.",
+        options: ["will pass", "would pass", "passed"],
+        answer: "will pass",
+        explanation: "Điều kiện loại 1: If + hiện tại đơn, will + V.",
+      },
+    ],
+  },
+  {
+    id: "gr-14",
+    title: "Câu bị động",
+    englishTitle: "Passive Voice",
+    level: "B1",
+    explanation:
+      "Câu bị động (be + V3/ed) nhấn mạnh vào đối tượng chịu tác động thay vì người thực hiện. Cấu trúc: tân ngữ + be (chia thì) + quá khứ phân từ + (by + tác nhân).",
+    examples: [
+      { english: "English is spoken here.", vietnamese: "Tiếng Anh được nói ở đây." },
+      {
+        english: "The cake was made by my mother.",
+        vietnamese: "Cái bánh được mẹ tôi làm.",
+      },
+      {
+        english: "This bridge was built in 1990.",
+        vietnamese: "Cây cầu này được xây năm 1990.",
+      },
+    ],
+    exercises: [
+      {
+        type: "fill-in-blank",
+        question: "The letter ___ (send) yesterday.",
+        answer: "was sent",
+        explanation: "Bị động quá khứ đơn: was/were + V3. 'Send' → 'sent'.",
+      },
+      {
+        type: "multiple-choice",
+        question: "Coffee ___ in Brazil.",
+        options: ["is grown", "grows", "is growing"],
+        answer: "is grown",
+        explanation: "Bị động hiện tại đơn: is/are + V3 (grown).",
+      },
+      {
+        type: "fill-in-blank",
+        question: "These cars ___ (make) in Japan.",
+        answer: "are made",
+        explanation: "Chủ ngữ số nhiều 'these cars' đi với 'are' + made.",
       },
     ],
   },

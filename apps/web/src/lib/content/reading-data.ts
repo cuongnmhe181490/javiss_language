@@ -389,4 +389,90 @@ Hoa`,
       },
     ],
   },
+  {
+    id: "read-9",
+    title: "Thói quen buổi sáng của Mai",
+    level: "A2",
+    topic: "Mai's Morning Routine",
+    passage: `Mai is a university student in Da Nang. She has a busy but healthy morning routine.
+
+She wakes up at 6 o'clock every day. First, she drinks a glass of warm water and does some light exercise for fifteen minutes. Then she takes a shower and gets dressed.
+
+For breakfast, Mai usually eats a bowl of pho or a banh mi with eggs. She loves coffee, so she always has a cup of Vietnamese iced coffee before class.
+
+Mai leaves home at 7:15 and rides her motorbike to university. It takes about twenty minutes. Her first class starts at 8 o'clock, so she always arrives early to review her notes.`,
+    vocabHints: [
+      { word: "routine", meaning: "thói quen, lịch trình" },
+      { word: "wakes up", meaning: "thức dậy" },
+      { word: "light exercise", meaning: "tập thể dục nhẹ" },
+      { word: "gets dressed", meaning: "mặc quần áo" },
+      { word: "leaves home", meaning: "rời nhà" },
+      { word: "review", meaning: "ôn lại" },
+    ],
+    questions: [
+      {
+        question: "Mai thức dậy lúc mấy giờ?",
+        options: ["5 giờ", "6 giờ", "7 giờ", "8 giờ"],
+        answer: "6 giờ",
+      },
+      {
+        question: "Mai làm gì đầu tiên sau khi thức dậy?",
+        options: ["Tắm", "Uống nước ấm và tập thể dục nhẹ", "Ăn sáng", "Đi học"],
+        answer: "Uống nước ấm và tập thể dục nhẹ",
+      },
+      {
+        question: "Mai đến trường bằng gì?",
+        options: ["Xe buýt", "Xe đạp", "Xe máy", "Đi bộ"],
+        answer: "Xe máy",
+      },
+      {
+        question: "Vì sao Mai luôn đến sớm?",
+        options: ["Để ăn sáng", "Để ôn lại bài", "Để gặp bạn", "Để tập thể dục"],
+        answer: "Để ôn lại bài",
+      },
+    ],
+  },
+  {
+    id: "read-10",
+    title: "Lợi ích của việc đi bộ",
+    level: "A2",
+    topic: "The Benefits of Walking",
+    passage: `Walking is one of the simplest and healthiest activities. You don't need any special equipment or a gym membership. You just need a pair of comfortable shoes.
+
+Doctors say that walking for thirty minutes a day can improve your health. It makes your heart stronger, helps you sleep better, and reduces stress. Walking is also good for people who want to lose weight slowly and safely.
+
+Many people walk in the early morning or after dinner. Walking with a friend or listening to music can make it more enjoyable. Some people use a phone app to count their steps. A common goal is 10,000 steps a day.
+
+So next time you take a short trip, think about walking instead of driving. It's free, easy, and good for both your body and the environment.`,
+    vocabHints: [
+      { word: "equipment", meaning: "thiết bị, dụng cụ" },
+      { word: "improve", meaning: "cải thiện" },
+      { word: "reduces stress", meaning: "giảm căng thẳng" },
+      { word: "lose weight", meaning: "giảm cân" },
+      { word: "enjoyable", meaning: "thú vị, dễ chịu" },
+      { word: "environment", meaning: "môi trường" },
+    ],
+    questions: [
+      {
+        question: "Cần gì để bắt đầu đi bộ?",
+        options: ["Thẻ tập gym", "Một đôi giày thoải mái", "Thiết bị đặc biệt", "Huấn luyện viên"],
+        answer: "Một đôi giày thoải mái",
+      },
+      {
+        question: "Đi bộ 30 phút mỗi ngày KHÔNG mang lại lợi ích nào sau đây?",
+        options: ["Tim khỏe hơn", "Ngủ ngon hơn", "Giảm căng thẳng", "Tăng cân nhanh"],
+        answer: "Tăng cân nhanh",
+      },
+      {
+        question: "Mục tiêu số bước phổ biến mỗi ngày là bao nhiêu?",
+        options: ["5,000", "8,000", "10,000", "20,000"],
+        answer: "10,000",
+      },
+      {
+        question: "Bài viết khuyên điều gì cho chuyến đi ngắn?",
+        options: ["Lái xe", "Đi bộ thay vì lái xe", "Đi xe buýt", "Ở nhà"],
+        answer: "Đi bộ thay vì lái xe",
+      },
+    ],
+  },
 ];
