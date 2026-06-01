@@ -14,6 +14,10 @@ export const publicRoutes = [
   "/reading",
   "/placement",
   "/curriculum",
+  "/learn/en",
+  "/learn/zh",
+  "/learn/ja",
+  "/learn/ko",
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {

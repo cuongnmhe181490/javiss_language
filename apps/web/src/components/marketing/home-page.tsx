@@ -11,10 +11,10 @@ import { SiteFooter } from "./site-footer";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const languages = [
-  { name: "Tiếng Anh", detail: "CEFR A1-C2 · giao tiếp, công việc, IELTS/TOEIC" },
-  { name: "Tiếng Trung", detail: "HSK · pinyin, thanh điệu, câu dùng hằng ngày" },
-  { name: "Tiếng Nhật", detail: "JLPT · kana, kanji cơ bản, mẫu câu ngắn" },
-  { name: "Tiếng Hàn", detail: "TOPIK · Hangul, trợ từ, hội thoại nhập môn" },
+  { code: "en", name: "Tiếng Anh", detail: "CEFR A1-C2 · giao tiếp, công việc, IELTS/TOEIC" },
+  { code: "zh", name: "Tiếng Trung", detail: "HSK · pinyin, thanh điệu, câu dùng hằng ngày" },
+  { code: "ja", name: "Tiếng Nhật", detail: "JLPT · kana, kanji cơ bản, mẫu câu ngắn" },
+  { code: "ko", name: "Tiếng Hàn", detail: "TOPIK · Hangul, trợ từ, hội thoại nhập môn" },
 ];
 
 const dailyFlow = [
@@ -249,10 +249,19 @@ function LanguageSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
             >
-              <div className="rounded-2xl border border-border bg-card p-5 backdrop-blur-xl transition hover:border-primary/30 hover:bg-accent">
-                <h3 className="font-semibold text-foreground">{lang.name}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{lang.detail}</p>
-              </div>
+              <Link
+                href={`/learn/${lang.code}`}
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5 backdrop-blur-xl transition hover:border-primary/30 hover:bg-accent"
+              >
+                <div>
+                  <h3 className="font-semibold text-foreground">{lang.name}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{lang.detail}</p>
+                </div>
+                <ArrowRight
+                  className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+                  aria-hidden="true"
+                />
+              </Link>
             </motion.div>
           ))}
         </div>

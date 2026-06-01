@@ -16,6 +16,49 @@ function pickEnglishVoice(): SpeechSynthesisVoice | undefined {
   );
 }
 
+function pickVoiceForLang(langPrefix: string): SpeechSynthesisVoice | undefined {
+  const voices = window.speechSynthesis.getVoices();
+  return voices.find((v) => v.lang.toLowerCase().startsWith(langPrefix.toLowerCase()));
+}
+
+const BCP47: Record<string, string> = {
+  en: "en-US",
+  zh: "zh-CN",
+  ja: "ja-JP",
+  ko: "ko-KR",
+};
+
+/**
+ * Speak a single phrase in the given language (en/zh/ja/ko). Returns true if a
+ * matching voice/locale was used. Falls back to the browser default voice.
+ */
+export function speakPhrase(
+  text: string,
+  lang: string,
+  options: { onEnd?: () => void; onError?: () => void } = {},
+): boolean {
+  if (!isSpeechSupported()) {
+    options.onError?.();
+    return false;
+  }
+
+  window.speechSynthesis.cancel();
+
+  const locale = BCP47[lang] ?? "en-US";
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = locale;
+  utterance.rate = 0.85;
+
+  const voice = pickVoiceForLang(lang);
+  if (voice) utterance.voice = voice;
+
+  utterance.onend = () => options.onEnd?.();
+  utterance.onerror = () => options.onError?.();
+
+  window.speechSynthesis.speak(utterance);
+  return Boolean(voice);
+}
+
 export function cancelSpeech(): void {
   if (isSpeechSupported()) {
     window.speechSynthesis.cancel();

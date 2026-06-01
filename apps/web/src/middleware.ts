@@ -14,6 +14,7 @@ const isPublicRoute = createRouteMatcher([
   "/speaking-practice(.*)",
   "/demo-speaking(.*)",
   "/placement(.*)",
+  "/learn(.*)",
   "/dashboard(.*)",
   "/api/(.*)",
 ]);
