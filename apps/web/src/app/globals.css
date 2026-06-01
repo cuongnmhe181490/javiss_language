@@ -612,168 +612,121 @@ body > *:not(.scene) {
 /*  Thủy Mặc — cinematic Chinese ink-wash scene                  */
 /* ============================================================= */
 [data-scene="thuy-mac"] {
-  --ink-strong: oklch(0.86 0 0);
-  --ink-mid: oklch(0.62 0.01 230);
-  --ink-soft: oklch(0.16 0 0);
-  --ink-cold: oklch(0.7 0.04 220);
+  --ink-strong: oklch(0.9 0 0);
+  --ink-mid: oklch(0.6 0.012 230);
+  --ink-soft: oklch(0.14 0 0);
+  --ink-cold: oklch(0.72 0.045 220);
 }
-/* deep ink base with a faint cold-blue depth at the bottom */
+/* deep ink base: near-black with a cold blue depth top and bottom */
 .scene-base-ink {
   background:
-    radial-gradient(ellipse 120% 80% at 50% -10%, oklch(0.2 0.008 230), transparent 60%),
-    radial-gradient(ellipse 140% 70% at 50% 118%, oklch(0.12 0.02 235), transparent 60%),
-    linear-gradient(180deg, oklch(0.11 0.004 235), oklch(0.08 0.004 235) 55%, oklch(0.06 0.006 240));
+    radial-gradient(ellipse 130% 75% at 50% -12%, oklch(0.19 0.012 232), transparent 62%),
+    radial-gradient(ellipse 150% 65% at 50% 116%, oklch(0.13 0.022 236), transparent 60%),
+    linear-gradient(180deg, oklch(0.1 0.006 236), oklch(0.075 0.006 238) 52%, oklch(0.05 0.008 242));
 }
-/* paper grain */
+/* xuyến-chỉ paper grain, very subtle, soft-light blended */
 .ink-texture {
   position: absolute;
   inset: 0;
-  opacity: 0.5;
+  opacity: 0.45;
   mix-blend-mode: soft-light;
   background-image:
     repeating-linear-gradient(
-      102deg,
-      rgba(255, 255, 255, 0.014) 0px,
-      rgba(255, 255, 255, 0.014) 1px,
+      96deg,
+      rgba(255, 255, 255, 0.013) 0px,
+      rgba(255, 255, 255, 0.013) 1px,
       transparent 1px,
       transparent 3px
     ),
     repeating-linear-gradient(
-      8deg,
-      rgba(255, 255, 255, 0.01) 0px,
-      rgba(255, 255, 255, 0.01) 1px,
+      4deg,
+      rgba(255, 255, 255, 0.009) 0px,
+      rgba(255, 255, 255, 0.009) 1px,
       transparent 1px,
-      transparent 5px
+      transparent 6px
     );
 }
-/* large soft ink-bleed blooms, very slow drift */
+/* soft ink-bleed blooms drifting slowly (parallax background) */
 .ink-bleed {
   position: absolute;
-  inset: -10%;
+  inset: -12%;
   background:
-    radial-gradient(38% 30% at 22% 30%, rgba(255, 255, 255, 0.05), transparent 70%),
-    radial-gradient(44% 36% at 78% 64%, rgba(160, 190, 210, 0.05), transparent 72%),
-    radial-gradient(30% 24% at 60% 18%, rgba(255, 255, 255, 0.035), transparent 70%);
-  filter: blur(26px);
-  animation: ink-bleed-drift 60s ease-in-out infinite alternate;
+    radial-gradient(36% 30% at 24% 32%, rgba(220, 230, 240, 0.05), transparent 70%),
+    radial-gradient(42% 34% at 76% 60%, rgba(150, 185, 210, 0.05), transparent 72%),
+    radial-gradient(28% 22% at 56% 16%, rgba(230, 235, 245, 0.035), transparent 70%);
+  filter: blur(30px);
 }
-@keyframes ink-bleed-drift {
+.ink-parallax-slow {
+  animation: ink-parallax 90s ease-in-out infinite alternate;
+}
+@keyframes ink-parallax {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
   }
   100% {
-    transform: translate3d(-24px, -18px, 0) scale(1.06);
+    transform: translate3d(-26px, -16px, 0) scale(1.05);
   }
+}
+/* far depth wrapper holding mountains + watermark */
+.ink-far {
+  position: absolute;
+  inset: 0;
 }
 .scene-glow-ink {
   background:
-    radial-gradient(ellipse at 50% 8%, rgba(255, 255, 255, 0.08), transparent 52%),
-    radial-gradient(ellipse at 30% 100%, rgba(150, 185, 210, 0.06), transparent 60%);
+    radial-gradient(ellipse at 50% 6%, rgba(235, 240, 248, 0.07), transparent 50%),
+    radial-gradient(ellipse at 28% 100%, rgba(150, 185, 210, 0.06), transparent 60%);
 }
 /* distant mountains, three depths */
 .ink-mountains {
   position: absolute;
   inset: auto 0 0 0;
   width: 100%;
-  height: 52%;
-  opacity: 0.6;
+  height: 56%;
+  opacity: 0.55;
 }
 .ink-mtn-far {
-  fill: rgba(200, 215, 230, 0.05);
+  fill: rgba(200, 215, 230, 0.045);
 }
 .ink-mtn-mid {
-  fill: rgba(190, 205, 225, 0.07);
+  fill: rgba(190, 205, 225, 0.065);
 }
 .ink-mtn-near {
-  fill: rgba(170, 185, 205, 0.1);
+  fill: rgba(170, 185, 205, 0.09);
 }
-/* yin-yang as a big faint off-center watermark — static, never spins */
+/* yin-yang: barely-there watermark blended into the upper-right haze */
 .ink-yinyang-watermark {
   position: absolute;
-  right: -6%;
-  top: 6%;
-  width: clamp(280px, 38vw, 560px);
-  height: clamp(280px, 38vw, 560px);
-  opacity: 0.05;
-  filter: blur(1px);
+  right: 4%;
+  top: 12%;
+  width: clamp(220px, 30vw, 440px);
+  height: clamp(220px, 30vw, 440px);
+  opacity: 0.03;
+  filter: blur(2px);
 }
 .ink-yinyang-watermark .yinyang-svg {
   width: 100%;
   height: 100%;
 }
-/* water surface ripples scattered low in the scene */
-.ink-water {
-  position: absolute;
-  inset: 0;
-}
-.ink-ripple {
-  position: absolute;
-  width: clamp(120px, 16vw, 220px);
-  height: clamp(40px, 5vw, 70px);
-  margin: calc(clamp(40px, 5vw, 70px) / -2) 0 0 calc(clamp(120px, 16vw, 220px) / -2);
-  border: 1px solid rgba(190, 210, 230, 0.14);
-  border-radius: 50%;
-  opacity: 0;
-  animation: ink-ripple 11s ease-out infinite;
-}
-@keyframes ink-ripple {
-  0% {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-  18% {
-    opacity: 0.45;
-  }
-  100% {
-    transform: scale(1.9);
-    opacity: 0;
-  }
-}
-/* koi swim across the whole scene along motion paths */
-.koi-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.koi {
-  /* drop shadow gives the koi a sense of floating above the water */
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.4));
-}
-.koi-inner {
-  /* slow vertical body sway, layered on top of the path motion */
-  animation: koi-sway 5.5s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-@keyframes koi-sway {
-  0%,
-  100% {
-    transform: translateY(-3px);
-  }
-  50% {
-    transform: translateY(3px);
-  }
-}
-/* drifting ink mist bands */
+/* drifting ink mist bands (parallax mid) */
 .ink-mist {
   position: absolute;
-  width: 70%;
-  height: 180px;
-  left: -35%;
+  width: 75%;
+  height: 200px;
+  left: -38%;
   border-radius: 9999px;
   background: radial-gradient(ellipse at center, rgba(210, 225, 240, 0.06), transparent 70%);
-  filter: blur(34px);
+  filter: blur(36px);
   animation: mist-move linear infinite;
 }
 .ink-mist-1 {
-  top: 30%;
-  animation-duration: 70s;
+  top: 28%;
+  animation-duration: 74s;
 }
 .ink-mist-2 {
-  top: 52%;
-  animation-duration: 96s;
-  animation-delay: -36s;
+  top: 50%;
+  animation-duration: 104s;
+  animation-delay: -40s;
   transform: scale(0.85);
   opacity: 0.7;
 }
@@ -782,8 +735,124 @@ body > *:not(.scene) {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(210vw);
+    transform: translateX(220vw);
   }
+}
+/* lower water surface ripples, very subtle */
+.ink-water {
+  position: absolute;
+  inset: 0;
+}
+.ink-ripple {
+  position: absolute;
+  width: clamp(120px, 16vw, 220px);
+  height: clamp(38px, 4.5vw, 64px);
+  margin: calc(clamp(38px, 4.5vw, 64px) / -2) 0 0 calc(clamp(120px, 16vw, 220px) / -2);
+  border: 1px solid rgba(190, 210, 230, 0.12);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ink-ripple 13s ease-out infinite;
+}
+@keyframes ink-ripple {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  16% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+/* koi canvas spans the scene; koi glide across via motion paths */
+.koi-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.koi {
+  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.35));
+}
+/* CSS Motion Path drives the swim: reliable, GPU-friendly, head leads. */
+.koi-swim {
+  offset-path: var(--koi-path);
+  offset-rotate: auto;
+  offset-distance: 0%;
+  animation: koi-swim var(--koi-dur, 60s) linear infinite;
+  will-change: offset-distance;
+}
+@keyframes koi-swim {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+/* gentle whole-body sway, on top of path motion */
+.koi-inner {
+  animation: koi-sway 6s ease-in-out infinite;
+}
+@keyframes koi-sway {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(2px);
+  }
+}
+/* trailing tail sways slowly like a brush stroke in water */
+.koi-tail {
+  transform-box: fill-box;
+  transform-origin: 100% 50%;
+  animation: koi-tail 3s ease-in-out infinite;
+}
+@keyframes koi-tail {
+  0%,
+  100% {
+    transform: rotate(-7deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+/* pectoral fin flutter */
+.koi-fin {
+  transform-box: fill-box;
+  transform-origin: 80% 20%;
+  animation: koi-fin 2.6s ease-in-out infinite;
+}
+@keyframes koi-fin {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(9deg);
+  }
+}
+/* readability vignette: darken edges so hero text/CTA stay crisp */
+.ink-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 70% 60% at 50% 42%,
+      transparent 0%,
+      transparent 52%,
+      rgba(8, 10, 14, 0.5) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(8, 10, 14, 0.35),
+      transparent 26%,
+      transparent 72%,
+      rgba(8, 10, 14, 0.4)
+    );
 }
 
 /* ============================================================= */
