@@ -155,65 +155,98 @@ function TeaScene() {
 }
 
 /* ============================================================= */
-/*  Thủy Mặc — Chinese ink wash, mountains, koi, yin-yang         */
+/*  Thủy Mặc — cinematic Chinese ink-wash scene with swimming koi  */
 /* ============================================================= */
 function InkScene() {
+  // Each koi wanders along its own meandering closed path. rotate="auto"
+  // orients the head along the direction of travel; a nested tail wiggle and
+  // body sway make the motion read as natural swimming, never a spinner.
   const koi = [
-    { orbit: 0, dur: "34s", scale: 1, delay: "0s" },
-    { orbit: 1, dur: "44s", scale: 0.72, delay: "-12s" },
+    {
+      id: "a",
+      tint: "strong",
+      scale: 1,
+      dur: 58,
+      opacity: 0.82,
+      path: "M180 640 C520 720 920 560 1200 612 C1360 642 1372 392 1040 388 C720 384 420 470 250 528 C70 590 60 580 180 640 Z",
+    },
+    {
+      id: "b",
+      tint: "soft",
+      scale: 0.62,
+      dur: 74,
+      opacity: 0.6,
+      path: "M1120 230 C820 150 520 250 380 312 C250 370 190 220 470 188 C820 150 980 150 1120 196 C1260 240 1300 300 1120 230 Z",
+    },
+    {
+      id: "c",
+      tint: "cold",
+      scale: 0.78,
+      dur: 92,
+      opacity: 0.4,
+      path: "M620 470 C840 520 980 430 900 360 C820 292 600 330 520 392 C452 444 420 430 620 470 Z",
+    },
   ];
+
   return (
     <div className="scene-stack scene-ink">
+      {/* 1. deep ink base */}
       <div className="scene-base scene-base-ink" />
+      {/* 2. paper grain + ink bleed texture */}
+      <div className="ink-texture" />
+      <div className="ink-bleed" />
+      {/* 3. soft light + drifting mist */}
       <div className="scene-glow scene-glow-ink" />
-
-      {/* distant mountains, layered for depth */}
-      <InkMountains />
-
-      {/* faint yin-yang watermark, slowly breathing */}
-      <div className="ink-yinyang">
-        <YinYang />
-      </div>
-
-      {/* ink ripples on the water */}
-      <div className="ink-ripples">
-        <span className="ink-ripple" style={{ animationDelay: "0s" }} />
-        <span className="ink-ripple" style={{ animationDelay: "3s" }} />
-        <span className="ink-ripple" style={{ animationDelay: "6s" }} />
-      </div>
-
-      {/* two koi circling around the yin-yang */}
-      <div className="koi-field">
-        {koi.map((k, i) => (
-          <span
-            key={i}
-            className={`koi-orbit koi-orbit-${k.orbit}`}
-            style={{ animationDuration: k.dur, animationDelay: k.delay }}
-          >
-            <span className="koi-body" style={{ ["--s" as string]: k.scale }}>
-              <Koi dark={i === 0} />
-            </span>
-          </span>
-        ))}
-      </div>
-
-      {/* drifting ink mist */}
       <span className="ink-mist ink-mist-1" />
       <span className="ink-mist ink-mist-2" />
+      {/* 4. distant mountains for depth */}
+      <InkMountains />
+      {/* large, faint yin-yang watermark, off-center, static */}
+      <div className="ink-yinyang-watermark">
+        <YinYang />
+      </div>
+      {/* 5. water surface ripples, very subtle */}
+      <div className="ink-water">
+        <span className="ink-ripple" style={{ left: "26%", top: "70%", animationDelay: "0s" }} />
+        <span className="ink-ripple" style={{ left: "64%", top: "78%", animationDelay: "4s" }} />
+        <span className="ink-ripple" style={{ left: "44%", top: "84%", animationDelay: "8s" }} />
+      </div>
+      {/* 6. koi swimming through the ink water */}
+      <svg
+        className="koi-canvas"
+        viewBox="0 0 1440 900"
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
+      >
+        {koi.map((k) => (
+          <Koi
+            key={k.id}
+            tint={k.tint as KoiTint}
+            scale={k.scale}
+            dur={k.dur}
+            opacity={k.opacity}
+            path={k.path}
+          />
+        ))}
+      </svg>
     </div>
   );
 }
 
 function InkMountains() {
   return (
-    <svg className="ink-mountains" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice">
+    <svg className="ink-mountains" viewBox="0 0 1440 480" preserveAspectRatio="xMidYMax slice">
       <path
         className="ink-mtn ink-mtn-far"
-        d="M0 360 C160 250 280 300 420 240 C560 180 700 280 880 220 C1040 168 1200 250 1440 200 L1440 420 L0 420 Z"
+        d="M0 360 C160 250 280 300 420 240 C560 180 700 280 880 220 C1040 168 1200 250 1440 200 L1440 480 L0 480 Z"
       />
       <path
         className="ink-mtn ink-mtn-mid"
-        d="M0 400 C200 320 360 360 520 300 C700 234 860 330 1040 286 C1220 244 1340 320 1440 300 L1440 420 L0 420 Z"
+        d="M0 420 C200 330 360 380 520 320 C700 250 860 350 1040 300 C1220 256 1340 336 1440 312 L1440 480 L0 480 Z"
+      />
+      <path
+        className="ink-mtn ink-mtn-near"
+        d="M0 470 C240 410 420 446 600 414 C820 374 980 446 1180 410 C1320 386 1400 420 1440 410 L1440 480 L0 480 Z"
       />
     </svg>
   );
@@ -243,16 +276,94 @@ function YinYang() {
   );
 }
 
-function Koi({ dark }: { dark: boolean }) {
-  const fill = dark ? "var(--ink-strong)" : "var(--ink-soft)";
-  const stroke = dark ? "var(--ink-soft)" : "var(--ink-strong)";
+type KoiTint = "strong" | "soft" | "cold";
+
+/**
+ * A single ink-wash koi that swims along `path`. The group follows the path
+ * via SVG animateMotion with rotate="auto" (head leads, body banks into the
+ * curve). The tail and pectoral fins wiggle on their own slow oscillation so
+ * the fish looks alive rather than rigidly translated.
+ */
+function Koi({
+  tint,
+  scale,
+  dur,
+  opacity,
+  path,
+}: {
+  tint: KoiTint;
+  scale: number;
+  dur: number;
+  opacity: number;
+  path: string;
+}) {
+  const fill =
+    tint === "strong"
+      ? "var(--ink-strong)"
+      : tint === "cold"
+        ? "var(--ink-cold)"
+        : "var(--ink-mid)";
+  const eye = tint === "strong" ? "var(--ink-soft)" : "var(--ink-strong)";
+
   return (
-    <svg viewBox="0 0 96 34" className="koi-svg">
-      <path d="M10 17 C30 4 60 4 74 17 C60 30 30 30 10 17 Z" fill={fill} opacity="0.9" />
-      <path d="M74 17 L94 6 L87 17 L94 28 Z" fill={fill} opacity="0.7" />
-      <path d="M40 6 L49 1 L53 8 Z" fill={fill} opacity="0.55" />
-      <circle cx="22" cy="15" r="1.9" fill={stroke} />
-    </svg>
+    <g className="koi" opacity={opacity}>
+      <g transform={`scale(${scale})`} className="koi-inner">
+        {/* tail — wiggles around the body/tail joint near x = -34 */}
+        <g>
+          <path
+            d="M-34 0 C-52 -10 -64 -18 -78 -20 C-70 -10 -70 10 -78 20 C-64 18 -52 10 -34 0 Z"
+            fill={fill}
+            opacity="0.55"
+          />
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            values="-9 -34 0; 9 -34 0; -9 -34 0"
+            dur="2.4s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keyTimes="0;0.5;1"
+            keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+          />
+        </g>
+
+        {/* dorsal fin */}
+        <path d="M2 -13 C10 -22 18 -22 22 -14 C14 -12 8 -12 2 -13 Z" fill={fill} opacity="0.5" />
+
+        {/* pectoral fin — gentle flutter */}
+        <g>
+          <path d="M6 6 C0 18 -10 22 -16 18 C-10 12 -6 8 -2 5 Z" fill={fill} opacity="0.45" />
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            values="-6 4 4; 8 4 4; -6 4 4"
+            dur="2.8s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keyTimes="0;0.5;1"
+            keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+          />
+        </g>
+
+        {/* body — almond shape, head at +x */}
+        <path d="M-36 0 C-16 -15 30 -13 46 0 C30 13 -16 15 -36 0 Z" fill={fill} opacity="0.92" />
+        {/* subtle ink shading along the back */}
+        <path d="M-30 -3 C-10 -12 26 -10 42 -1 C24 -6 -8 -7 -30 -3 Z" fill={eye} opacity="0.12" />
+        {/* eye near the head */}
+        <circle cx="34" cy="-2" r="2.1" fill={eye} />
+      </g>
+
+      {/* drive the whole koi along its meandering path */}
+      <animateMotion
+        dur={`${dur}s`}
+        repeatCount="indefinite"
+        rotate="auto"
+        path={path}
+        calcMode="spline"
+        keyTimes="0;0.5;1"
+        keySplines="0.42 0 0.58 1;0.42 0 0.58 1"
+      />
+    </g>
   );
 }
 
