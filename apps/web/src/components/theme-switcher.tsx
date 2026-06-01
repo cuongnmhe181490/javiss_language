@@ -27,14 +27,20 @@ function readStoredTheme(): ThemeId {
   return (localStorage.getItem(STORAGE_KEY) as ThemeId) || "default";
 }
 
-function applyTheme(theme: ThemeId) {
+/** Apply the theme to the DOM only (no storage write). */
+function applyThemeToDom(theme: ThemeId) {
   const root = document.documentElement;
   if (theme === "default") {
     root.removeAttribute("data-theme");
   } else {
     root.setAttribute("data-theme", theme);
   }
+}
+
+/** Persist the selected theme and apply it. */
+function persistTheme(theme: ThemeId) {
   localStorage.setItem(STORAGE_KEY, theme);
+  applyThemeToDom(theme);
 }
 
 /**
@@ -55,13 +61,14 @@ function subscribe(onChange: () => void): () => void {
 export function ThemeSwitcher() {
   const current = useSyncExternalStore<ThemeId>(subscribe, readStoredTheme, () => "default");
 
-  // Keep the DOM attribute in sync with the stored theme on mount and updates.
+  // Keep the DOM attribute in sync with the active theme. Never writes to
+  // storage here, so it cannot clobber a stored theme during hydration.
   useEffect(() => {
-    applyTheme(current);
+    applyThemeToDom(current);
   }, [current]);
 
   const handleSelect = useCallback((theme: ThemeId) => {
-    applyTheme(theme);
+    persistTheme(theme);
     window.dispatchEvent(new Event("app-theme-change"));
   }, []);
 

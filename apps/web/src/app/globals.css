@@ -331,11 +331,12 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
-    @apply font-sans;
+    @apply font-sans bg-background;
+  }
+  body {
+    @apply text-foreground;
+    background-color: transparent;
   }
   ::selection {
     background: color-mix(in oklab, var(--primary) 28%, transparent);
@@ -344,4 +345,366 @@
   button {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
+}
+
+/* ============================================================= */
+/*  Theme ambience — animated decorative background per theme    */
+/* ============================================================= */
+
+.ambience {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Keep real content above the ambience layer. */
+body > *:not(.ambience) {
+  position: relative;
+  z-index: 1;
+}
+
+.amb-base {
+  position: absolute;
+  inset: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .amb-orb,
+  .amb-steam,
+  .amb-leaf,
+  .amb-koi,
+  .amb-cloud,
+  .amb-yinyang,
+  .amb-float,
+  .amb-twinkle {
+    animation: none !important;
+  }
+}
+
+/* ---------- Ngọc Lục (default): jade orbs ---------- */
+.amb-base-jade {
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      color-mix(in oklab, var(--primary) 18%, transparent),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 85% 80%,
+      color-mix(in oklab, var(--primary) 12%, transparent),
+      transparent 50%
+    );
+}
+.amb-orb {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle at 35% 35%,
+    color-mix(in oklab, var(--primary) 30%, transparent),
+    transparent 70%
+  );
+  filter: blur(40px);
+  opacity: 0.5;
+  animation-name: amb-drift;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+@keyframes amb-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -40px) scale(1.12);
+  }
+}
+
+/* ---------- Trà Đạo: steam + leaves ---------- */
+.amb-base-tea {
+  background:
+    radial-gradient(
+      circle at 50% 110%,
+      color-mix(in oklab, var(--primary) 14%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 80% 10%,
+      color-mix(in oklab, var(--primary) 8%, transparent),
+      transparent 45%
+    );
+}
+.amb-teacup {
+  position: absolute;
+  left: 6%;
+  bottom: 0;
+  width: 180px;
+  height: 60%;
+}
+.amb-steam {
+  position: absolute;
+  bottom: 0;
+  width: 10px;
+  height: 120px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to top,
+    color-mix(in oklab, var(--primary) 30%, transparent),
+    transparent
+  );
+  filter: blur(8px);
+  opacity: 0;
+  animation-name: amb-steam-rise;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in;
+}
+@keyframes amb-steam-rise {
+  0% {
+    transform: translateY(0) scaleX(1);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateY(-220px) scaleX(2.4);
+    opacity: 0;
+  }
+}
+.amb-leaf {
+  position: absolute;
+  top: -40px;
+  font-size: 22px;
+  opacity: 0.55;
+  animation-name: amb-leaf-fall;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+@keyframes amb-leaf-fall {
+  0% {
+    transform: translateY(-40px) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(105vh) translateX(-80px) rotate(420deg);
+    opacity: 0;
+  }
+}
+
+/* ---------- Thủy Mặc: ink wash, koi, yin-yang ---------- */
+[data-theme="thuy-mac"] {
+  --amb-ink-dark: oklch(0.25 0 0);
+  --amb-ink-light: oklch(0.96 0 0);
+}
+[data-theme="thuy-mac"].dark,
+[data-theme="thuy-mac"] .dark {
+  --amb-ink-dark: oklch(0.78 0 0);
+  --amb-ink-light: oklch(0.16 0 0);
+}
+.amb-base-ink {
+  background:
+    radial-gradient(
+      ellipse at 50% 100%,
+      color-mix(in oklab, var(--foreground) 7%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 20% 0%,
+      color-mix(in oklab, var(--foreground) 5%, transparent),
+      transparent 50%
+    );
+}
+.amb-cloud {
+  position: absolute;
+  left: -30%;
+  width: 60%;
+  height: 120px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in oklab, var(--foreground) 6%, transparent),
+    transparent 70%
+  );
+  filter: blur(30px);
+  animation-name: amb-cloud-move;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+@keyframes amb-cloud-move {
+  0% {
+    transform: translateX(0) scale(var(--s, 1));
+  }
+  100% {
+    transform: translateX(230vw) scale(var(--s, 1));
+  }
+}
+.amb-yinyang {
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  width: clamp(120px, 18vw, 220px);
+  height: clamp(120px, 18vw, 220px);
+  margin-left: calc(clamp(120px, 18vw, 220px) / -2);
+  opacity: 0.16;
+  animation: amb-spin 36s linear infinite;
+}
+.amb-yinyang-svg {
+  width: 100%;
+  height: 100%;
+}
+@keyframes amb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.amb-koi {
+  position: absolute;
+  left: -120px;
+  width: 90px;
+  opacity: 0.4;
+  transform: scale(var(--koi-scale, 1));
+  animation-name: amb-koi-swim;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+.amb-koi-svg {
+  width: 100%;
+  height: auto;
+}
+@keyframes amb-koi-swim {
+  0% {
+    transform: translateX(0) translateY(0) scale(var(--koi-scale, 1));
+  }
+  25% {
+    transform: translateX(40vw) translateY(-14px) scale(var(--koi-scale, 1));
+  }
+  50% {
+    transform: translateX(80vw) translateY(0) scale(var(--koi-scale, 1));
+  }
+  75% {
+    transform: translateX(110vw) translateY(12px) scale(var(--koi-scale, 1));
+  }
+  100% {
+    transform: translateX(125vw) translateY(0) scale(var(--koi-scale, 1));
+  }
+}
+
+/* ---------- Hello Kitty: bows, hearts, sparkles ---------- */
+.amb-base-kitty {
+  background:
+    radial-gradient(
+      circle at 20% 15%,
+      color-mix(in oklab, var(--primary) 16%, transparent),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 80% 85%,
+      color-mix(in oklab, var(--primary) 14%, transparent),
+      transparent 50%
+    );
+}
+.amb-float {
+  position: absolute;
+  bottom: -50px;
+  font-size: 26px;
+  opacity: 0;
+  animation-name: amb-float-up;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+@keyframes amb-float-up {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-108vh) rotate(40deg);
+    opacity: 0;
+  }
+}
+.amb-twinkle {
+  position: absolute;
+  font-size: 18px;
+  opacity: 0;
+  animation: amb-twinkle 3.5s ease-in-out infinite;
+}
+@keyframes amb-twinkle {
+  0%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+/* ============================================================= */
+/*  Theme-aware surface overrides                                 */
+/*  Full-page <main> wrappers become transparent so the ambience */
+/*  layer shows through on every theme. Hardcoded slate surfaces  */
+/*  follow theme tokens and turn translucent.                     */
+/* ============================================================= */
+
+/* Let the fixed ambience show behind every full-height page. */
+main.min-h-screen {
+  background-color: transparent !important;
+}
+
+/* Cards / panels keep a readable translucent surface. */
+[data-theme] .bg-slate-900\/80,
+[data-theme] .bg-slate-900\/70,
+[data-theme] .bg-slate-900\/60,
+[data-theme] .bg-slate-900\/50 {
+  background-color: color-mix(in oklab, var(--card) 72%, transparent) !important;
+  backdrop-filter: blur(10px);
+}
+[data-theme] .bg-slate-950\/80,
+[data-theme] .bg-slate-950\/60 {
+  background-color: color-mix(in oklab, var(--background) 68%, transparent) !important;
+  backdrop-filter: blur(10px);
+}
+[data-theme] .bg-slate-800\/60,
+[data-theme] .bg-slate-800\/50,
+[data-theme] .bg-slate-800\/40 {
+  background-color: color-mix(in oklab, var(--muted) 60%, transparent) !important;
+}
+[data-theme] .bg-white\/5,
+[data-theme] .bg-white\/10 {
+  background-color: color-mix(in oklab, var(--card) 55%, transparent) !important;
+}
+
+/* Text/border on dark-styled pages → theme tokens for readability. */
+[data-theme="tra-dao"] .text-slate-50,
+[data-theme="hello-kitty"] .text-slate-50,
+[data-theme="thuy-mac"] .text-slate-50,
+[data-theme="tra-dao"] .text-slate-100,
+[data-theme="hello-kitty"] .text-slate-100,
+[data-theme="thuy-mac"] .text-slate-100,
+[data-theme="tra-dao"] .text-slate-200,
+[data-theme="hello-kitty"] .text-slate-200,
+[data-theme="thuy-mac"] .text-slate-200 {
+  color: var(--foreground) !important;
+}
+[data-theme="tra-dao"] .text-slate-300,
+[data-theme="tra-dao"] .text-slate-400,
+[data-theme="tra-dao"] .text-slate-500,
+[data-theme="hello-kitty"] .text-slate-300,
+[data-theme="hello-kitty"] .text-slate-400,
+[data-theme="hello-kitty"] .text-slate-500,
+[data-theme="thuy-mac"] .text-slate-300,
+[data-theme="thuy-mac"] .text-slate-400,
+[data-theme="thuy-mac"] .text-slate-500 {
+  color: var(--muted-foreground) !important;
 }
