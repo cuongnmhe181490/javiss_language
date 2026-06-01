@@ -8,6 +8,7 @@ import { absoluteUrl } from "@/lib/site-url";
 import { fetchLessonDetail, isApiConfigured } from "@/lib/api/client";
 import { languageLabelVi } from "@/lib/format";
 import type { LessonBlockRecord, ExerciseRecord } from "@/lib/api/types";
+import { LessonProgress } from "./lesson-progress";
 
 interface LessonPageProps {
   params: Promise<{ lessonId: string }>;
@@ -106,13 +107,16 @@ export default async function LessonPage({ params }: LessonPageProps) {
           </section>
         )}
 
-        <div className="mt-10 flex justify-center">
-          <Link
-            href="/speaking-practice"
-            className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-medium text-slate-950 transition hover:bg-emerald-400"
-          >
-            Luyện nói tình huống này
-          </Link>
+        <div className="mt-10 space-y-4">
+          <LessonProgress lessonId={lesson.id} />
+          <div className="flex justify-center">
+            <Link
+              href="/speaking-practice"
+              className="rounded-xl border border-emerald-500/40 px-5 py-2.5 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/10"
+            >
+              Luyện nói tình huống này
+            </Link>
+          </div>
         </div>
       </div>
     </main>

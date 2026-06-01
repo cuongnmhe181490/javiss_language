@@ -141,3 +141,50 @@ export async function fetchAssignments(): Promise<AssignmentRecord[] | null> {
   });
   return result?.data ?? null;
 }
+
+async function apiMutate<T>(path: string, body?: unknown): Promise<T | null> {
+  if (!isApiConfigured()) {
+    return null;
+  }
+
+  const actor = resolveActor();
+  const url = `${resolveApiBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "x-dev-user-id": actor.userId,
+        "x-dev-tenant-id": actor.tenantId,
+        "x-dev-roles": actor.roles.join(","),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      console.error(`API POST ${path} responded ${response.status}`);
+      return null;
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    console.error(`API POST ${path} request failed:`, error);
+    return null;
+  }
+}
+
+export async function startLesson(lessonId: string): Promise<boolean> {
+  const result = await apiMutate(`/v1/lessons/${encodeURIComponent(lessonId)}/start`);
+  return result !== null;
+}
+
+export async function completeLesson(lessonId: string, score?: number): Promise<boolean> {
+  const result = await apiMutate(
+    `/v1/lessons/${encodeURIComponent(lessonId)}/complete`,
+    score === undefined ? {} : { score },
+  );
+  return result !== null;
+}

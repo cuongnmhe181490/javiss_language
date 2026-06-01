@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CheckCircle2,
   ChevronDown,
@@ -8,6 +8,8 @@ import {
   Eye,
   EyeOff,
   Headphones,
+  Pause,
+  Play,
   XCircle,
 } from "lucide-react";
 
@@ -15,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { listeningExercises, type ListeningQuestion } from "@/lib/content/listening-data";
+import { cancelSpeech, isSpeechSupported, speakDialogue } from "@/lib/speech";
 
 export default function ListeningContent() {
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
@@ -68,27 +71,89 @@ export default function ListeningContent() {
 
 function TranscriptSection({ transcript }: { transcript: string[] }) {
   const [showTranscript, setShowTranscript] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [unsupported, setUnsupported] = useState(false);
+
+  useEffect(() => {
+    return () => cancelSpeech();
+  }, []);
+
+  function togglePlay() {
+    if (!isSpeechSupported()) {
+      setUnsupported(true);
+      return;
+    }
+    if (isPlaying) {
+      cancelSpeech();
+      setIsPlaying(false);
+      return;
+    }
+    setIsPlaying(true);
+    speakDialogue(transcript, {
+      onEnd: () => setIsPlaying(false),
+      onError: () => setIsPlaying(false),
+    });
+  }
 
   return (
     <div className="mb-5">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setShowTranscript(!showTranscript)}
-        className="border-slate-700 text-slate-300 mb-3"
-      >
-        {showTranscript ? (
-          <>
-            <EyeOff className="mr-1.5 size-3.5" />
-            Ẩn transcript
-          </>
-        ) : (
-          <>
-            <Eye className="mr-1.5 size-3.5" />
-            Xem transcript
-          </>
-        )}
-      </Button>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <Button
+          size="sm"
+          onClick={togglePlay}
+          className="bg-emerald-600 hover:bg-emerald-700"
+          aria-label={isPlaying ? "Tạm dừng nghe" : "Nghe đoạn hội thoại"}
+        >
+          {isPlaying ? (
+            <>
+              <Pause className="mr-1.5 size-3.5" />
+              Dừng
+            </>
+          ) : (
+            <>
+              <Play className="mr-1.5 size-3.5" />
+              Nghe
+            </>
+          )}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowTranscript(!showTranscript)}
+          className="border-slate-700 text-slate-300"
+        >
+          {showTranscript ? (
+            <>
+              <EyeOff className="mr-1.5 size-3.5" />
+              Ẩn transcript
+            </>
+          ) : (
+            <>
+              <Eye className="mr-1.5 size-3.5" />
+              Xem transcript
+            </>
+          )}
+        </Button>
+      </div>
+
+      {unsupported && (
+        <p className="mb-3 text-xs text-slate-500">
+          Trình duyệt không hỗ trợ đọc audio. Bạn có thể đọc transcript bên dưới.
+        </p>
+      )}
+
+      {isPlaying && (
+        <div className="mb-3 flex items-center gap-1" aria-hidden="true">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <span
+              key={i}
+              className="w-1 animate-pulse rounded-full bg-emerald-400/70"
+              style={{ height: `${8 + ((i * 7) % 16)}px`, animationDelay: `${i * 120}ms` }}
+            />
+          ))}
+          <span className="ml-2 text-xs text-slate-500">Đang phát…</span>
+        </div>
+      )}
 
       {showTranscript && (
         <div className="rounded-md bg-slate-800/60 p-4">
