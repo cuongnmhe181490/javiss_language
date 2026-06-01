@@ -6,7 +6,7 @@ import { dark } from "@clerk/themes";
 import { SkipLink } from "@/components/ui/skip-link";
 import { absoluteUrl, resolveSiteUrl } from "@/lib/site-url";
 import { isClerkConfigured } from "@/lib/auth";
-import { ThemeAmbience } from "@/components/theme/theme-ambience";
+import { ThemeBackground } from "@/components/theme/theme-background";
 import { AppProviders } from "./providers";
 import "./globals.css";
 
@@ -97,7 +97,7 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-full flex-col">
-        <ThemeAmbience />
+        <ThemeBackground />
         <AuthBoundary>
           <SkipLink />
           <AppProviders>{children}</AppProviders>

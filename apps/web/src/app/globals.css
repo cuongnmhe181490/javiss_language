@@ -348,344 +348,609 @@
 }
 
 /* ============================================================= */
-/*  Theme ambience — animated decorative background per theme    */
+/*  Theme scene background system                                 */
+/*  A layered, full-screen world behind all content.             */
 /* ============================================================= */
 
-.ambience {
+.scene {
   position: fixed;
   inset: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
+  /* smooth cross-fade when switching themes */
+  transition: opacity 600ms ease;
 }
 
-/* Keep real content above the ambience layer. */
-body > *:not(.ambience) {
+/* Content sits above the scene. */
+body > *:not(.scene) {
   position: relative;
   z-index: 1;
 }
 
-.amb-base {
+.scene-stack,
+.scene-base,
+.scene-glow,
+.layer {
   position: absolute;
   inset: 0;
 }
 
+.scene-stack {
+  animation: scene-fade-in 700ms ease both;
+}
+@keyframes scene-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Readability mask: subtle vertical + radial darkening so text stays crisp. */
+.scene-mask {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse at 50% 38%,
+      transparent 0%,
+      transparent 45%,
+      color-mix(in oklab, var(--background) 38%, transparent) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--background) 30%, transparent),
+      transparent 30%,
+      transparent 70%,
+      color-mix(in oklab, var(--background) 42%, transparent)
+    );
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .amb-orb,
-  .amb-steam,
-  .amb-leaf,
-  .amb-koi,
-  .amb-cloud,
-  .amb-yinyang,
-  .amb-float,
-  .amb-twinkle {
+  .scene * {
     animation: none !important;
   }
+  .scene {
+    transition: none;
+  }
 }
 
-/* ---------- Ngọc Lục (default): jade orbs ---------- */
-.amb-base-jade {
+/* ---------- shared SVG leaf used by jade & tea ---------- */
+.leaf-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ============================================================= */
+/*  Ngọc Lục — jade / bamboo / forest depth                      */
+/* ============================================================= */
+.scene-jade .scene-base {
+  background:
+    radial-gradient(ellipse at 50% 0%, oklch(0.28 0.06 165), transparent 60%),
+    linear-gradient(180deg, oklch(0.16 0.04 168), oklch(0.12 0.03 170) 55%, oklch(0.1 0.025 172));
+}
+.scene-glow-jade {
   background:
     radial-gradient(
-      circle at 15% 20%,
-      color-mix(in oklab, var(--primary) 18%, transparent),
-      transparent 45%
+      circle at 18% 28%,
+      color-mix(in oklab, oklch(0.72 0.17 162) 26%, transparent),
+      transparent 42%
     ),
     radial-gradient(
-      circle at 85% 80%,
-      color-mix(in oklab, var(--primary) 12%, transparent),
-      transparent 50%
+      circle at 82% 72%,
+      color-mix(in oklab, oklch(0.7 0.15 178) 20%, transparent),
+      transparent 48%
     );
+  filter: blur(8px);
+  animation: glow-breathe 14s ease-in-out infinite;
 }
-.amb-orb {
-  position: absolute;
-  border-radius: 9999px;
-  background: radial-gradient(
-    circle at 35% 35%,
-    color-mix(in oklab, var(--primary) 30%, transparent),
-    transparent 70%
-  );
-  filter: blur(40px);
-  opacity: 0.5;
-  animation-name: amb-drift;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-in-out;
-}
-@keyframes amb-drift {
+@keyframes glow-breathe {
   0%,
   100% {
-    transform: translate(0, 0) scale(1);
+    opacity: 0.75;
   }
   50% {
-    transform: translate(30px, -40px) scale(1.12);
+    opacity: 1;
+  }
+}
+.bamboo-leaf {
+  position: absolute;
+  top: -6%;
+  width: 46px;
+  height: 18px;
+  color: oklch(0.62 0.14 158);
+  transform: scale(var(--s, 1)) rotate(var(--h, 0deg));
+  opacity: 0;
+  animation-name: leaf-drift;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  will-change: transform, opacity;
+}
+@keyframes leaf-drift {
+  0% {
+    transform: translateY(-10vh) translateX(0) rotate(0deg) scale(var(--s, 1));
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(112vh) translateX(-90px) rotate(300deg) scale(var(--s, 1));
+    opacity: 0;
+  }
+}
+.scene-dust {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(
+      1.5px 1.5px at 20% 30%,
+      color-mix(in oklab, oklch(0.85 0.12 160) 60%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      1.5px 1.5px at 70% 60%,
+      color-mix(in oklab, oklch(0.85 0.12 160) 50%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      1px 1px at 45% 80%,
+      color-mix(in oklab, oklch(0.85 0.12 160) 45%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      1px 1px at 85% 25%,
+      color-mix(in oklab, oklch(0.85 0.12 160) 45%, transparent),
+      transparent
+    );
+  background-size: 100% 100%;
+  opacity: 0.5;
+  animation: dust-float 18s ease-in-out infinite;
+}
+@keyframes dust-float {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-18px);
+    opacity: 0.6;
   }
 }
 
-/* ---------- Trà Đạo: steam + leaves ---------- */
-.amb-base-tea {
+/* ============================================================= */
+/*  Trà Đạo — warm tea ceremony                                  */
+/* ============================================================= */
+.scene-tea .scene-base {
   background:
-    radial-gradient(
-      circle at 50% 110%,
-      color-mix(in oklab, var(--primary) 14%, transparent),
-      transparent 55%
-    ),
-    radial-gradient(
-      circle at 80% 10%,
-      color-mix(in oklab, var(--primary) 8%, transparent),
-      transparent 45%
-    );
+    radial-gradient(ellipse at 78% 12%, oklch(0.34 0.05 70), transparent 55%),
+    linear-gradient(180deg, oklch(0.2 0.035 65), oklch(0.16 0.03 60) 60%, oklch(0.13 0.025 55));
 }
-.amb-teacup {
-  position: absolute;
-  left: 6%;
-  bottom: 0;
-  width: 180px;
-  height: 60%;
+.scene-glow-tea {
+  background: radial-gradient(
+    circle at 80% 14%,
+    color-mix(in oklab, oklch(0.78 0.12 75) 30%, transparent),
+    transparent 46%
+  );
+  filter: blur(6px);
+  animation: glow-breathe 16s ease-in-out infinite;
 }
-.amb-steam {
+.tea-cup {
+  position: absolute;
+  left: 7%;
+  bottom: 0;
+  width: 60px;
+  height: 55%;
+}
+.tea-steam {
   position: absolute;
   bottom: 0;
-  width: 10px;
-  height: 120px;
+  width: 9px;
+  height: 130px;
   border-radius: 9999px;
   background: linear-gradient(
     to top,
-    color-mix(in oklab, var(--primary) 30%, transparent),
+    color-mix(in oklab, oklch(0.85 0.05 75) 40%, transparent),
     transparent
   );
-  filter: blur(8px);
+  filter: blur(7px);
   opacity: 0;
-  animation-name: amb-steam-rise;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-in;
+  animation: steam-rise 7s ease-in infinite;
+  will-change: transform, opacity;
 }
-@keyframes amb-steam-rise {
+@keyframes steam-rise {
   0% {
     transform: translateY(0) scaleX(1);
     opacity: 0;
   }
   25% {
-    opacity: 0.55;
+    opacity: 0.5;
   }
   100% {
-    transform: translateY(-220px) scaleX(2.4);
+    transform: translateY(-240px) scaleX(2.6);
     opacity: 0;
   }
 }
-.amb-leaf {
+.tea-ripples {
   position: absolute;
-  top: -40px;
-  font-size: 22px;
-  opacity: 0.55;
-  animation-name: amb-leaf-fall;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
+  left: 9%;
+  bottom: 7%;
+  width: 200px;
+  height: 120px;
 }
-@keyframes amb-leaf-fall {
-  0% {
-    transform: translateY(-40px) translateX(0) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateY(105vh) translateX(-80px) rotate(420deg);
-    opacity: 0;
-  }
+.tea-ripple {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 60px;
+  height: 22px;
+  border: 1px solid color-mix(in oklab, oklch(0.7 0.08 70) 40%, transparent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ink-ripple 7.8s ease-out infinite;
+}
+.tea-leaf {
+  position: absolute;
+  top: -6%;
+  width: 40px;
+  height: 16px;
+  color: oklch(0.5 0.1 60);
+  transform: scale(var(--s, 1));
+  opacity: 0;
+  animation: leaf-drift 18s linear infinite;
+  will-change: transform, opacity;
 }
 
-/* ---------- Thủy Mặc: ink wash, koi, yin-yang ---------- */
-[data-theme="thuy-mac"] {
-  --amb-ink-dark: oklch(0.25 0 0);
-  --amb-ink-light: oklch(0.96 0 0);
+/* ============================================================= */
+/*  Thủy Mặc — Chinese ink wash                                  */
+/* ============================================================= */
+[data-scene="thuy-mac"] {
+  --ink-strong: oklch(0.82 0 0);
+  --ink-soft: oklch(0.16 0 0);
 }
-[data-theme="thuy-mac"].dark,
-[data-theme="thuy-mac"] .dark {
-  --amb-ink-dark: oklch(0.78 0 0);
-  --amb-ink-light: oklch(0.16 0 0);
-}
-.amb-base-ink {
+.scene-ink .scene-base-ink {
   background:
-    radial-gradient(
-      ellipse at 50% 100%,
-      color-mix(in oklab, var(--foreground) 7%, transparent),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse at 20% 0%,
-      color-mix(in oklab, var(--foreground) 5%, transparent),
-      transparent 50%
+    linear-gradient(180deg, oklch(0.12 0 0), oklch(0.09 0 0) 60%, oklch(0.07 0 0)),
+    repeating-linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.012) 0px,
+      rgba(255, 255, 255, 0.012) 1px,
+      transparent 1px,
+      transparent 4px
     );
 }
-.amb-cloud {
-  position: absolute;
-  left: -30%;
-  width: 60%;
-  height: 120px;
-  border-radius: 9999px;
-  background: radial-gradient(
-    ellipse at center,
-    color-mix(in oklab, var(--foreground) 6%, transparent),
-    transparent 70%
-  );
-  filter: blur(30px);
-  animation-name: amb-cloud-move;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
+.scene-glow-ink {
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(255, 255, 255, 0.07), transparent 55%),
+    radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.05), transparent 60%);
 }
-@keyframes amb-cloud-move {
-  0% {
-    transform: translateX(0) scale(var(--s, 1));
-  }
-  100% {
-    transform: translateX(230vw) scale(var(--s, 1));
-  }
-}
-.amb-yinyang {
+.ink-mountains {
   position: absolute;
-  bottom: 4%;
+  inset: auto 0 0 0;
+  width: 100%;
+  height: 46%;
+  opacity: 0.5;
+}
+.ink-mtn-far {
+  fill: rgba(255, 255, 255, 0.05);
+}
+.ink-mtn-mid {
+  fill: rgba(255, 255, 255, 0.08);
+}
+.ink-yinyang {
+  position: absolute;
   left: 50%;
-  width: clamp(120px, 18vw, 220px);
-  height: clamp(120px, 18vw, 220px);
-  margin-left: calc(clamp(120px, 18vw, 220px) / -2);
-  opacity: 0.16;
-  animation: amb-spin 36s linear infinite;
+  top: 46%;
+  width: clamp(160px, 24vw, 300px);
+  height: clamp(160px, 24vw, 300px);
+  transform: translate(-50%, -50%);
+  opacity: 0.1;
+  animation: yy-breathe 22s ease-in-out infinite;
 }
-.amb-yinyang-svg {
+.yinyang-svg {
   width: 100%;
   height: 100%;
+  animation: spin-slow 80s linear infinite;
 }
-@keyframes amb-spin {
+@keyframes spin-slow {
   to {
     transform: rotate(360deg);
   }
 }
-.amb-koi {
-  position: absolute;
-  left: -120px;
-  width: 90px;
-  opacity: 0.4;
-  transform: scale(var(--koi-scale, 1));
-  animation-name: amb-koi-swim;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-in-out;
-}
-.amb-koi-svg {
-  width: 100%;
-  height: auto;
-}
-@keyframes amb-koi-swim {
-  0% {
-    transform: translateX(0) translateY(0) scale(var(--koi-scale, 1));
-  }
-  25% {
-    transform: translateX(40vw) translateY(-14px) scale(var(--koi-scale, 1));
+@keyframes yy-breathe {
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: translate(-50%, -50%) scale(1);
   }
   50% {
-    transform: translateX(80vw) translateY(0) scale(var(--koi-scale, 1));
+    opacity: 0.14;
+    transform: translate(-50%, -50%) scale(1.04);
   }
-  75% {
-    transform: translateX(110vw) translateY(12px) scale(var(--koi-scale, 1));
+}
+.ink-ripples {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  width: clamp(160px, 24vw, 300px);
+  height: clamp(160px, 24vw, 300px);
+}
+.ink-ripple {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40%;
+  height: 40%;
+  margin: -20% 0 0 -20%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ink-ripple 9s ease-out infinite;
+}
+@keyframes ink-ripple {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.5;
   }
   100% {
-    transform: translateX(125vw) translateY(0) scale(var(--koi-scale, 1));
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+/* koi circle the yin-yang on two orbits */
+.koi-field {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 0;
+  height: 0;
+}
+.koi-orbit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  animation-name: koi-spin;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+.koi-orbit-0 {
+  --radius: clamp(110px, 16vw, 200px);
+}
+.koi-orbit-1 {
+  --radius: clamp(150px, 21vw, 270px);
+}
+@keyframes koi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.koi-body {
+  position: absolute;
+  left: var(--radius);
+  top: 0;
+  width: 90px;
+  margin: -16px 0 0 -45px;
+  transform: scale(var(--s, 1));
+  /* keep koi upright-ish while orbiting, plus a gentle tail wiggle */
+  animation: koi-wiggle 3.5s ease-in-out infinite;
+  opacity: 0.78;
+}
+.koi-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+@keyframes koi-wiggle {
+  0%,
+  100% {
+    transform: scale(var(--s, 1)) rotate(-4deg);
+  }
+  50% {
+    transform: scale(var(--s, 1)) rotate(4deg);
+  }
+}
+.ink-mist {
+  position: absolute;
+  width: 60%;
+  height: 140px;
+  left: -30%;
+  border-radius: 9999px;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.05), transparent 70%);
+  filter: blur(28px);
+  animation: mist-move linear infinite;
+}
+.ink-mist-1 {
+  top: 22%;
+  animation-duration: 46s;
+}
+.ink-mist-2 {
+  top: 40%;
+  animation-duration: 64s;
+  animation-delay: -20s;
+  transform: scale(0.8);
+}
+@keyframes mist-move {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(230vw);
   }
 }
 
-/* ---------- Hello Kitty: bows, hearts, sparkles ---------- */
-.amb-base-kitty {
+/* ============================================================= */
+/*  Hello Kitty — kawaii pastel, modern                          */
+/* ============================================================= */
+.scene-kitty .scene-base {
+  background:
+    radial-gradient(ellipse at 25% 12%, oklch(0.42 0.1 350), transparent 55%),
+    radial-gradient(ellipse at 80% 80%, oklch(0.4 0.09 320), transparent 55%),
+    linear-gradient(180deg, oklch(0.24 0.05 345), oklch(0.18 0.04 340));
+}
+.scene-glow-kitty {
   background:
     radial-gradient(
-      circle at 20% 15%,
-      color-mix(in oklab, var(--primary) 16%, transparent),
+      circle at 30% 25%,
+      color-mix(in oklab, oklch(0.8 0.14 350) 28%, transparent),
       transparent 45%
     ),
     radial-gradient(
-      circle at 80% 85%,
-      color-mix(in oklab, var(--primary) 14%, transparent),
-      transparent 50%
+      circle at 75% 75%,
+      color-mix(in oklab, oklch(0.78 0.12 320) 24%, transparent),
+      transparent 48%
     );
+  filter: blur(8px);
+  animation: glow-breathe 13s ease-in-out infinite;
 }
-.amb-float {
+.kitty-cloud {
   position: absolute;
-  bottom: -50px;
-  font-size: 26px;
+  left: -25%;
+  width: clamp(160px, 22vw, 280px);
+  color: color-mix(in oklab, oklch(0.92 0.05 350) 70%, transparent);
+  opacity: var(--op, 0.4);
+  transform: scale(var(--s, 1));
+  animation: cloud-move linear infinite;
+  will-change: transform;
+}
+.cloud-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: blur(1px);
+}
+@keyframes cloud-move {
+  0% {
+    transform: translateX(0) scale(var(--s, 1));
+  }
+  100% {
+    transform: translateX(180vw) scale(var(--s, 1));
+  }
+}
+.kitty-float {
+  position: absolute;
+  bottom: -8%;
+  width: 36px;
+  color: oklch(0.8 0.16 350);
   opacity: 0;
-  animation-name: amb-float-up;
+  transform: scale(var(--s, 1));
+  animation-name: pastel-float;
   animation-iteration-count: infinite;
   animation-timing-function: ease-in-out;
+  will-change: transform, opacity;
 }
-@keyframes amb-float-up {
+.kitty-float .ribbon-svg,
+.kitty-float .heart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+}
+@keyframes pastel-float {
   0% {
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(0) rotate(0deg) scale(var(--s, 1));
     opacity: 0;
   }
-  15% {
-    opacity: 0.8;
+  12% {
+    opacity: 0.85;
   }
-  85% {
-    opacity: 0.8;
+  88% {
+    opacity: 0.85;
   }
   100% {
-    transform: translateY(-108vh) rotate(40deg);
+    transform: translateY(-116vh) rotate(40deg) scale(var(--s, 1));
     opacity: 0;
   }
 }
-.amb-twinkle {
+.kitty-sparkle {
   position: absolute;
-  font-size: 18px;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, transparent 60%);
   opacity: 0;
-  animation: amb-twinkle 3.5s ease-in-out infinite;
+  animation: sparkle 3.6s ease-in-out infinite;
 }
-@keyframes amb-twinkle {
+.kitty-sparkle::before,
+.kitty-sparkle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: inherit;
+}
+.kitty-sparkle::before {
+  transform: scaleX(0.25);
+}
+.kitty-sparkle::after {
+  transform: scaleY(0.25);
+}
+@keyframes sparkle {
   0%,
   100% {
-    transform: scale(0.6);
+    transform: scale(0.5);
     opacity: 0;
   }
   50% {
-    transform: scale(1.1);
+    transform: scale(1.2);
     opacity: 0.9;
   }
 }
 
 /* ============================================================= */
-/*  Theme-aware surface overrides                                 */
-/*  Full-page <main> wrappers become transparent so the ambience */
-/*  layer shows through on every theme. Hardcoded slate surfaces  */
-/*  follow theme tokens and turn translucent.                     */
+/*  Glassmorphism surfaces over the scene                        */
+/*  Make hardcoded slate panels translucent + blurred so the     */
+/*  scene shows through, with a theme-tinted hover glow.          */
 /* ============================================================= */
 
-/* Let the fixed ambience show behind every full-height page. */
+/* Full-page wrappers become transparent to reveal the scene. */
 main.min-h-screen {
   background-color: transparent !important;
 }
 
-/* Cards / panels keep a readable translucent surface. */
 [data-theme] .bg-slate-900\/80,
 [data-theme] .bg-slate-900\/70,
 [data-theme] .bg-slate-900\/60,
 [data-theme] .bg-slate-900\/50 {
-  background-color: color-mix(in oklab, var(--card) 72%, transparent) !important;
-  backdrop-filter: blur(10px);
+  background-color: color-mix(in oklab, var(--card) 55%, transparent) !important;
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border-color: color-mix(in oklab, var(--foreground) 12%, transparent) !important;
 }
 [data-theme] .bg-slate-950\/80,
 [data-theme] .bg-slate-950\/60 {
-  background-color: color-mix(in oklab, var(--background) 68%, transparent) !important;
-  backdrop-filter: blur(10px);
+  background-color: color-mix(in oklab, var(--background) 55%, transparent) !important;
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
 }
 [data-theme] .bg-slate-800\/60,
 [data-theme] .bg-slate-800\/50,
 [data-theme] .bg-slate-800\/40 {
-  background-color: color-mix(in oklab, var(--muted) 60%, transparent) !important;
+  background-color: color-mix(in oklab, var(--muted) 50%, transparent) !important;
 }
 [data-theme] .bg-white\/5,
 [data-theme] .bg-white\/10 {
-  background-color: color-mix(in oklab, var(--card) 55%, transparent) !important;
+  background-color: color-mix(in oklab, var(--card) 42%, transparent) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-/* Text/border on dark-styled pages → theme tokens for readability. */
+/* Theme-tinted hover glow for cards/links that already animate border. */
+[data-theme] a.group:hover,
+[data-theme] .hover\:border-primary\/30:hover {
+  box-shadow: 0 8px 30px -12px color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+/* Readability: map slate text utilities to theme tokens on themed pages. */
 [data-theme="tra-dao"] .text-slate-50,
 [data-theme="hello-kitty"] .text-slate-50,
 [data-theme="thuy-mac"] .text-slate-50,
